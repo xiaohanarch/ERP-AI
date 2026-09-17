@@ -1,0 +1,10 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+psycopg2-binary==2.9.10
+PyYAML==6.0.2
+PyJWT==2.10.1
+httpx==0.28.1
+python-multipart==0.0.20
+opentelemetry-api==1.29.0
+opentelemetry-sdk==1.29.0
+opentelemetry-exporter-otlp-proto-http==1.29.0

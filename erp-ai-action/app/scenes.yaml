@@ -1,0 +1,45 @@
+# 场景注册表：工具白名单（场景工具 ∩ Agent 清单 = T2 scope）+ 降级开关
+# enabled=false 时：交换与工具调用均拒绝（GW.SCENE_DISABLED），聊天入口直接降级提示。
+scenes:
+  ap.diag:
+    enabled: true
+    description: 发票阻断归因诊断（读侧）
+    tools:
+      - ap.invoice.checkValidation
+      - ap.invoice.getMatchDetail
+      - ap.invoice.listBlocked
+      - ap.balance.query
+      - semantic.metadata.entities
+      - semantic.metadata.fields
+      - semantic.metric.get
+      - semantic.term.translate
+      - semantic.task.match
+      - semantic.operation.explain
+      - semantic.drift.status
+
+  ap.batch:
+    enabled: true
+    description: 阻断发票批量筛查（读侧，含大额风险口径）
+    tools:
+      - ap.invoice.listBlocked
+      - ap.balance.query
+      - semantic.term.translate
+      - semantic.task.match
+      - semantic.metric.get
+
+  ap.taxcode:
+    enabled: true
+    description: 税码建议与补全（写侧，强制审批）
+    tools:
+      - ap.invoice.checkValidation
+      - ap.invoice.applyTaxCode
+      - semantic.metric.get
+      - semantic.term.translate
+      - semantic.metadata.fields
+
+  ap.event:
+    enabled: true
+    description: 事件触发无头诊断（形态④：ap.invoice.blocked -> 归因 -> 通知）
+    tools:
+      - ap.invoice.checkValidation
+      - ap.invoice.getMatchDetail
