@@ -1,0 +1,21 @@
+# 构建产物
+**/target/
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/.venv/
+*.pyc
+.venv/
+.venv-hub/
+# 运行时数据
+compose/recordings/
+compose/logs/
+eval/reports/
+_smoke_tmp.py
+# 环境
+.env
+compose/.env
+# IDE
+.idea/
+.vscode/
+*.iml

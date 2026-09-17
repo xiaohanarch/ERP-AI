@@ -1,0 +1,6 @@
+# 强制 LF，Windows 开发环境统一换行（见 docs/windows-notes.md）
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.jar binary

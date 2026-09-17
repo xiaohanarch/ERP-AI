@@ -1,0 +1,144 @@
+name: erp-ai-demo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp-demo-pwd}
+      POSTGRES_DB: ${POSTGRES_DB:-erp}
+    ports:
+      - "15432:5432"   # 宿主 5432 常被本机 PostgreSQL 占用，改用 15432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp} -d erp"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16687:16686"   # UI（宿主 16686 可能被其他栈占用）
+      - "14318:4318"    # OTLP HTTP
+
+  # ---------- 存量域：Java Spring Boot 应付模块（appid: erp-ap） ----------
+  legacy-erp-ap:
+    build:
+      context: ..
+      dockerfile: legacy-erp-ap/Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/erp
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-erp}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-erp-demo-pwd}
+      GW_JWT_SECRET: ${GW_JWT_SECRET}
+      # 演示开关：启动时追加 5000 条 bulk 发票（事故端点口径数据）
+      ERP_BULK_SEED: "${ERP_BULK_SEED:-true}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------- mock 模型：OpenAI 兼容脚本化应答 ----------
+  mock-model:
+    build:
+      context: ..
+      dockerfile: erp-ai-action/docker/mock-model.Dockerfile
+    ports:
+      - "18090:8090"   # 宿主 8090 可能被占用，改用 18090
+
+  # ---------- 语义服务（appid: erp-ai-context） ----------
+  semantics:
+    build:
+      context: ..
+      dockerfile: erp-ai-context/Dockerfile
+    environment:
+      ERP_AP_BASE: ${ERP_AP_BASE:-http://legacy-erp-ap:8080}
+      GW_INTERNAL_SECRET: ${GW_INTERNAL_SECRET}
+      JAEGER_OTLP: ${JAEGER_OTLP:-http://jaeger:4318}
+    ports:
+      - "8002:8002"
+    depends_on:
+      - legacy-erp-ap
+
+  # ---------- AI 网关（appid: erp-ai-action） ----------
+  ai-gateway:
+    build:
+      context: ..
+      dockerfile: erp-ai-action/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp-demo-pwd}@postgres:5432/ai_gw
+      GW_JWT_SECRET: ${GW_JWT_SECRET}
+      HUB_CLIENT_SECRET: ${HUB_CLIENT_SECRET}
+      GW_INTERNAL_SECRET: ${GW_INTERNAL_SECRET}
+      GW_ADMIN_USER: ${GW_ADMIN_USER:-admin}
+      GW_ADMIN_PASSWORD: ${GW_ADMIN_PASSWORD:-admin-demo-pwd}
+      ERP_AP_BASE: ${ERP_AP_BASE:-http://legacy-erp-ap:8080}
+      SEMANTICS_BASE: ${SEMANTICS_BASE:-http://semantics:8002}
+      HUB_BASE: ${HUB_BASE:-http://hub:8001}
+      MODEL_MODE: ${MODEL_MODE:-mock}
+      MODEL_BASE: ${MODEL_BASE:-http://mock-model:8090}
+      LIVE_PROVIDER: ${LIVE_PROVIDER:-deepseek}
+      LIVE_BASE_URL: ${LIVE_BASE_URL:-}
+      LIVE_API_KEY: ${LIVE_API_KEY:-}
+      LIVE_MODEL: ${LIVE_MODEL:-deepseek-chat}
+      REPLAY_MISS_MODE: ${REPLAY_MISS_MODE:-passthrough}
+      JAEGER_OTLP: ${JAEGER_OTLP:-http://jaeger:4318}
+      RECORDINGS_DIR: /var/lib/gw/recordings
+    ports:
+      - "8000:8000"
+    volumes:
+      - recordings:/var/lib/gw/recordings
+    depends_on:
+      postgres:
+        condition: service_healthy
+      legacy-erp-ap:
+        condition: service_started
+      semantics:
+        condition: service_started
+      mock-model:
+        condition: service_started
+
+  # ---------- 业务 Hub（appid: erp-ai-hub，LangGraph） ----------
+  hub:
+    build:
+      context: ..
+      dockerfile: erp-ai-hub/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp-demo-pwd}@postgres:5432/hub
+      GW_BASE: ${GW_BASE:-http://ai-gateway:8000}
+      ERP_AP_BASE: ${ERP_AP_BASE:-http://legacy-erp-ap:8080}
+      GW_INTERNAL_SECRET: ${GW_INTERNAL_SECRET}
+      HUB_CLIENT_SECRET: ${HUB_CLIENT_SECRET}
+      JAEGER_OTLP: ${JAEGER_OTLP:-http://jaeger:4318}
+      GW_JWT_SECRET: ${GW_JWT_SECRET}
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-gateway:
+        condition: service_started
+
+  # ---------- WorkBuddy 员工助手平台（React + nginx） ----------
+  workbuddy:
+    build:
+      context: ../workbuddy
+      dockerfile: Dockerfile
+      args:
+        VITE_GW_BASE: http://localhost:8000
+        VITE_HUB_BASE: http://localhost:8001
+    ports:
+      - "8088:80"
+    depends_on:
+      - ai-gateway
+      - hub
+
+volumes:
+  pgdata:
+  recordings:
