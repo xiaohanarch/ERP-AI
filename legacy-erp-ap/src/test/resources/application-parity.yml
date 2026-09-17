@@ -1,0 +1,9 @@
+# 平价测试 profile：连接 compose 起的既有库（PARITY_DB_URL 指定）
+spring:
+  datasource:
+    url: ${PARITY_DB_URL}
+    username: ${PARITY_DB_USER:erp}
+    password: ${PARITY_DB_PASSWORD:erp-demo-pwd}
+  jpa:
+    hibernate:
+      ddl-auto: none

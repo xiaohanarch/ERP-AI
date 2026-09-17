@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>华东制造 ERP - 登录</title>
+  <style>
+    :root { --bg:#f3f4f1; --panel:#ffffff; --ink:#1c2418; --accent:#2d5a27; --line:#d8dcd2; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:var(--bg); color:var(--ink); display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { background:var(--panel); border:1px solid var(--line); border-top:4px solid var(--accent); width:380px; padding:36px 40px; box-shadow:0 6px 24px rgba(28,36,24,.08); }
+    h1 { font-size:20px; margin-bottom:4px; }
+    .sub { color:#6b7263; font-size:13px; margin-bottom:26px; }
+    label { display:block; font-size:13px; margin:14px 0 6px; color:#3a4234; }
+    input { width:100%; padding:9px 10px; border:1px solid var(--line); font-size:14px; background:#fbfbf9; }
+    input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+    button { width:100%; margin-top:22px; padding:10px; background:var(--accent); color:#fff; border:none; font-size:15px; cursor:pointer; }
+    button:hover { background:#234a1e; }
+    .demo { margin-top:22px; border-top:1px dashed var(--line); padding-top:14px; }
+    .demo p { font-size:12px; color:#6b7263; margin-bottom:8px; }
+    .demo a { display:inline-block; margin:3px 4px 3px 0; padding:4px 10px; font-size:12px; background:#eef1e9; border:1px solid var(--line); color:#3a4234; cursor:pointer; text-decoration:none; }
+    .demo a:hover { background:#e2e8d8; }
+    .err { color:#a33; font-size:13px; margin-top:12px; min-height:16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>华东制造 ERP</h1>
+    <div class="sub">应付账款模块 · 统一登录（SSO 由 AI 网关代理）</div>
+    <form id="f">
+      <label>用户名</label>
+      <input id="u" name="username" autocomplete="off"/>
+      <label>口令</label>
+      <input id="p" name="password" type="password" value="demo123"/>
+      <button type="submit">登 录</button>
+      <div class="err" id="err"></div>
+    </form>
+    <div class="demo">
+      <p>演示账号（口令均为 demo123）：</p>
+      <a data-u="zhangsan">张三 · T-EAST 采购经理</a>
+      <a data-u="lisi">李四 · T-EAST 财务</a>
+      <a data-u="wangwu">王五 · T-EAST 经理(审批)</a>
+      <a data-u="zhaoliu">赵六 · T-UNI 采购</a>
+      <a data-u="qianqi">钱七 · T-UNI 财务</a>
+      <a data-u="sunba">孙八 · T-UNI 经理</a>
+    </div>
+  </div>
+  <script>
+    // 网关地址（宿主机访问）
+    const GW = window.GW_BASE || (location.protocol + '//' + location.hostname + ':8000');
+    document.querySelectorAll('.demo a').forEach(a => a.onclick = () => {
+      document.getElementById('u').value = a.dataset.u;
+    });
+    document.getElementById('f').onsubmit = async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('err');
+      err.textContent = '';
+      const username = document.getElementById('u').value.trim();
+      const password = document.getElementById('p').value;
+      // 1) 网关 SSO 登录 -> T1
+      const r = await fetch(GW + '/gw/auth/sso/login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password, surface: 'surface-erp-page' })
+      });
+      if (!r.ok) { err.textContent = '登录失败：' + (await r.text()); return; }
+      const data = await r.json();
+      sessionStorage.setItem('t1', data.token);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
+      // 2) 用 T1 建立 ERP 页面会话
+      const r2 = await fetch('/uiapi/auth/session-login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ token: data.token })
+      });
+      if (!r2.ok) { err.textContent = '会话建立失败'; return; }
+      location.href = '/ui/invoices';
+    };
+  </script>
+</body>
+</html>

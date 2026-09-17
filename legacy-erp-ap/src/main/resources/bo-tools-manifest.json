@@ -1,0 +1,498 @@
+{
+  "spec_version": "1.0.0",
+  "ruleset_version": "AP-RS-1.2.0",
+  "seed_version": "ap-seed-1.0.0",
+  "appid": "erp-ap",
+  "domain": "AP",
+  "tools": [
+    {
+      "name": "ap.invoice.checkValidation",
+      "summary": "发票校验（含权限裁剪后的完整性披露）",
+      "description": "按规则组执行三单匹配/税码/预算/供应商校验，返回 overallResult 与 findings。\n存量行为基线：权限不足的规则组被「静默跳过」；BO API 适配层必须补齐为\ncompleteness 披露（full=false 时给出 skippedRuleGroups 与 reason）。\n例：用户无 ap.budget.read 时，BUDGET 组跳过且必须在响应中声明。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.invoice.read"
+      ],
+      "error_codes": [
+        "AP.INVOICE_NOT_FOUND",
+        "AP.INVOICE_IN_DRAFT",
+        "AP.PERMISSION_DENIED",
+        "AP.RULE_ENGINE_TIMEOUT"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/invoices/{invoiceNo}/check-validation"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "invoiceNo": {
+            "type": "string",
+            "description": "发票号（如 INV-A-001）"
+          },
+          "ruleGroups": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MATCH",
+                "TAX",
+                "BUDGET",
+                "VENDOR"
+              ]
+            },
+            "description": "可选规则组过滤；缺省为全部组"
+          }
+        },
+        "required": [
+          "invoiceNo"
+        ]
+      },
+      "binding": {
+        "invoiceNo": {
+          "in": "path",
+          "name": "invoiceNo"
+        },
+        "ruleGroups": {
+          "in": "query",
+          "name": "ruleGroups"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-完整校验（李四，含预算组）",
+          "request": {
+            "invoiceNo": "INV-A-001"
+          },
+          "expect": {
+            "overallResult": "BLOCKED",
+            "completeness": {
+              "full": true
+            },
+            "finding_rule_ids": [
+              "AP.MATCH.QTY_MISMATCH",
+              "AP.BUDGET.EXCEEDED"
+            ]
+          }
+        },
+        {
+          "name": "反例-权限裁剪（张三，无预算权限）",
+          "request": {
+            "invoiceNo": "INV-A-001"
+          },
+          "expect": {
+            "overallResult": "BLOCKED",
+            "completeness": {
+              "full": false,
+              "skippedRuleGroups": [
+                "BUDGET"
+              ]
+            }
+          }
+        },
+        {
+          "name": "反例-不存在",
+          "request": {
+            "invoiceNo": "INV-X-999"
+          },
+          "expect": {
+            "error": {
+              "code": "AP.INVOICE_NOT_FOUND",
+              "category": "not_found",
+              "retryable": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.invoice.listBlocked",
+      "summary": "阻断发票批量筛查（游标分页 + 数据权限口径披露）",
+      "description": "返回当前主体数据权限口径下的阻断发票。与 UI 页面同一 PermissionService\n（同主体必同集合）；与 Open API（appid 直连、租户级）口径不同 —— 这是\n「页面 50 条 vs Open API 5000 条」事故的 BO API 侧答案：数量一致 + 披露。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.invoice.read"
+      ],
+      "error_codes": [
+        "AP.PERMISSION_DENIED",
+        "AP.RULE_ENGINE_TIMEOUT"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/invoices/blocked"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string"
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          },
+          "minAmountCny": {
+            "type": "number",
+            "description": "大额风险筛选阈值（租户校准参数由语义层提供，本接口不做默认假设）"
+          }
+        },
+        "required": []
+      },
+      "binding": {
+        "cursor": {
+          "in": "query",
+          "name": "cursor"
+        },
+        "pageSize": {
+          "in": "query",
+          "name": "pageSize"
+        },
+        "minAmountCny": {
+          "in": "query",
+          "name": "minAmountCny"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-张三批量筛查（与页面同口径 50 条内）",
+          "request": {
+            "pageSize": 20
+          },
+          "expect": {
+            "filteredByDimension": {
+              "dimensions": [
+                "org"
+              ]
+            }
+          }
+        },
+        {
+          "name": "正例-大额筛选（阈值来自语义层租户校准）",
+          "request": {
+            "minAmountCny": 500000
+          },
+          "expect": {
+            "items_contains": [
+              "INV-A-011"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.invoice.getMatchDetail",
+      "summary": "三单匹配差异下钻",
+      "description": "返回发票行 vs 采购订单行 vs 收货行的逐行差异明细，供阻断归因下钻。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.invoice.read",
+        "ap.po.read",
+        "ap.gr.read"
+      ],
+      "error_codes": [
+        "AP.INVOICE_NOT_FOUND",
+        "AP.PO_NOT_ACCESSIBLE",
+        "AP.PERMISSION_DENIED"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/invoices/{invoiceNo}/match-detail"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "invoiceNo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoiceNo"
+        ]
+      },
+      "binding": {
+        "invoiceNo": {
+          "in": "path",
+          "name": "invoiceNo"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-INV-A-001 数量差异下钻",
+          "request": {
+            "invoiceNo": "INV-A-001"
+          },
+          "expect": {
+            "line_findings": [
+              {
+                "field": "qty",
+                "invoice": 120,
+                "goods_receipt": 100,
+                "diff": 20
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.balance.query",
+      "summary": "应付余额指标查询（语义层指标计算唯一出口）",
+      "description": "语义层不生成 SQL。所有派生指标（确认应付、已付、暂估、净额）经本操作\n计算，口径（caliber）随响应返回，租户口径差异由语义层 A0 参数解释。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.balance.read"
+      ],
+      "error_codes": [
+        "AP.PERMISSION_DENIED",
+        "AP.RULE_ENGINE_TIMEOUT"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/balance/query"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "ap.payable.confirmed",
+              "ap.payable.paid",
+              "ap.payable.accrual",
+              "ap.balance.net"
+            ]
+          },
+          "period": {
+            "type": "string",
+            "description": "会计期间，如 2026-09"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "tenant",
+              "org"
+            ],
+            "default": "tenant"
+          }
+        },
+        "required": [
+          "metric"
+        ]
+      },
+      "binding": {
+        "metric": {
+          "in": "query",
+          "name": "metric"
+        },
+        "period": {
+          "in": "query",
+          "name": "period"
+        },
+        "scope": {
+          "in": "query",
+          "name": "scope"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-租户口径净额（T-UNI，含暂估差额验证）",
+          "request": {
+            "metric": "ap.balance.net",
+            "scope": "tenant"
+          },
+          "expect": {
+            "invariant": "net == confirmed - paid - accrual_adjustment"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.invoice.applyTaxCode",
+      "summary": "税码建议落库（不可逆，强制审批 + 业务幂等）",
+      "description": "写路径标的操作。网关见 x-bo-irreversible=true 强制走审批工作流\n（GW.APPROVAL_REQUIRED -> 审批 -> 一次性令牌 OT -> 重发）。\n业务幂等键 = invoiceNo + taxCode + accountPeriod（唯一约束，与变更同事务）。",
+      "kind": "write",
+      "irreversible": true,
+      "sod_group": "ap-tax-write",
+      "permissions": [
+        "ap.taxcode.write"
+      ],
+      "error_codes": [
+        "AP.INVOICE_NOT_FOUND",
+        "AP.INVOICE_IN_DRAFT",
+        "AP.PERMISSION_DENIED",
+        "GW.APPROVAL_REQUIRED",
+        "GW.APPROVAL_TOKEN_EXPIRED",
+        "GW.APPROVAL_PARAMS_MISMATCH",
+        "AP.IDEMPOTENCY_CONFLICT"
+      ],
+      "http": {
+        "method": "POST",
+        "path": "/boapi/invoices/{invoiceNo}/tax-code"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "invoiceNo": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "description": "网关/Hub 按任务步骤生成的幂等键，审批挂起后重发保持不变"
+          },
+          "taxCode": {
+            "type": "string",
+            "example": "CN-VAT-13"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "accountPeriod": {
+            "type": "string",
+            "example": "2026-09"
+          }
+        },
+        "required": [
+          "invoiceNo",
+          "idempotencyKey",
+          "taxCode",
+          "reason",
+          "accountPeriod"
+        ]
+      },
+      "binding": {
+        "invoiceNo": {
+          "in": "path",
+          "name": "invoiceNo"
+        },
+        "idempotencyKey": {
+          "in": "header",
+          "name": "Idempotency-Key"
+        },
+        "taxCode": {
+          "in": "body",
+          "name": "taxCode"
+        },
+        "reason": {
+          "in": "body",
+          "name": "reason"
+        },
+        "accountPeriod": {
+          "in": "body",
+          "name": "accountPeriod"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-INV-A-003 税码补全（李四发起，王五审批）",
+          "request": {
+            "invoiceNo": "INV-A-003",
+            "taxCode": "CN-VAT-13",
+            "reason": "供应商所在地常用税码",
+            "accountPeriod": "2026-09"
+          },
+          "expect": {
+            "newTaxCode": "CN-VAT-13",
+            "decidedBy": "u-wangwu"
+          }
+        },
+        {
+          "name": "反例-同键不同参（幂等冲突）",
+          "request": {
+            "invoiceNo": "INV-A-003",
+            "taxCode": "CN-VAT-09",
+            "accountPeriod": "2026-09"
+          },
+          "expect": {
+            "error": {
+              "code": "AP.IDEMPOTENCY_CONFLICT",
+              "category": "state_conflict",
+              "retryable": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.payment.execute",
+      "summary": "付款执行（MOCK，仅为 SoD 与越权诱导拦截演示存在）",
+      "description": "演示专用：本实现不产生真实资金动作。存在目的有二：\n1) SoD 互斥：与 ap.invoice.applyTaxCode 同属不可逆写操作但分属不同互斥组，\n   Agent 同时申请两者 -> GW.SOD_CONFLICT；\n2) 越权诱导：任何场景均不授予本工具，诱导调用 -> GW.SCOPE_EXCEEDED（403）。",
+      "kind": "write",
+      "irreversible": true,
+      "sod_group": "ap-payment",
+      "permissions": [
+        "ap.payment.execute"
+      ],
+      "error_codes": [
+        "AP.INVOICE_NOT_FOUND",
+        "AP.PERMISSION_DENIED",
+        "GW.APPROVAL_REQUIRED",
+        "GW.SOD_CONFLICT",
+        "GW.SCOPE_EXCEEDED"
+      ],
+      "http": {
+        "method": "POST",
+        "path": "/boapi/payments/execute"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "paymentOrderNo": {
+            "type": "string"
+          },
+          "invoiceNo": {
+            "type": "string"
+          },
+          "amountCny": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "paymentOrderNo",
+          "invoiceNo",
+          "amountCny"
+        ]
+      },
+      "binding": {
+        "paymentOrderNo": {
+          "in": "body",
+          "name": "paymentOrderNo"
+        },
+        "invoiceNo": {
+          "in": "body",
+          "name": "invoiceNo"
+        },
+        "amountCny": {
+          "in": "body",
+          "name": "amountCny"
+        }
+      },
+      "examples": [
+        {
+          "name": "反例-越权诱导（copilot 被要求付款）",
+          "request": {
+            "paymentOrderNo": "PAY-DEMO-001",
+            "invoiceNo": "INV-A-001",
+            "amountCny": 100000
+          },
+          "expect": {
+            "error": {
+              "code": "GW.SCOPE_EXCEEDED",
+              "category": "gateway_policy",
+              "retryable": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

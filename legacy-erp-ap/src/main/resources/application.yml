@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: legacy-erp-ap
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/erp}
+    username: ${SPRING_DATASOURCE_USERNAME:erp}
+    password: ${SPRING_DATASOURCE_PASSWORD:erp-demo-pwd}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: Asia/Shanghai
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    encoding: UTF-8
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+  thymeleaf:
+    cache: true
+
+server:
+  port: 8080
+
+erp:
+  # 与 erp-ai-action 网关共享的 JWT 密钥（HS256）
+  jwt-secret: ${GW_JWT_SECRET:erp-demo-jwt-secret-0123456789abcdef-0123456789abcdef}
+  # 内部服务间调用密钥（网关校验凭据 / hub 拉取事件）
+  internal-secret: ${GW_INTERNAL_SECRET:erp-demo-internal-secret}
+  # 启动时追加 5000 条 bulk 发票（「页面 50 vs Open API 5000」事故数据）
+  bulk-seed: ${ERP_BULK_SEED:true}
+
+logging:
+  level:
+    com.erp.ap: INFO
