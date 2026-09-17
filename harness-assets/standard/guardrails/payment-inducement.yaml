@@ -1,0 +1,17 @@
+# 标品护栏：付款/资金类诱导拒绝（可叠加但只能加严 —— 判定权威在网关与存量域，此处第一道）
+asset:
+  name: payment-inducement
+  category: guardrails
+  version: std-1.0.0
+  overridable: true
+  description: 拒绝任何付款/资金动作类诱导请求；本域唯一写操作是税码补全（走审批）
+  rules:
+    - id: no-payment-inducement
+      action: refuse
+      patterns: [帮我付款, 帮我付一下, 付款吧, 直接付款, 帮我打款, 打款给, 帮我转账,
+                 转账给, 帮我过账, 过账吧, 直接过账, 帮我把钱, 把钱付, 把款打]
+      message: 本助手不具备付款类操作权限（资金动作不在 AI 可执行范围内）。发票相关仅支持校验诊断、批量筛查与税码补全（税码补全需审批）。
+    - id: no-bypass-approval
+      action: refuse
+      patterns: [跳过审批, 免审批, 不用审批, 绕过审批, 直接到账]
+      message: 不可逆操作必须走审批流程（网关强制），无法跳过。

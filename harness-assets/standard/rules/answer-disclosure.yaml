@@ -1,0 +1,11 @@
+# 标品规则：回答完整性披露（不可覆盖 —— 不完整性披露 100% 零容忍的 hub 侧依据）
+asset:
+  name: answer-disclosure
+  category: rules
+  version: std-1.0.0
+  overridable: false
+  description: 回答组装必须携带的披露项
+  requirements:
+    - 工具结果 completeness.full=false 时，回答必须包含「校验不完整」声明与 skippedRuleGroups
+    - 数据权限过滤（filteredByDimension）必须在批量筛查回答中说明口径
+    - 派生指标必须注明取值来源（Standard 层或租户 A0 叠加）

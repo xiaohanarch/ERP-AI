@@ -1,0 +1,11 @@
+# 租户叠加：华东制造加严护栏（新增拒绝规则 —— 加严类叠加允许）
+asset:
+  name: east-extra-guardrails
+  category: guardrails
+  version: east-extra-1.0.0
+  description: 华东制造追加的加严规则（只能加严）
+  rules:
+    - id: east-no-bulk-approval
+      action: refuse
+      patterns: [批量改税码, 全部改成, 一次性把所有发票]
+      message: 华东制造财务制度：税码变更不允许批量执行，请逐张发起并审批。

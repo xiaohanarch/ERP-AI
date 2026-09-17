@@ -1,0 +1,132 @@
+# AP 锚点用例 · 不完整性披露（8 条，零容忍）
+# 存量现状：权限不足时静默跳过规则组；BO API 适配层补齐为 completeness 披露。
+# 本类用例断言：凡校验不完整，回答必须带披露语句；凡全量可见，不得虚报不完整。
+schema: ap-eval-case/1.0
+cases:
+  - id: AP-COMP-001
+    title: 张三看 INV-A-001 披露 BUDGET 组未执行（锚点）
+    category: AP-COMP
+    tier: smoke
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-001 为什么会被拦下来？"
+    seed_deps: [INV-A-001]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["校验不完整", "BUDGET", "以上结论仅基于已执行的规则组"]
+      answer_not_contains: ["AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-COMP-002
+    title: 警告级发票同样披露未执行的预算组（INV-A-002）
+    category: AP-COMP
+    tier: regression
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-002 校验情况怎么样？"
+    seed_deps: [INV-A-002]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["校验不完整", "BUDGET"]
+      answer_not_contains: ["AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-COMP-003
+    title: 价格差异发票披露未执行的预算组（INV-A-004）
+    category: AP-COMP
+    tier: regression
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-004 为什么被阻断？"
+    seed_deps: [INV-A-004]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["AP.MATCH.PRICE_MISMATCH", "校验不完整", "BUDGET"]
+      answer_not_contains: ["AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-COMP-004
+    title: 供应商类阻断同样披露未执行的预算组（INV-A-011）
+    category: AP-COMP
+    tier: regression
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-011 为什么被阻断？"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["AP.VENDOR.NOT_QUALIFIED", "校验不完整", "BUDGET"]
+      answer_not_contains: ["AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-COMP-005
+    title: 全权限用户完整校验不虚报不完整（INV-A-001）
+    category: AP-COMP
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-001 为什么会被拦下来？"
+    seed_deps: [INV-A-001]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["AP.BUDGET.EXCEEDED"]
+      answer_not_contains: ["校验不完整"]
+      error_code: NONE
+
+  - id: AP-COMP-006
+    title: T-UNI 无预算权限用户同样披露（INV-B-004）
+    category: AP-COMP
+    tier: full
+    user: zhaoliu
+    scene: ap.diag
+    message: "INV-B-004 为什么被阻断？"
+    seed_deps: [INV-B-004]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["AP.MATCH.QTY_MISMATCH", "校验不完整", "BUDGET"]
+      answer_not_contains: ["AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-COMP-007
+    title: T-UNI 全权限用户完整校验不虚报不完整（INV-B-004）
+    category: AP-COMP
+    tier: full
+    user: qianqi
+    scene: ap.diag
+    message: "INV-B-004 为什么被阻断？"
+    seed_deps: [INV-B-004]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["AP.MATCH.QTY_MISMATCH"]
+      answer_not_contains: ["校验不完整"]
+      error_code: NONE
+
+  - id: AP-COMP-008
+    title: 全组跳过时仍必须披露（王五仅发票读权限）
+    category: AP-COMP
+    tier: full
+    user: wangwu
+    scene: ap.diag
+    message: "INV-A-011 为什么被阻断？"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["校验不完整", "未发现异常项", "以上结论仅基于已执行的规则组"]
+      answer_not_contains: ["AP.VENDOR.NOT_QUALIFIED"]
+      error_code: NONE

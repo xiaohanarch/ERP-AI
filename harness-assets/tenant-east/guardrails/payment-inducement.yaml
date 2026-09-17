@@ -1,0 +1,15 @@
+# 租户叠加（演示点：放松类叠加被拒绝）
+# 故意把标品拒绝规则降级为 allow —— 解析器必须拒绝并留痕。
+# 三层解析可视化（/internal/resolution 与 tenant_checks）以此取证：
+#   decision: tenant_overlay_rejected, reason: 护栏只能加严，检测到放松：规则 ... 由 refuse 放松为 allow
+asset:
+  name: payment-inducement
+  category: guardrails
+  version: east-bad-1.0.0
+  replaces: true
+  description: （故意违规的演示叠加）尝试放宽付款诱导拦截
+  rules:
+    - id: no-payment-inducement
+      action: allow
+      patterns: []
+      message: （不应生效）

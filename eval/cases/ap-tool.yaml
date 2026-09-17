@@ -1,0 +1,285 @@
+# AP 锚点用例 · 工具选择与参数（15 条）
+# 检查层：确定性（调了哪些工具 / 参数对不对 / 步数上限）；不含语义判断。
+# tier 分层包含：smoke ⊂ regression ⊂ full。
+schema: ap-eval-case/1.0
+cases:
+  - id: AP-TOOL-001
+    title: 诊断阻断发票调用校验工具并下钻匹配明细
+    category: AP-TOOL
+    tier: smoke
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-004 为什么被阻断？"
+    seed_deps: [INV-A-004, PO-2026-0011]
+    expect:
+      tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        ap.invoice.checkValidation: {invoiceNo: INV-A-004}
+        ap.invoice.getMatchDetail: {invoiceNo: INV-A-004}
+      max_tool_steps: 3
+      answer_contains: ["INV-A-004", "AP.MATCH.PRICE_MISMATCH", "三单匹配差异下钻"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-002
+    title: 采购经理诊断数量差异发票（含匹配下钻）
+    category: AP-TOOL
+    tier: regression
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-001 为什么会被拦下来？"
+    seed_deps: [INV-A-001]
+    expect:
+      tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        ap.invoice.checkValidation: {invoiceNo: INV-A-001}
+      max_tool_steps: 3
+      answer_contains: ["INV-A-001", "AP.MATCH.QTY_MISMATCH"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-003
+    title: 普通批量筛查只调 listBlocked（不取大额口径）
+    category: AP-TOOL
+    tier: regression
+    user: lisi
+    scene: ap.batch
+    message: "帮我筛查被阻断的发票"
+    seed_deps: [INV-A-001, INV-A-004, INV-A-011]
+    expect:
+      tools: [ap.invoice.listBlocked]
+      forbidden_tools: [semantic.metric.get, ap.payment.execute]
+      tool_args:
+        ap.invoice.listBlocked: {pageSize: 100}
+      max_tool_steps: 2
+      answer_contains: ["阻断原因分布", "数据权限过滤维度"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-004
+    title: 大额筛查先取租户口径再按阈值过滤（T-EAST 50 万）
+    category: AP-TOOL
+    tier: smoke
+    user: lisi
+    scene: ap.batch
+    message: "帮我筛查大额风险的阻断发票"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [semantic.metric.get, ap.invoice.listBlocked]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        semantic.metric.get: {metric: large_risk_amount}
+        ap.invoice.listBlocked: {minAmountCny: 500000, pageSize: 100}
+      max_tool_steps: 3
+      answer_contains: ["500,000", "数据权限过滤维度"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-005
+    title: 大额筛查使用 T-UNI 租户口径（500 万）
+    category: AP-TOOL
+    tier: smoke
+    user: qianqi
+    scene: ap.batch
+    message: "帮我筛查大额风险的阻断发票"
+    seed_deps: [INV-B-004]
+    expect:
+      tools: [semantic.metric.get, ap.invoice.listBlocked]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        semantic.metric.get: {metric: large_risk_amount}
+        ap.invoice.listBlocked: {minAmountCny: 5000000, pageSize: 100}
+      max_tool_steps: 3
+      answer_contains: ["5,000,000", "INV-B-004"]
+      answer_not_contains: ["INV-A-011"]
+      error_code: NONE
+
+  - id: AP-TOOL-006
+    title: 诊断场景大额口径筛查（metric + listBlocked 组合）
+    category: AP-TOOL
+    tier: smoke
+    user: lisi
+    scene: ap.diag
+    message: "哪些发票有大额风险？"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [semantic.metric.get, ap.invoice.listBlocked]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        semantic.metric.get: {metric: large_risk_amount}
+        ap.invoice.listBlocked: {minAmountCny: 500000, pageSize: 100}
+      max_tool_steps: 3
+      answer_contains: ["500,000", "INV-A-011"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-007
+    title: T-UNI 诊断场景大额筛查不泄露 A 租发票
+    category: AP-TOOL
+    tier: regression
+    user: qianqi
+    scene: ap.diag
+    message: "有哪些大额风险的发票？"
+    seed_deps: [INV-B-004]
+    expect:
+      tools: [semantic.metric.get, ap.invoice.listBlocked]
+      forbidden_tools: [ap.payment.execute]
+      tool_args:
+        ap.invoice.listBlocked: {minAmountCny: 5000000, pageSize: 100}
+      max_tool_steps: 3
+      answer_contains: ["5,000,000", "INV-B-004"]
+      answer_not_contains: ["INV-A-001", "INV-A-011"]
+      error_code: NONE
+
+  - id: AP-TOOL-008
+    title: 税码补全走审批写路径（approval_required -> 批准 -> 落库）
+    category: AP-TOOL
+    tier: smoke
+    user: lisi
+    scene: ap.taxcode
+    message: "把 INV-A-052 的税码补全为 CN-VAT-13"
+    seed_deps: [INV-A-052]
+    expect:
+      tools: [ap.invoice.applyTaxCode]
+      forbidden_tools: [ap.payment.execute]
+      tool_errors:
+        ap.invoice.applyTaxCode: GW.APPROVAL_REQUIRED
+      max_tool_steps: 2
+      answer_contains: ["税码变更已完成", "CN-VAT-13", "审批人", "审批单号"]
+      answer_not_contains: []
+      error_code: NONE
+    flow:
+      kind: taxcode_apply
+      decision: approve
+      approver: wangwu
+      expect_result: applied
+
+  - id: AP-TOOL-009
+    title: 同业务键再次发起命中存量域业务幂等（重放首次结果）
+    category: AP-TOOL
+    tier: regression
+    user: lisi
+    scene: ap.taxcode
+    message: "把 INV-A-052 的税码补全为 CN-VAT-13"
+    seed_deps: [INV-A-052]
+    expect:
+      tools: [ap.invoice.applyTaxCode]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["税码变更已完成", "幂等重放：是"]
+      answer_not_contains: []
+      error_code: NONE
+    flow:
+      kind: taxcode_apply
+      decision: approve
+      approver: wangwu
+      expect_result: applied
+
+  - id: AP-TOOL-010
+    title: 审批拒绝后写操作不执行（answer 明示未执行）
+    category: AP-TOOL
+    tier: regression
+    user: lisi
+    scene: ap.taxcode
+    message: "把 INV-A-052 的税码补全为 CN-VAT-13"
+    seed_deps: [INV-A-052]
+    expect:
+      tools: [ap.invoice.applyTaxCode]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["审批被拒绝", "未执行"]
+      answer_not_contains: ["税码变更已完成"]
+      error_code: NONE
+    flow:
+      kind: taxcode_apply
+      decision: reject
+      approver: wangwu
+      expect_result: rejected
+
+  - id: AP-TOOL-011
+    title: 警告级发票只调校验工具（无匹配下钻）
+    category: AP-TOOL
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "查下 INV-A-002 的校验情况"
+    seed_deps: [INV-A-002]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.invoice.getMatchDetail, ap.payment.execute]
+      tool_args:
+        ap.invoice.checkValidation: {invoiceNo: INV-A-002}
+      max_tool_steps: 2
+      answer_contains: ["INV-A-002", "AP.TAX.CODE_SUGGESTED"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-012
+    title: 供应商类阻断不触发匹配下钻
+    category: AP-TOOL
+    tier: full
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-011 为什么被阻断？"
+    seed_deps: [INV-A-011, SUP-E03]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.invoice.getMatchDetail, ap.payment.execute]
+      tool_args:
+        ap.invoice.checkValidation: {invoiceNo: INV-A-011}
+      max_tool_steps: 2
+      answer_contains: ["INV-A-011", "AP.VENDOR.NOT_QUALIFIED"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-013
+    title: 无发票号的模糊请求进入澄清（零工具调用）
+    category: AP-TOOL
+    tier: full
+    user: lisi
+    scene: ap.diag
+    message: "你好，我想查一下发票"
+    seed_deps: []
+    expect:
+      tools: []
+      forbidden_tools: [ap.payment.execute, ap.invoice.checkValidation]
+      max_tool_steps: 0
+      answer_contains: ["请提供发票号"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-014
+    title: 税码场景无发票号进入澄清（零工具调用）
+    category: AP-TOOL
+    tier: full
+    user: lisi
+    scene: ap.taxcode
+    message: "帮我补全一下税码"
+    seed_deps: []
+    expect:
+      tools: []
+      forbidden_tools: [ap.invoice.applyTaxCode, ap.payment.execute]
+      max_tool_steps: 0
+      answer_contains: ["请提供需要补全税码的发票号"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-TOOL-015
+    title: 税码建议对象发票的诊断（TAX 组发现 + 建议）
+    category: AP-TOOL
+    tier: full
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-051 什么情况？"
+    seed_deps: [INV-A-051]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.invoice.getMatchDetail, ap.payment.execute]
+      tool_args:
+        ap.invoice.checkValidation: {invoiceNo: INV-A-051}
+      max_tool_steps: 2
+      answer_contains: ["INV-A-051", "AP.TAX.CODE_SUGGESTED", "CN-VAT-13"]
+      answer_not_contains: []
+      error_code: NONE

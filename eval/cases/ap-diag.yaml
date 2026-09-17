@@ -1,0 +1,163 @@
+# AP 锚点用例 · 归因结论正确性（10 条）
+# 检查层：确定性（结论包含正确规则号 / 严重级别 / 单据状态；不得包含错误归因）。
+schema: ap-eval-case/1.0
+cases:
+  - id: AP-DIAG-001
+    title: 李四看 INV-A-001 完整归因（数量差异 + 预算超支）
+    category: AP-DIAG
+    tier: smoke
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-001 为什么会被拦下来？"
+    seed_deps: [INV-A-001]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["INV-A-001", "阻断", "AP.MATCH.QTY_MISMATCH", "AP.BUDGET.EXCEEDED"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-002
+    title: 价格差异归因（INV-A-004）
+    category: AP-DIAG
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-004 为什么被阻断？"
+    seed_deps: [INV-A-004]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["INV-A-004", "阻断", "AP.MATCH.PRICE_MISMATCH"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-003
+    title: 供应商未准入归因（INV-A-011）
+    category: AP-DIAG
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-011 为什么被阻断？"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-A-011", "阻断", "AP.VENDOR.NOT_QUALIFIED"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-004
+    title: 警告级发票结论为警告而非阻断（INV-A-002）
+    category: AP-DIAG
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-002 被拦下来了吗？"
+    seed_deps: [INV-A-002]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-A-002", "校验结果：警告", "AP.TAX.CODE_SUGGESTED"]
+      answer_not_contains: ["AP.MATCH.QTY_MISMATCH", "AP.BUDGET.EXCEEDED", "AP.VENDOR.NOT_QUALIFIED"]
+      error_code: NONE
+
+  - id: AP-DIAG-005
+    title: 税码建议归因指向补全操作（INV-A-051）
+    category: AP-DIAG
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-051 校验情况怎么样？"
+    seed_deps: [INV-A-051]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-A-051", "AP.TAX.CODE_SUGGESTED", "CN-VAT-13"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-006
+    title: T-UNI 数量差异归因（INV-B-004）
+    category: AP-DIAG
+    tier: full
+    user: qianqi
+    scene: ap.diag
+    message: "INV-B-004 为什么被阻断？"
+    seed_deps: [INV-B-004]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["INV-B-004", "阻断", "AP.MATCH.QTY_MISMATCH"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-007
+    title: T-UNI 供应商未准入归因（INV-B-005）
+    category: AP-DIAG
+    tier: full
+    user: qianqi
+    scene: ap.diag
+    message: "INV-B-005 为什么被阻断？"
+    seed_deps: [INV-B-005]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-B-005", "阻断", "AP.VENDOR.NOT_QUALIFIED"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-008
+    title: 通过级发票结论为通过且无异常项（INV-B-001）
+    category: AP-DIAG
+    tier: full
+    user: qianqi
+    scene: ap.diag
+    message: "INV-B-001 校验有问题吗？"
+    seed_deps: [INV-B-001]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-B-001", "校验结果：通过", "未发现异常项"]
+      answer_not_contains: ["AP.MATCH.QTY_MISMATCH", "AP.TAX.CODE_SUGGESTED", "AP.BUDGET.EXCEEDED"]
+      error_code: NONE
+
+  - id: AP-DIAG-009
+    title: 数量差异下钻展示发票/收货数量对照
+    category: AP-DIAG
+    tier: regression
+    user: lisi
+    scene: ap.diag
+    message: "INV-A-001 具体差异在哪里？"
+    seed_deps: [INV-A-001]
+    expect:
+      tools: [ap.invoice.getMatchDetail]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 3
+      answer_contains: ["三单匹配差异下钻", "发票数量", "收货数量"]
+      answer_not_contains: []
+      error_code: NONE
+
+  - id: AP-DIAG-010
+    title: 采购经理对供应商类阻断的归因同样正确（INV-A-011）
+    category: AP-DIAG
+    tier: full
+    user: zhangsan
+    scene: ap.diag
+    message: "INV-A-011 为什么被阻断？"
+    seed_deps: [INV-A-011]
+    expect:
+      tools: [ap.invoice.checkValidation]
+      forbidden_tools: [ap.payment.execute]
+      max_tool_steps: 2
+      answer_contains: ["INV-A-011", "AP.VENDOR.NOT_QUALIFIED"]
+      answer_not_contains: []
+      error_code: NONE

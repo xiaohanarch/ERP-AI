@@ -1,0 +1,14 @@
+# 标品技能：AP 诊断（步骤与工具绑定说明）
+asset:
+  name: ap-diagnosis
+  category: skills
+  version: std-1.0.0
+  overridable: true
+  description: 发票阻断归因诊断技能（读侧）
+  steps:
+    - 提取发票号（缺失时澄清）
+    - 调用 ap.invoice.checkValidation 获取整体结果与 findings
+    - completeness.full=false 时必须声明跳过的规则组与原因
+    - 匹配类阻断可下钻 ap.invoice.getMatchDetail 给出逐行差异
+    - 汇总：阻断原因 -> 涉及规则（ID/severity/消息）-> 修复建议（remediation）
+  tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail]
