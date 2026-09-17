@@ -1,0 +1,23 @@
+# 租户 A0 叠加：星联科技（T-UNI）
+# 「进货单」在此租户解析为 goods_receipt（与 T-EAST 不同）——双租同题不同答的术语演示点。
+overlay:
+  tenant_id: T-UNI
+  version: uni-a0-1.0.0
+  description: 星联科技租户叠加（参数 / 术语 / 派生指标口径）
+  parameters:
+    large_risk_threshold:
+      value: 5000000
+      source: 租户A0叠加（星联科技风控制度：单张发票 500 万以上为大额）
+      description: 大额风险阈值 500 万
+  terms:
+    - business: 进货单
+      semantic: goods_receipt
+      note: T-UNI 口径：进货单指收货单（GR）
+    - business: 三单匹配
+      semantic: match
+      note: 发票-PO-GR 匹配
+  metrics:
+    net_payable:
+      formula: confirmed - paid - accrual
+      includes_accrual: true
+      note: T-UNI 口径：应付净额需扣减暂估

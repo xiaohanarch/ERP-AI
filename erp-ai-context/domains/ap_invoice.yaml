@@ -1,0 +1,73 @@
+# ============================================================
+# 语义文件：AP 应付发票域（三段式：投影 / 增量 / 原生）
+# ============================================================
+#  - 投影段：业务术语 -> 实体/字段（实时取存量元数据 + 合并版本号）
+#  - 增量段：语义层新增（派生字段/派生指标/规则引用）—— 漂移检测比对对象
+#  - 原生段：存量 BO 操作直通（规格即工具：boapi-spec/bo-ap.yaml）
+semantics:
+  name: ap-invoice
+  version: ap-sem-1.0.0
+  description: 应付发票域语义层（阻断归因 / 批量筛查 / 税码补全）
+  owner: erp-ai-context
+  domain: AP
+
+  # ==================== 投影段（projection） ====================
+  projection:
+    entities:
+      - entity: Invoice
+        terms: [发票, 应付发票]
+      - entity: PurchaseOrder
+        terms: [采购订单, PO]
+      - entity: GoodsReceipt
+        terms: [收货单, GR]
+      - entity: Supplier
+        terms: [供应商, 供货商]
+      - entity: BudgetOccupancy
+        terms: [预算, 预算占用]
+      - entity: InvoiceTaxChange
+        terms: [税码变更, 税码变更记录]
+    dimensions: [org, period, supplier, tax_code, status]
+    enums: [InvoiceStatus, ValidationStatus, Severity, RuleGroup]
+
+  # ==================== 增量段（increment） ====================
+  # ★ 漂移高风险段：此处引用的存量字段/规则必须与元数据现状一致（drift_check 比对）。
+  #   预埋漂移（演示口径，drift_check 必须报出）：
+  #     1) derived_field accrual_flag —— 元数据现状字段名是 is_accrual；
+  #     2) 规则引用 AP.TAX.RATE_CHECK —— 存量规则清单中不存在。
+  increment:
+    derived_fields:
+      - name: accrual_flag
+        entity: Invoice
+        type: boolean
+        description: 暂估标记（引用了存量字段，但存量字段名为 is_accrual —— 预埋漂移）
+    metrics:
+      - name: large_risk_amount
+        description: 大额风险发票口径（阈值来自 A0 租户叠加，随租户不同）
+        unit: CNY
+        parameter: large_risk_threshold
+        default_threshold: 500000
+        apply: amount_cny >= threshold
+      - name: net_payable
+        description: 应付净额（是否扣减暂估按租户 A0 口径）
+        caliber_default: confirmed - paid - accrual
+      - name: blocked_count
+        description: 阻断发票数（依据校验状态 BLOCKED）
+        apply: count(invoice where validation_status = 'BLOCKED')
+    rules:
+      - AP.TAX.RATE_CHECK
+      - AP.MATCH.QTY_MISMATCH
+      - AP.MATCH.PRICE_MISMATCH
+      - AP.TAX.CODE_SUGGESTED
+      - AP.BUDGET.EXCEEDED
+      - AP.VENDOR.NOT_QUALIFIED
+
+  # ==================== 原生段（native） ====================
+  native:
+    spec_ref: boapi-spec/bo-ap.yaml
+    operations:
+      - ap.invoice.checkValidation
+      - ap.invoice.listBlocked
+      - ap.invoice.getMatchDetail
+      - ap.balance.query
+      - ap.invoice.applyTaxCode
+      - ap.payment.execute

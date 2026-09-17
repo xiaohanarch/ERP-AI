@@ -1,0 +1,23 @@
+# 租户 A0 叠加：华东制造（T-EAST）
+# 解析顺序 Standard -> Partner -> Tenant；仅 overridable 资产可被覆盖。
+overlay:
+  tenant_id: T-EAST
+  version: east-a0-1.0.0
+  description: 华东制造租户叠加（参数 / 术语 / 派生指标口径）
+  parameters:
+    large_risk_threshold:
+      value: 500000
+      source: 租户A0叠加（华东制造财务制度：单张发票 50 万以上为大额）
+      description: 大额风险阈值 50 万
+  terms:
+    - business: 进货单
+      semantic: purchase_order
+      note: T-EAST 口径：进货单指采购订单（PO）
+    - business: 三单匹配
+      semantic: match
+      note: 发票-PO-GR 匹配
+  metrics:
+    net_payable:
+      formula: confirmed - paid
+      includes_accrual: false
+      note: T-EAST 口径：应付净额不扣减暂估

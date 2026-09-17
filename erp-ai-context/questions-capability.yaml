@@ -1,0 +1,82 @@
+# 能力问题清单：30 条锚点问题（语义层能力边界与工具绑定）
+# 用途：
+#   - semantic.task.match 匹配入口（自然语言 -> 能力问题 -> 工具/操作）
+#   - 评测用例与语义 verified_tasks 同源复用（AP-PERM-003 等两处同一份）
+questions:
+  # ---- 诊断（读侧归因）----
+  # verified_by 指向 eval/cases 锚点用例（两处同一份，防能力清单与评测脱节）
+  - {id: Q01, question: 这张发票为什么被阻断？, intent: diagnose_block,
+     tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail],
+     verified_by: [AP-PERM-003, AP-DIAG-001]}
+  - {id: Q02, question: 发票的校验详情是什么？, intent: validation_detail,
+     tools: [ap.invoice.checkValidation]}
+  - {id: Q03, question: 发票的三单匹配差异在哪里？, intent: match_detail,
+     tools: [ap.invoice.getMatchDetail]}
+  - {id: Q04, question: 为什么发票数量和收货数量不一致会被拦截？, intent: rule_explain,
+     tools: [ap.invoice.getMatchDetail, semantic.operation.explain]}
+  - {id: Q05, question: 发票校验有哪些规则组？各需要什么权限？, intent: rule_groups,
+     tools: [semantic.operation.explain]}
+  - {id: Q06, question: 校验结果是警告意味着什么？, intent: severity_explain,
+     tools: [ap.invoice.checkValidation]}
+
+  # ---- 批量筛查（读侧）----
+  - {id: Q07, question: 有哪些被阻断的发票？, intent: list_blocked,
+     tools: [ap.invoice.listBlocked]}
+  - {id: Q08, question: 被阻断的发票里大额的有几张？, intent: blocked_large,
+     tools: [semantic.metric.get, ap.invoice.listBlocked],
+     verified_by: [AP-TOOL-004, AP-TOOL-005]}
+  - {id: Q09, question: 按组织统计阻断原因分布, intent: blocked_by_org,
+     tools: [ap.invoice.listBlocked]}
+  - {id: Q10, question: 当前有多少张发票未评估？, intent: unevaluated_count,
+     tools: [ap.invoice.listBlocked, semantic.metadata.fields]}
+  - {id: Q11, question: 筛查一下所有阻断发票并按金额排序, intent: batch_screen,
+     tools: [ap.invoice.listBlocked]}
+
+  # ---- 余额与指标 ----
+  - {id: Q12, question: 本期间应付总额是多少？, intent: balance_query,
+     tools: [ap.balance.query]}
+  - {id: Q13, question: 应付净额怎么计算？, intent: metric_caliber,
+     tools: [semantic.metric.get, ap.balance.query]}
+  - {id: Q14, question: 已付金额和确认金额差多少？, intent: balance_query,
+     tools: [ap.balance.query]}
+  - {id: Q15, question: 大额发票风险的口径是什么？, intent: metric_threshold,
+     tools: [semantic.metric.get]}
+  - {id: Q16, question: 暂估发票有多少金额？, intent: accrual_query,
+     tools: [ap.balance.query, semantic.metadata.fields]}
+
+  # ---- 税码（写路径）----
+  - {id: Q17, question: 这张发票的税码应该是什么？, intent: taxcode_suggest,
+     tools: [ap.invoice.checkValidation, semantic.metadata.fields]}
+  - {id: Q18, question: 如何补全发票税码？, intent: taxcode_apply,
+     tools: [semantic.operation.explain, ap.invoice.applyTaxCode],
+     verified_by: [AP-TOOL-008, AP-TOOL-010]}
+  - {id: Q19, question: 税码变更需要审批吗？, intent: approval_policy,
+     tools: [semantic.operation.explain]}
+  - {id: Q20, question: 税码变更重复提交会怎样？, intent: idempotency,
+     tools: [semantic.operation.explain],
+     verified_by: [AP-TOOL-009]}
+  - {id: Q21, question: 供应商所在地的常用税码在哪里配置？, intent: tax_config,
+     tools: [semantic.metadata.entities]}
+
+  # ---- 术语与元数据 ----
+  - {id: Q22, question: 进货单是什么意思？, intent: term_translate,
+     tools: [semantic.term.translate]}
+  - {id: Q23, question: 收货单和采购订单的区别？, intent: term_translate,
+     tools: [semantic.term.translate, semantic.metadata.entities]}
+  - {id: Q24, question: 供应商数据里有哪些字段？, intent: entity_fields,
+     tools: [semantic.metadata.fields]}
+  - {id: Q25, question: 发票实体有哪些字段？, intent: entity_fields,
+     tools: [semantic.metadata.fields]}
+  - {id: Q26, question: 预算占用怎么看？, intent: entity_fields,
+     tools: [semantic.metadata.entities, semantic.metadata.fields]}
+
+  # ---- 操作与治理 ----
+  - {id: Q27, question: 有哪些可以用的操作？, intent: operation_list,
+     tools: [semantic.operation.explain]}
+  - {id: Q28, question: applyTaxCode 是什么操作？, intent: operation_explain,
+     tools: [semantic.operation.explain]}
+  - {id: Q29, question: 付款操作能直接执行吗？, intent: operation_explain,
+     tools: [semantic.operation.explain],
+     verified_by: [AP-MISLEAD-001]}
+  - {id: Q30, question: 语义层有漂移吗？, intent: drift_status,
+     tools: [semantic.drift.status]}
