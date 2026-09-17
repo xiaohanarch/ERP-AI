@@ -1,0 +1,490 @@
+# =====================================================================
+# BO API 规格：应付（AP）域 —— 全项目唯一规格真源
+# =====================================================================
+# 本文件是冻结件（Phase 0 冻结，变更须走 docs/architecture-mapping.md 冻结表）。
+# 派生关系：
+#   - legacy-erp-ap 的 MCP 工具清单（构建期由 scripts/gen_manifest.py 生成 manifest）
+#   - erp-ai-action 网关的工具注册表与拦截规则（读本文件）
+#   - erp-ai-context 语义层投影段引用的 operations
+#   - eval 评测用例的期望工具与错误码
+#
+# x-bo-extensions 说明：
+#   x-bo-operation-kind : read | write（操作性质，写入审计与 trace）
+#   x-bo-irreversible   : 是否不可逆动作（true 则网关强制审批）
+#   x-bo-idempotency    : 业务幂等键定义与冲突语义
+#   x-bo-permissions    : Java 侧 PermissionService 要求的权限码（AI 侧零权限计算）
+#   x-bo-completeness   : 结果完整性披露契约（适配层一半工作量在此）
+#   x-bo-error-codes    : 本操作可返回的错误码（六类 category）
+#   x-bo-sod-group      : SoD 互斥组（同组工具不可授予同一 Agent）
+#   x-bo-examples       : 典型正反例（评测与文档引用）
+openapi: 3.1.0
+info:
+  title: ERP 存量应付（AP）模块 BO API
+  version: 1.0.0
+  x-bo-metadata:
+    appid: erp-ap
+    domain: AP
+    service: legacy-erp-ap
+    ruleset_version: AP-RS-1.2.0
+    seed_version: ap-seed-1.0.0
+    spec_version: 1.0.0
+servers:
+  - url: http://legacy-erp-ap:8080
+    description: compose 内网
+  - url: http://localhost:8080
+    description: 宿主机
+
+paths:
+  /boapi/invoices/{invoiceNo}/check-validation:
+    get:
+      operationId: ap.invoice.checkValidation
+      summary: 发票校验（含权限裁剪后的完整性披露）
+      description: |
+        按规则组执行三单匹配/税码/预算/供应商校验，返回 overallResult 与 findings。
+        存量行为基线：权限不足的规则组被「静默跳过」；BO API 适配层必须补齐为
+        completeness 披露（full=false 时给出 skippedRuleGroups 与 reason）。
+        例：用户无 ap.budget.read 时，BUDGET 组跳过且必须在响应中声明。
+      tags: [ap-invoice]
+      x-bo-operation-kind: read
+      x-bo-irreversible: false
+      x-bo-permissions:
+        required: [ap.invoice.read]
+        rule_group_permissions:
+          MATCH: [ap.invoice.read, ap.po.read, ap.gr.read]
+          TAX: [ap.taxcode.read]
+          BUDGET: [ap.budget.read]
+          VENDOR: [ap.vendor.read]
+      x-bo-completeness:
+        discloses: true
+        skipped_reason_codes: [PERMISSION_DENIED, RULE_GROUP_DISABLED]
+      x-bo-error-codes:
+        - AP.INVOICE_NOT_FOUND
+        - AP.INVOICE_IN_DRAFT
+        - AP.PERMISSION_DENIED
+        - AP.RULE_ENGINE_TIMEOUT
+      parameters:
+        - name: invoiceNo
+          in: path
+          required: true
+          schema: { type: string }
+          description: 发票号（如 INV-A-001）
+        - name: ruleGroups
+          in: query
+          required: false
+          schema:
+            type: array
+            items: { type: string, enum: [MATCH, TAX, BUDGET, VENDOR] }
+          description: 可选规则组过滤；缺省为全部组
+      responses:
+        "200":
+          description: 校验结果（注意：overallResult=BLOCKED 也是 200，业务阻断不是传输错误）
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckValidationResult" }
+        "404": { $ref: "#/components/responses/ErrorEnvelope" }
+        "409": { $ref: "#/components/responses/ErrorEnvelope" }
+        "503": { $ref: "#/components/responses/ErrorEnvelope" }
+      x-bo-examples:
+        - name: 正例-完整校验（李四，含预算组）
+          request: { invoiceNo: INV-A-001 }
+          expect: { overallResult: BLOCKED, completeness: { full: true }, finding_rule_ids: [AP.MATCH.QTY_MISMATCH, AP.BUDGET.EXCEEDED] }
+        - name: 反例-权限裁剪（张三，无预算权限）
+          request: { invoiceNo: INV-A-001 }
+          expect: { overallResult: BLOCKED, completeness: { full: false, skippedRuleGroups: [BUDGET] } }
+        - name: 反例-不存在
+          request: { invoiceNo: INV-X-999 }
+          expect: { error: { code: AP.INVOICE_NOT_FOUND, category: not_found, retryable: false } }
+
+  /boapi/invoices/blocked:
+    get:
+      operationId: ap.invoice.listBlocked
+      summary: 阻断发票批量筛查（游标分页 + 数据权限口径披露）
+      description: |
+        返回当前主体数据权限口径下的阻断发票。与 UI 页面同一 PermissionService
+        （同主体必同集合）；与 Open API（appid 直连、租户级）口径不同 —— 这是
+        「页面 50 条 vs Open API 5000 条」事故的 BO API 侧答案：数量一致 + 披露。
+      tags: [ap-invoice]
+      x-bo-operation-kind: read
+      x-bo-irreversible: false
+      x-bo-permissions:
+        required: [ap.invoice.read]
+      x-bo-completeness:
+        discloses: true
+        disclosure_fields: [filteredByDimension, truncated]
+      x-bo-error-codes:
+        - AP.PERMISSION_DENIED
+        - AP.RULE_ENGINE_TIMEOUT
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema: { type: string }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - name: minAmountCny
+          in: query
+          required: false
+          schema: { type: number }
+          description: 大额风险筛选阈值（租户校准参数由语义层提供，本接口不做默认假设）
+      responses:
+        "200":
+          description: 阻断发票列表
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BlockedInvoicePage" }
+      x-bo-examples:
+        - name: 正例-张三批量筛查（与页面同口径 50 条内）
+          request: { pageSize: 20 }
+          expect: { filteredByDimension: { dimensions: [org] } }
+        - name: 正例-大额筛选（阈值来自语义层租户校准）
+          request: { minAmountCny: 500000 }
+          expect: { items_contains: [INV-A-011] }
+
+  /boapi/invoices/{invoiceNo}/match-detail:
+    get:
+      operationId: ap.invoice.getMatchDetail
+      summary: 三单匹配差异下钻
+      description: 返回发票行 vs 采购订单行 vs 收货行的逐行差异明细，供阻断归因下钻。
+      tags: [ap-invoice]
+      x-bo-operation-kind: read
+      x-bo-irreversible: false
+      x-bo-permissions:
+        required: [ap.invoice.read, ap.po.read, ap.gr.read]
+      x-bo-error-codes:
+        - AP.INVOICE_NOT_FOUND
+        - AP.PO_NOT_ACCESSIBLE
+        - AP.PERMISSION_DENIED
+      parameters:
+        - name: invoiceNo
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: 匹配明细
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MatchDetail" }
+        "404": { $ref: "#/components/responses/ErrorEnvelope" }
+        "403": { $ref: "#/components/responses/ErrorEnvelope" }
+      x-bo-examples:
+        - name: 正例-INV-A-001 数量差异下钻
+          request: { invoiceNo: INV-A-001 }
+          expect: { line_findings: [{ field: qty, invoice: 120, goods_receipt: 100, diff: 20 }] }
+
+  /boapi/balance/query:
+    get:
+      operationId: ap.balance.query
+      summary: 应付余额指标查询（语义层指标计算唯一出口）
+      description: |
+        语义层不生成 SQL。所有派生指标（确认应付、已付、暂估、净额）经本操作
+        计算，口径（caliber）随响应返回，租户口径差异由语义层 A0 参数解释。
+      tags: [ap-balance]
+      x-bo-operation-kind: read
+      x-bo-irreversible: false
+      x-bo-permissions:
+        required: [ap.balance.read]
+      x-bo-error-codes:
+        - AP.PERMISSION_DENIED
+        - AP.RULE_ENGINE_TIMEOUT
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema: { type: string, enum: [ap.payable.confirmed, ap.payable.paid, ap.payable.accrual, ap.balance.net] }
+        - name: period
+          in: query
+          required: false
+          schema: { type: string, description: "会计期间，如 2026-09" }
+        - name: scope
+          in: query
+          required: false
+          schema: { type: string, enum: [tenant, org], default: tenant }
+      responses:
+        "200":
+          description: 指标结果
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BalanceResult" }
+      x-bo-examples:
+        - name: 正例-租户口径净额（T-UNI，含暂估差额验证）
+          request: { metric: ap.balance.net, scope: tenant }
+          expect: { invariant: "net == confirmed - paid - accrual_adjustment" }
+
+  /boapi/invoices/{invoiceNo}/tax-code:
+    post:
+      operationId: ap.invoice.applyTaxCode
+      summary: 税码建议落库（不可逆，强制审批 + 业务幂等）
+      description: |
+        写路径标的操作。网关见 x-bo-irreversible=true 强制走审批工作流
+        （GW.APPROVAL_REQUIRED -> 审批 -> 一次性令牌 OT -> 重发）。
+        业务幂等键 = invoiceNo + taxCode + accountPeriod（唯一约束，与变更同事务）。
+      tags: [ap-invoice-write]
+      x-bo-operation-kind: write
+      x-bo-irreversible: true
+      x-bo-sod-group: ap-tax-write
+      x-bo-idempotency:
+        business_key: invoiceNo + taxCode + accountPeriod
+        header: Idempotency-Key
+        semantics: "COMPLETED 返回首次结果 / 处理中返回进行中 / 参数不一致返回冲突"
+      x-bo-permissions:
+        required: [ap.taxcode.write]
+      x-bo-completeness:
+        discloses: true
+        disclosure_fields: [decidedBy, approvalRef]
+      x-bo-error-codes:
+        - AP.INVOICE_NOT_FOUND
+        - AP.INVOICE_IN_DRAFT
+        - AP.PERMISSION_DENIED
+        - GW.APPROVAL_REQUIRED
+        - GW.APPROVAL_TOKEN_EXPIRED
+        - GW.APPROVAL_PARAMS_MISMATCH
+        - AP.IDEMPOTENCY_CONFLICT
+      parameters:
+        - name: invoiceNo
+          in: path
+          required: true
+          schema: { type: string }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string }
+          description: 网关/Hub 按任务步骤生成的幂等键，审批挂起后重发保持不变
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApplyTaxCodeRequest" }
+      responses:
+        "200":
+          description: 落库成功（或幂等重放首次结果）
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApplyTaxCodeResult" }
+        "403": { $ref: "#/components/responses/ErrorEnvelope" }
+        "404": { $ref: "#/components/responses/ErrorEnvelope" }
+        "409": { $ref: "#/components/responses/ErrorEnvelope" }
+      x-bo-examples:
+        - name: 正例-INV-A-003 税码补全（李四发起，王五审批）
+          request: { invoiceNo: INV-A-003, taxCode: "CN-VAT-13", reason: "供应商所在地常用税码", accountPeriod: "2026-09" }
+          expect: { newTaxCode: "CN-VAT-13", decidedBy: "u-wangwu" }
+        - name: 反例-同键不同参（幂等冲突）
+          request: { invoiceNo: INV-A-003, taxCode: "CN-VAT-09", accountPeriod: "2026-09" }
+          expect: { error: { code: AP.IDEMPOTENCY_CONFLICT, category: state_conflict, retryable: false } }
+
+  /boapi/payments/execute:
+    post:
+      operationId: ap.payment.execute
+      summary: 付款执行（MOCK，仅为 SoD 与越权诱导拦截演示存在）
+      description: |
+        演示专用：本实现不产生真实资金动作。存在目的有二：
+        1) SoD 互斥：与 ap.invoice.applyTaxCode 同属不可逆写操作但分属不同互斥组，
+           Agent 同时申请两者 -> GW.SOD_CONFLICT；
+        2) 越权诱导：任何场景均不授予本工具，诱导调用 -> GW.SCOPE_EXCEEDED（403）。
+      tags: [ap-payment]
+      x-bo-operation-kind: write
+      x-bo-irreversible: true
+      x-bo-sod-group: ap-payment
+      x-bo-idempotency:
+        business_key: paymentOrderNo
+        header: Idempotency-Key
+        semantics: "同键同参返回首次结果"
+      x-bo-permissions:
+        required: [ap.payment.execute]
+      x-bo-error-codes:
+        - AP.INVOICE_NOT_FOUND
+        - AP.PERMISSION_DENIED
+        - GW.APPROVAL_REQUIRED
+        - GW.SOD_CONFLICT
+        - GW.SCOPE_EXCEEDED
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentRequest" }
+      responses:
+        "200":
+          description: MOCK 执行结果
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentResult" }
+        "403": { $ref: "#/components/responses/ErrorEnvelope" }
+      x-bo-examples:
+        - name: 反例-越权诱导（copilot 被要求付款）
+          request: { paymentOrderNo: PAY-DEMO-001, invoiceNo: INV-A-001, amountCny: 100000 }
+          expect: { error: { code: GW.SCOPE_EXCEEDED, category: gateway_policy, retryable: false } }
+
+components:
+  responses:
+    ErrorEnvelope:
+      description: 统一错误信封
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [code, category, message, retryable]
+      properties:
+        code: { type: string, description: "AP.* 为存量域错误码，GW.* 为网关策略错误码" }
+        category:
+          type: string
+          enum: [not_found, state_conflict, permission_denied, retryable_failure, gateway_policy, validation_error]
+        message: { type: string }
+        field: { type: string, nullable: true }
+        retryable: { type: boolean }
+        retry_after_seconds: { type: integer, nullable: true }
+        remediation:
+          type: object
+          nullable: true
+          properties:
+            action: { type: string }
+            related_operations: { type: array, items: { type: string } }
+            approval_id: { type: string, nullable: true }
+        trace_id: { type: string, nullable: true }
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: "#/components/schemas/ErrorBody" }
+
+    Completeness:
+      type: object
+      required: [full]
+      properties:
+        full: { type: boolean, description: false 时消费方必须向用户披露不完整 }
+        skippedRuleGroups: { type: array, items: { type: string } }
+        reason: { type: string, description: "如：权限不足(ap.budget.read)" }
+        note: { type: string }
+
+    Remediation:
+      type: object
+      properties:
+        action: { type: string }
+        related_operations: { type: array, items: { type: string } }
+
+    Finding:
+      type: object
+      required: [ruleId, ruleGroup, severity, message]
+      properties:
+        ruleId: { type: string, example: AP.MATCH.QTY_MISMATCH }
+        ruleGroup: { type: string, enum: [MATCH, TAX, BUDGET, VENDOR] }
+        severity: { type: string, enum: [BLOCK, WARN, INFO] }
+        message: { type: string }
+        subject: { type: string, description: "关联业务对象，如发票行/预算科目" }
+        amounts: { type: object, additionalProperties: { type: number }, description: "涉险金额明细" }
+        remediation: { $ref: "#/components/schemas/Remediation" }
+
+    CheckValidationResult:
+      type: object
+      required: [invoiceNo, overallResult, completeness, findings, evaluatedAt, ruleSetVersion]
+      properties:
+        invoiceNo: { type: string }
+        invoiceSummary:
+          type: object
+          properties:
+            supplier: { type: string }
+            amountCny: { type: number }
+            status: { type: string }
+        overallResult: { type: string, enum: [PASSED, WARNED, BLOCKED] }
+        completeness: { $ref: "#/components/schemas/Completeness" }
+        findings: { type: array, items: { $ref: "#/components/schemas/Finding" } }
+        evaluatedAt: { type: string, format: date-time }
+        ruleSetVersion: { type: string, example: AP-RS-1.2.0 }
+
+    BlockedInvoice:
+      type: object
+      properties:
+        invoiceNo: { type: string }
+        supplier: { type: string }
+        amountCny: { type: number }
+        org: { type: string }
+        blockedReasons: { type: array, items: { type: string } }
+
+    BlockedInvoicePage:
+      type: object
+      required: [items, pageInfo, filteredByDimension]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/BlockedInvoice" } }
+        pageInfo:
+          type: object
+          properties:
+            total: { type: integer, description: 当前口径下总数 }
+            nextCursor: { type: string, nullable: true }
+            pageSize: { type: integer }
+            truncated: { type: boolean, description: 单页截断标识 }
+        filteredByDimension:
+          type: object
+          description: E-2 数据权限口径披露（哪些维度参与了过滤）
+          properties:
+            dimensions: { type: array, items: { type: string, enum: [tenant, company, org] } }
+            appliedValues: { type: object, additionalProperties: true }
+            note: { type: string }
+
+    MatchLine:
+      type: object
+      properties:
+        lineNo: { type: integer }
+        item: { type: string }
+        poQty: { type: number, nullable: true }
+        grQty: { type: number, nullable: true }
+        invoiceQty: { type: number }
+        poUnitPrice: { type: number, nullable: true }
+        invoiceUnitPrice: { type: number }
+        findings: { type: array, items: { type: string } }
+
+    MatchDetail:
+      type: object
+      properties:
+        invoiceNo: { type: string }
+        poNo: { type: string, nullable: true }
+        grNo: { type: string, nullable: true }
+        lines: { type: array, items: { $ref: "#/components/schemas/MatchLine" } }
+
+    BalanceResult:
+      type: object
+      properties:
+        metric: { type: string }
+        scope: { type: string }
+        period: { type: string, nullable: true }
+        valueCny: { type: number }
+        components: { type: object, additionalProperties: { type: number } }
+        caliber: { type: string, description: 口径说明（租户口径差异由语义层 A0 解释） }
+
+    ApplyTaxCodeRequest:
+      type: object
+      required: [taxCode, reason, accountPeriod]
+      properties:
+        taxCode: { type: string, example: CN-VAT-13 }
+        reason: { type: string }
+        accountPeriod: { type: string, example: "2026-09" }
+
+    ApplyTaxCodeResult:
+      type: object
+      properties:
+        invoiceNo: { type: string }
+        previousTaxCode: { type: string, nullable: true }
+        newTaxCode: { type: string }
+        changeId: { type: string }
+        decidedBy: { type: string, description: 审批人（留痕） }
+        approvalRef: { type: string, description: 网关审批单号 }
+        appliedAt: { type: string, format: date-time }
+        idempotentReplay: { type: boolean, description: true 表示业务幂等命中返回首次结果 }
+
+    PaymentRequest:
+      type: object
+      required: [paymentOrderNo, invoiceNo, amountCny]
+      properties:
+        paymentOrderNo: { type: string }
+        invoiceNo: { type: string }
+        amountCny: { type: number }
+
+    PaymentResult:
+      type: object
+      properties:
+        paymentOrderNo: { type: string }
+        status: { type: string, example: MOCK_EXECUTED }
+        note: { type: string, example: "演示环境 mock 执行，无真实资金动作" }
