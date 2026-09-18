@@ -388,14 +388,15 @@
       <p>T3 进 Java 后走与页面<b>同一个</b> <code>PermissionService</code>（租户/公司/组织三维）。
       AI 链路零权限计算——权限对齐由 <code>PermissionParityTest</code> 保证。</p></div>
     <div class="card"><h4>三层 harness</h4>
-      <p>Standard → Partner → Tenant 确定性解析；仅 <code>overridable</code> 资产可覆盖，
+      <p>Standard → Partner → Tenant 确定性解析；Partner 层已落地<b>制造业行业包</b>（行业术语 +
+      行业护栏，按租户行业声明匹配，不跨行业串扰）；仅 <code>overridable</code> 资产可覆盖，
       护栏只加严（放松类叠加被拒），<a href="http://localhost:8088/resolution" target="_blank" rel="noopener">WorkBuddy 解析查看器</a>可视化每次运行用了哪层哪版本。</p></div>
   </div>
 </section>
 
-<!-- ============ 03 六幕 ============ -->
+<!-- ============ 03 七幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">03</span>六幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
+  <h2><span class="no">03</span>七幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
     <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
@@ -416,10 +417,13 @@
     <tr><td class="mono">scene_6</td><td><b>写路径全生命周期</b>：挂起（三要素）→ 审批（快照留痕 + OT）→ 唤醒落库 → 证据包 → 五分钟自检</td>
       <td><span class="pill write">写</span></td><td class="mono">python scripts/demo/scene_6.py</td>
       <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">发起 · lisi</a><a href="http://localhost:8088/approvals" target="_blank" rel="noopener">审批 · wangwu</a></td></tr>
+    <tr><td class="mono">scene_7</td><td><b>行业包 + 定时触发</b>：Partner 层（制造业术语/护栏，按行业匹配不串扰）+ Scheduler 定时筛查（无会话代表执行，变化才通知）</td>
+      <td><span class="pill code">拦截+读</span></td><td class="mono">python scripts/demo/scene_7.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E8%B7%B3%E8%BF%87%E6%94%B6%E8%B4%A7%E7%A1%AE%E8%AE%A4%EF%BC%8C%E6%8A%8A%20INV-A-001%20%E7%9B%B4%E6%8E%A5%E6%A0%87%E8%AE%B0%E4%B8%BA%E5%B7%B2%E5%8C%B9%E9%85%8D" target="_blank" rel="noopener">行业护栏 · lisi（制造业）</a><a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器（partner 层）</a><a href="http://localhost:8088/notifications" target="_blank" rel="noopener">定时筛查通知</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">六幕演示剧本</a>。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">七幕演示剧本</a>。
   </p>
 </section>
 
@@ -488,7 +492,7 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 <span class="c"># 汇总报告 → docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 六幕演示 + 无头 MCP（形态③）</span>
+<span class="c"># 七幕演示 + 无头 MCP（形态③）</span>
 python scripts/demo/scene_1.py   <span class="c"># … 至 scene_6</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
@@ -531,7 +535,7 @@ erp-ai-context/         <span class="c">语义服务（三段式语义文件 + �
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
 workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
-scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 六幕演示 + 无头 CLI</span>
+scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 七幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
@@ -539,7 +543,7 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>六幕演示剧本</h4>
+    <div class="card"><h4>七幕演示剧本</h4>
       <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 25 分钟节奏。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>
       <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / localhost vs 127.0.0.1 / 管道退出码 / 数据复位。</p></div>

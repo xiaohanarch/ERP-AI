@@ -64,13 +64,14 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 # 5) 汇总报告 → docs/verification-report.md
 python -X utf8 scripts/gen_report.py
 
-# 6) 六幕演示（每幕一断言集）
+# 6) 七幕演示（每幕一断言集）
 python scripts/demo/scene_1.py   # 事故复现：页面 ~50 / Open API 5000+ / BO API 同权限口径
 python scripts/demo/scene_2.py   # completeness：张三见数量差异+披露，李四见完整结论
 python scripts/demo/scene_3.py   # 越权诱导三道拦截（护栏/SoD/scope）
 python scripts/demo/scene_4.py   # 未注册/吊销即时生效
 python scripts/demo/scene_5.py   # 双租同题不同答（阈值/术语/余额口径）
 python scripts/demo/scene_6.py   # 审批留痕 + 证据包 + 自检
+python scripts/demo/scene_7.py   # 行业包（Partner 层）+ 定时触发（Scheduler）
 
 # 7) WorkBuddy 浏览器 E2E（Playwright，19 项检查，需系统 Python + playwright install chromium）
 python scripts/e2e_workbuddy.py
@@ -97,12 +98,12 @@ Windows 环境的编码/Python 选择/端口注意事项见 [docs/windows-notes.
 boapi-spec/bo-ap.yaml     ★ 全项目唯一规格真源（OpenAPI 3.1 + x-bo-extensions），其余全派生
 legacy-erp-ap/            Java 存量域（UI API/BO API/Open API/规则引擎/PermissionService/MCP）
 erp-ai-action/            Python AI 网关（注册中心/令牌/审批/模型网关/审计/成本/OTel）
-erp-ai-hub/               LangGraph Hub（薄封装 sdk/ + 三图 + 三层解析器 + 事件订阅）
-erp-ai-context/           语义服务（domains/ 三段式 + overlays/ 双租叠加 + drift/）
-harness-assets/           标品资产层（standard/ + tenant-east/ + tenant-uni/）
+erp-ai-hub/               LangGraph Hub（薄封装 sdk/ + 三图 + 三层解析器 + 事件订阅 + 定时调度）
+erp-ai-context/           语义服务（domains/ 三段式 + overlays/ 双租与行业包叠加 + drift/）
+harness-assets/           资产层（standard/ + partner/ 行业包 + tenant-east/ + tenant-uni/）
 workbuddy/                React 助手平台
 eval/                     50 条锚点用例 + 三层 runner（deterministic/judge/采样）
-scripts/                  检验体系（tenant_checks/selfcheck/gen_report）+ demo 六幕 + headless
+scripts/                  检验体系（tenant_checks/selfcheck/gen_report）+ demo 七幕 + headless
 compose/                  docker-compose 一键起
 docs/                     映射表 / 演示剧本 / 令牌设计 / Windows 注意事项 / 验证报告（生成物）
 ```
@@ -126,7 +127,8 @@ docs/                     映射表 / 演示剧本 / 令牌设计 / Windows 注�
 |---|---|
 | [docs/intro.html](docs/intro.html) | 项目介绍页（概况 + 架构 + 使用指南，可直接浏览器打开） |
 | [docs/architecture-mapping.md](docs/architecture-mapping.md) | 总纲 14 章 ↔ 代码映射 + 验证入口 |
-| [docs/demo-script.md](docs/demo-script.md) | 六幕演示剧本（讲解词 + 断言 + 浏览器路径） |
+| [docs/architecture-alignment.md](docs/architecture-alignment.md) | 14 条 AI-Native 架构判断 × 本仓对照（一致性/张力/缺口） |
+| [docs/demo-script.md](docs/demo-script.md) | 七幕演示剧本（讲解词 + 断言 + 浏览器路径） |
 | [docs/token-design.md](docs/token-design.md) | 令牌链路 / claims / 拦截链 / 审批 OT / 幂等 |
 | [docs/windows-notes.md](docs/windows-notes.md) | Windows 编码 / Python / Docker 注意事项 |
 | [docs/verification-report.md](docs/verification-report.md) | 检验报告（`gen_report.py` 生成物） |
