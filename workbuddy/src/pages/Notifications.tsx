@@ -1,4 +1,4 @@
-/** 通知中心：审批请求 / 审批结果 / 事件诊断结果（阻断发票无头诊断推送）。 */
+/** 通知中心：审批请求 / 审批结果 / 事件诊断 / 定时筛查（Scheduler 无会话代表执行的推送）。 */
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, listNotifications, markNotificationRead } from '../api'
 import { useAuth } from '../auth'
@@ -8,12 +8,14 @@ const KIND_LABEL: Record<string, string> = {
   APPROVAL_REQUEST: '审批请求',
   APPROVAL_DECIDED: '审批结果',
   EVENT_DIAG: '事件诊断',
+  SCHEDULED_BATCH: '定时筛查',
 }
 
 const KIND_CLASS: Record<string, string> = {
   APPROVAL_REQUEST: 'pending',
   APPROVAL_DECIDED: 'approved',
   EVENT_DIAG: 'info',
+  SCHEDULED_BATCH: 'info',
 }
 
 export default function Notifications() {

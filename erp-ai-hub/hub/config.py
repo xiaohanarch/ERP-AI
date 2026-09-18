@@ -35,6 +35,9 @@ class Settings:
     assets_root = _env("HARNESS_ASSETS_ROOT", _default_assets_root())
     # 模型
     model_name = _env("HUB_MODEL_NAME", "mock-scene-model")
+    # 定时调度（形态⑤：Scheduler 触发 Agent；间隔秒数）
+    scheduler_enabled = _env("SCHEDULER_ENABLED", "1") == "1"
+    scheduler_interval = int(_env("SCHEDULER_INTERVAL", "180"))
 
 
 settings = Settings()

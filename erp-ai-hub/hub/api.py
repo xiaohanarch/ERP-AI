@@ -249,6 +249,17 @@ def resume(request: Request, body: dict):
             "conversationId": wait.get("conversationId"), "answer": answer}
 
 
+# ---------------------------------------------------------------- 定时调度
+@router.post("/internal/scheduler/run")
+def scheduler_run(request: Request):
+    """手动触发一次定时筛查（演示/验证入口；与后台定时线程同一执行路径，同样留痕）。"""
+    if _caller(request) is None:
+        return JSONResponse(status_code=401, content={
+            "error": {"code": "HUB.UNAUTHORIZED", "message": "需要 T1 令牌或内部密钥"}})
+    from hub import scheduler
+    return scheduler.run_once(manual=True)
+
+
 # ---------------------------------------------------------------- 解析可视化
 @router.get("/internal/resolution")
 def resolution(request: Request, conversation_id: str, tenant: str | None = None):
