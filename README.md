@@ -119,6 +119,7 @@ docs/                     映射表 / 演示剧本 / 令牌设计 / Windows 注�
 
 | 文档 | 内容 |
 |---|---|
+| [docs/intro.html](docs/intro.html) | 项目介绍页（概况 + 架构 + 使用指南，可直接浏览器打开） |
 | [docs/architecture-mapping.md](docs/architecture-mapping.md) | 总纲 14 章 ↔ 代码映射 + 验证入口 |
 | [docs/demo-script.md](docs/demo-script.md) | 六幕演示剧本（讲解词 + 断言 + 浏览器路径） |
 | [docs/token-design.md](docs/token-design.md) | 令牌链路 / claims / 拦截链 / 审批 OT / 幂等 |
