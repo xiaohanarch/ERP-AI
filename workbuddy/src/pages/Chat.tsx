@@ -1,6 +1,6 @@
 /** 对话页：场景选择 + SSE 流式应答（meta/token/tool/error/approval_required/done）。 */
-import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, chatStream } from '../api'
 import { nid, useAuth } from '../auth'
 import type { ChatTurn } from '../types'
@@ -19,15 +19,31 @@ const SAMPLES: Record<string, string[]> = {
 
 export default function Chat() {
   const { token } = useAuth()
-  const [scene, setScene] = useState<string>('ap.diag')
+  const [params, setParams] = useSearchParams()
+  // 深链：?scene= 预选场景；?q= 自动发送（intro.html / 文档一键直达演示）
+  const [scene, setScene] = useState<string>(() => {
+    const s = params.get('scene')
+    return SCENES.some((x) => x.id === s) ? (s as string) : 'ap.diag'
+  })
   const [cid, setCid] = useState<string>(() => `wb-${nid().slice(0, 12)}`)
   const [turns, setTurns] = useState<ChatTurn[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [fatal, setFatal] = useState<string | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
+  const autoSent = useRef(false)
 
   const samples = useMemo(() => SAMPLES[scene] ?? [], [scene])
+
+  // 深链自动发送：?q= 存在且已登录时发一次，随后清掉参数避免返回时重发
+  useEffect(() => {
+    const q = params.get('q')
+    if (!q || autoSent.current || !token) return
+    autoSent.current = true
+    setParams({}, { replace: true })
+    void send(q)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, token])
 
   const patch = (id: string, fn: (t: ChatTurn) => ChatTurn) =>
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)))

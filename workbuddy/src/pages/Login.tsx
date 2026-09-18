@@ -1,4 +1,5 @@
 /** 登录页：OAuth 授权码流程入口（整页跳转网关统一登录，不在本页收口令）。 */
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth'
 
 const DEMO_ACCOUNTS: { user: string; name: string; role: string; tenant: string }[] = [
@@ -9,6 +10,13 @@ const DEMO_ACCOUNTS: { user: string; name: string; role: string; tenant: string 
 
 export default function Login() {
   const { gotoLogin } = useAuth()
+  const [params] = useSearchParams()
+  const go = () => {
+    // 深链回跳：登录前记下原始目标（如 /chat?scene=ap.diag&q=...），授权后原路返回
+    const rt = params.get('returnTo')
+    if (rt && rt.startsWith('/')) sessionStorage.setItem('wb.returnTo', rt)
+    gotoLogin()
+  }
   return (
     <div className="login-wrap">
       <div className="card login-card">
@@ -36,7 +44,7 @@ export default function Login() {
             </tbody>
           </table>
         </div>
-        <button className="btn login" onClick={gotoLogin}>使用 ERP 账号授权登录</button>
+        <button className="btn login" onClick={go}>使用 ERP 账号授权登录</button>
         <div className="login-note">演示口令统一为 demo123 · 请经 http://localhost:8088 访问（回调地址已注册）</div>
       </div>
     </div>
