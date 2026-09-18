@@ -44,8 +44,14 @@ def chat_completions(request: Request, payload: dict):
     ctx = _client_ctx(request)
     if ctx is None:
         return unauthorized("需要 IN 令牌或后端客户凭据（X-Client-Id/X-Client-Secret）")
+    mode_override = request.headers.get("X-Model-Mode", "")
+    if mode_override and mode_override not in service.VALID_MODES:
+        return gw_json(400, "GW.INVALID_MODEL_MODE",
+                       f"X-Model-Mode 必须是 {service.VALID_MODES} 之一，收到 {mode_override!r}",
+                       "validation_error", retryable=False)
     try:
-        response, source = service.chat_completion(payload, ctx)
+        response, source = service.chat_completion(payload, ctx,
+                                                   mode_override=mode_override or None)
     except service.ModelGwError as e:
         return gw_json(e.status, e.code, e.message,
                        "retryable_failure" if e.retryable else "gateway_policy",

@@ -84,6 +84,7 @@ services:
       MODEL_MODE: ${MODEL_MODE:-mock}
       MODEL_BASE: ${MODEL_BASE:-http://mock-model:8090}
       LIVE_PROVIDER: ${LIVE_PROVIDER:-deepseek}
+      LIVE_PROTOCOL: ${LIVE_PROTOCOL:-openai}
       LIVE_BASE_URL: ${LIVE_BASE_URL:-}
       LIVE_API_KEY: ${LIVE_API_KEY:-}
       LIVE_MODEL: ${LIVE_MODEL:-deepseek-chat}

@@ -121,8 +121,10 @@ def chat(username: str, scene: str, message: str, conversation_id: str | None = 
            "approval": None, "done": False}
     body = {"message": message, "scene": scene, "conversationId": cid,
             "traceId": f"script-{uuid.uuid4().hex[:12]}"}
+    # 演示/检验脚本锁定确定性 mock（交互面 WorkBuddy 不带此头，走全局默认模式）
     with httpx.stream("POST", f"{HUB}/chat/stream", json=body, timeout=timeout,
-                      headers={"Authorization": f"Bearer {token}"}) as resp:
+                      headers={"Authorization": f"Bearer {token}",
+                               "X-Model-Mode": "mock"}) as resp:
         if resp.status_code != 200:
             resp.read()
             out["error"] = _err_of(resp)

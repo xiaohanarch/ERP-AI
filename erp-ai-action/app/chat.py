@@ -40,6 +40,14 @@ def chat_stream(request: Request, body: dict):
     message = str(body.get("message", "")).strip()
     scene = str(body.get("scene") or "ap.diag")
     conversation_id = str(body.get("conversationId") or f"c-{uuid.uuid4().hex[:12]}")
+    # 逐请求模型模式钉定（mock|replay|live）：评测/六幕脚本锁确定性，交互面走全局默认
+    model_mode = request.headers.get("X-Model-Mode", "")
+    if model_mode and model_mode not in ("mock", "replay", "live"):
+        def err_mode():
+            yield _sse_event({"type": "error", "code": "GW.INVALID_MODEL_MODE",
+                              "message": f"X-Model-Mode 必须是 mock/replay/live，收到 {model_mode!r}"})
+            yield _sse_event({"type": "done"})
+        return StreamingResponse(err_mode(), headers=_SSE_HEADERS)
 
     trace_id = uuid.uuid4().hex
     audit.record(tenant_id=tenant, user_id=username, azp=claims.get("azp"),
@@ -73,16 +81,18 @@ def chat_stream(request: Request, body: dict):
         "bo.action": "chat",
     }):
         return StreamingResponse(_relay(message, scene, conversation_id, username, tenant,
-                                        in_token, trace_id),
+                                        in_token, trace_id, model_mode),
                                  headers=_SSE_HEADERS)
 
 
 def _relay(message: str, scene: str, conversation_id: str, username: str, tenant: str | None,
-           in_token: str, trace_id: str):
+           in_token: str, trace_id: str, model_mode: str = ""):
     """hub SSE 逐事件透传；异常时以 error + done 收尾（协议永不悬空）。"""
     payload = {"message": message, "scene": scene, "conversationId": conversation_id,
                "user": username, "tenant": tenant, "traceId": trace_id}
     headers = {"Authorization": f"Bearer {in_token}", "Content-Type": "application/json"}
+    if model_mode:
+        headers["X-Model-Mode"] = model_mode
     try:
         with httpx.stream("POST", f"{settings.hub_base}/chat/stream", json=payload,
                           headers=headers, timeout=httpx.Timeout(30, read=180)) as resp:
