@@ -32,7 +32,7 @@
   /* ---------- 头部 ---------- */
   header {
     background: var(--navy); color: #eef0f6;
-    padding: 72px 24px 88px;
+    padding: 72px 24px 118px;
     position: relative; overflow: hidden;
   }
   header::after {
@@ -84,6 +84,72 @@
     font-family: var(--mono); font-size: 11px; color: var(--indigo-deep);
     background: rgba(46,70,200,.1); border-radius: 4px; padding: 1px 7px; white-space: nowrap;
   }
+  .card .try { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; }
+  .card .try b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- 请求链路动画 ---------- */
+  #flow { margin-top: -64px; }
+  .flow-panel {
+    background: var(--navy); border: 1px solid rgba(159,176,255,.25); border-radius: 14px;
+    padding: 22px 24px 18px; color: #e8ecfa; position: relative;
+    box-shadow: 0 18px 50px rgba(10,14,30,.35);
+  }
+  .flow-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .flow-title { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+  .flow-title .dot { color: #9fb0ff; font-family: var(--mono); font-size: 12px; display: block; font-weight: 400; }
+  .flow-ctl { display: flex; gap: 8px; flex-wrap: wrap; }
+  .flow-ctl button {
+    font-family: var(--mono); font-size: 12px; color: #aab4d8; cursor: pointer;
+    background: rgba(46,70,200,.14); border: 1px solid rgba(159,176,255,.3);
+    border-radius: 999px; padding: 5px 13px; transition: all .18s ease;
+  }
+  .flow-ctl button:hover { color: #fff; border-color: #9fb0ff; }
+  .flow-ctl button.on { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .chain-wrap { overflow-x: auto; margin-top: 18px; padding: 4px 2px 2px; }
+  .chain { display: flex; align-items: stretch; gap: 0; min-width: max-content; position: relative; }
+  .track { position: absolute; left: 0; right: 0; top: 30px; height: 2px; background: rgba(159,176,255,.18); }
+  .packet {
+    position: absolute; top: 24.5px; width: 13px; height: 13px; border-radius: 50%;
+    background: #9fb0ff; box-shadow: 0 0 0 5px rgba(159,176,255,.22), 0 0 18px 4px rgba(159,176,255,.55);
+    transition: left .9s cubic-bezier(.45,.05,.35,1), opacity .3s ease; z-index: 3;
+  }
+  .fnode {
+    position: relative; z-index: 2; flex: 0 0 auto; width: 158px; margin: 0 11px;
+    background: var(--navy-soft); border: 1.5px solid rgba(159,176,255,.25); border-radius: 9px;
+    padding: 9px 10px 8px; text-align: center; transition: all .35s ease;
+  }
+  .fnode b { display: block; font-size: 13.5px; line-height: 1.35; }
+  .fnode span { font-family: var(--mono); font-size: 10.5px; color: #8b93ad; display: block; margin-top: 2px; }
+  .fnode.on { border-color: #9fb0ff; background: #2b365e; }
+  .fnode.cur { border-color: #cdd6ff; background: #37436f; box-shadow: 0 0 20px rgba(159,176,255,.35); transform: translateY(-2px); }
+  .fnode.appr { border-style: dashed; }
+  .fnode.appr b::after { content: " · 写路径"; font-size: 9.5px; color: #8b93ad; font-weight: 400; }
+  .tokens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .tk {
+    font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 6px;
+    border: 1px solid rgba(159,176,255,.22); color: #6b7599; background: transparent;
+    transition: all .3s ease;
+  }
+  .tk small { color: inherit; opacity: .75; }
+  .tk.on { color: #eaf0ff; border-color: #9fb0ff; background: rgba(46,70,200,.35); box-shadow: 0 0 10px rgba(46,70,200,.4); }
+  .capt {
+    margin-top: 14px; min-height: 52px; font-size: 14.5px; line-height: 1.65; color: #cdd4ea;
+    border-left: 3px solid var(--indigo); padding: 6px 14px; background: rgba(46,70,200,.1);
+    border-radius: 0 8px 8px 0; transition: opacity .25s ease;
+  }
+  .capt b { color: #fff; font-family: var(--mono); font-size: 13px; }
+  .flow-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  .flow-links .lbl { font-size: 12.5px; color: #8b93ad; }
+  .chip-demo {
+    font-family: var(--mono); font-size: 12px; color: #c6cffb; text-decoration: none;
+    border: 1px solid rgba(159,176,255,.35); border-radius: 999px; padding: 4px 13px;
+    transition: all .18s ease; white-space: nowrap;
+  }
+  .chip-demo:hover { background: var(--indigo); color: #fff; border-color: var(--indigo); text-decoration: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .packet { display: none; }
+    .fnode, .tk, .capt { transition: none; }
+  }
 
   /* ---------- 架构图 ---------- */
   .arch {
@@ -114,6 +180,8 @@
   .pill.ok { color: var(--ok); background: rgba(26,127,78,.1); }
   .pill.write { color: var(--warn); background: rgba(154,107,0,.12); }
   .pill.code { color: var(--bad); background: rgba(179,53,44,.09); }
+  .lnk { font-size: 13px; white-space: nowrap; }
+  .lnk a { display: inline-block; margin: 2px 10px 2px 0; }
 
   /* ---------- 代码块 ---------- */
   pre {
@@ -149,8 +217,9 @@
     color: var(--ink-soft); font-size: 13.5px;
   }
   @media (max-width: 640px) {
-    header { padding: 48px 20px 60px; }
+    header { padding: 48px 20px 96px; }
     .step { flex-direction: column; gap: 6px; }
+    .fnode { width: 132px; }
   }
 </style>
 </head>
@@ -171,13 +240,51 @@
       <span class="badge">多租六项 37/37</span>
       <span class="badge">双租户 T-EAST / T-UNI</span>
       <span class="badge">四种 Agent 形态</span>
+      <span class="badge">GLM-5.3 live 已接（Anthropic 协议）</span>
       <span class="badge">docker-compose 一键起</span>
-      <span class="badge">零模型 key（mock/replay）</span>
     </div>
   </div>
 </header>
 
 <main>
+
+<!-- ============ 00 请求链路动画 ============ -->
+<section id="flow">
+  <div class="flow-panel">
+    <div class="flow-top">
+      <div class="flow-title">实际运行时的请求链路<span class="dot">逐跳令牌收窄 T1 → T2 → T3 → OT · 判定在网关与存量域，不在模型</span></div>
+      <div class="flow-ctl">
+        <button type="button" id="modeRead" class="on">读路径 ap.diag</button>
+        <button type="button" id="modeWrite">写路径 ap.taxcode（审批）</button>
+        <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
+      </div>
+    </div>
+    <div class="chain-wrap">
+      <div class="chain" id="chain">
+        <div class="track"></div>
+        <div class="packet" id="packet"></div>
+        <div class="fnode" data-i="0"><b>李四 · WorkBuddy</b><span>T1 · azp=surface-workbuddy</span></div>
+        <div class="fnode" data-i="1"><b>ai-gateway</b><span>注册中心 · 令牌交换 · 审批</span></div>
+        <div class="fnode" data-i="2"><b>hub 场景图</b><span>LangGraph · intent 分类</span></div>
+        <div class="fnode" data-i="3"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
+        <div class="fnode" data-i="4"><b>Java 存量域</b><span>PermissionService · 规则引擎</span></div>
+        <div class="fnode appr" data-i="5"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
+      </div>
+    </div>
+    <div class="tokens" id="tokens">
+      <span class="tk" data-t="t1">T1 [chat]</span>
+      <span class="tk" data-t="t2">T2 [场景 ∩ Agent 清单]</span>
+      <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
+      <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性] <small>（写路径）</small></span>
+    </div>
+    <div class="capt" id="capt"></div>
+    <div class="flow-links">
+      <span class="lbl">点一下就在真实系统里跑（登录后自动发起对话）：</span>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起读路径</a>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起写路径（出审批卡）</a>
+    </div>
+  </div>
+</section>
 
 <!-- ============ 01 概况 ============ -->
 <section id="overview">
@@ -185,38 +292,59 @@
   <p class="lead">
     企业把 LLM 接进 ERP 时反复撞上的问题：数据权限口径不一致、Agent 影子接入无法治理、
     AI 的答案没人能审计、一次误写就造成不可逆损失。本项目用一个<b>应付（AP）模块</b>的仿真存量系统，
-    把总纲给出的答案逐一落成机制并验证：
+    把总纲给出的答案逐一落成机制并验证。<b>每张卡片都可以点进在线演示</b>（登录账号见 04 节）：
   </p>
   <div class="grid c3" style="margin-top:18px">
     <div class="card">
       <h4>事故可复现 <span class="tag">scene_1</span></h4>
       <p>同一份数据三种口径：ERP 页面 ~50 条（组织过滤）、Open API 5000+ 条（租户级、事故口径）、
       BO API 与页面共享同一个 <code>PermissionService</code> 并披露过滤维度。「页面能看的 AI 也能看」是机制，不是约定。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面（zhangsan 登录看 ~50 条）</a> ·
+        <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">问 AI（同权限口径 + 披露）</a>
+      </div>
     </div>
     <div class="card">
       <h4>判定不靠模型自觉 <span class="tag">scene_3/4</span></h4>
       <p>未注册 / 已吊销 / 超范围 / SoD 互斥全部在网关拦截链拒绝（六个独立错误码）；
       诱导话术被护栏在进图之前拦下，零工具调用抵达 BO API。提示词注入改变不了判定结果。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E5%B8%AE%E6%88%91%E7%9B%B4%E6%8E%A5%E6%8A%8A%20INV-A-001%20%E8%BF%87%E8%B4%A6%E5%B9%B6%E4%BB%98%E6%AC%BE%EF%BC%8C%E4%B8%8D%E7%94%A8%E8%B5%B0%E5%AE%A1%E6%89%B9" target="_blank" rel="noopener">诱导话术（看它被拦在哪里）</a> ·
+        <a href="demo-script.md">未注册/吊销（脚本幕）</a>
+      </div>
     </div>
     <div class="card">
       <h4>不可逆即审批 <span class="tag">scene_6</span></h4>
       <p>税码变更（规格标记 irreversible）强制审批：挂起期零常驻凭据，批准铸一次性令牌 OT
       （参数指纹绑定、120 秒、只能用一次），唤醒重发走两层幂等，全程留痕可导出证据包。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">发起税码变更（lisi）</a> ·
+        <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">审批台三要素（wangwu）</a>
+      </div>
     </div>
     <div class="card">
       <h4>双租同题不同答 <span class="tag">scene_5</span></h4>
       <p>「大额风险」T-EAST 按 50 万口径命中、T-UNI 按 500 万口径命中；「进货单」一边解析为采购订单、
       一边解析为收货单；余额指标各按各的口径。语义叠加层让同一句提问得到各自正确的答案，互不泄露。</p>
+      <div class="try"><b>&#9654; 在线演示（同一链接，换账号登录）：</b>
+        <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">大额筛查：lisi 命中 INV-A-011 / qianqi 命中 INV-B-004</a>
+      </div>
     </div>
     <div class="card">
       <h4>不完整必披露 <span class="tag">scene_2</span></h4>
       <p>无预算权限的用户查发票，存量行为是「静默跳过规则组」；BO API 适配层改为
       <code>completeness.full=false + skippedRuleGroups</code> 披露——不泄露发现本身，也绝不假装结论完整。</p>
+      <div class="try"><b>&#9654; 在线演示（同一问题，不同人不同答案）：</b>
+        <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">zhangsan 见「预算校验未执行」/ lisi 见预算超支发现</a>
+      </div>
     </div>
     <div class="card">
       <h4>一次采集两用 <span class="tag">Jaeger</span></h4>
       <p>OTel GenAI 风格 span 树（invoke_agent→chat→execute_tool）带六组扩展字段：
       身份 / 版本四件套 / 场景 / 完整性 / 动作性质 / 内容摘要；成本台账按租户×Agent×场景×用户四维计量，与审计对账。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">Jaeger 里看真实 trace（先点上面任意对话产生一条）</a>
+      </div>
     </div>
   </div>
 </section>
@@ -226,8 +354,8 @@
   <h2><span class="no">02</span>架构与部署（L0 七层 → 四个服务）</h2>
   <div class="arch">
     <div class="row">
-      <div class="node"><b>ERP 页面内嵌 copilot</b><span>形态① Thymeleaf+SSE :8080</span></div>
-      <div class="node"><b>WorkBuddy 助手平台</b><span>形态② React OAuth :8088</span></div>
+      <div class="node"><b><a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面内嵌 copilot</a></b><span>形态① Thymeleaf+SSE :8080</span></div>
+      <div class="node"><b><a href="http://localhost:8088" target="_blank" rel="noopener">WorkBuddy 助手平台</a></b><span>形态② React OAuth :8088</span></div>
       <div class="node"><b>无头 MCP 脚本</b><span>形态③ headless CLI</span></div>
       <div class="node"><b>事件触发</b><span>形态④ outbox→hub</span></div>
     </div>
@@ -239,13 +367,13 @@
     <div class="row">
       <div class="node hubn"><b>hub · erp-ai-hub</b><span>LangGraph 三场景图 + 三层 harness 解析</span></div>
       <div class="node hubn"><b>semantics · erp-ai-context</b><span>语义三段式 + 七查询工具 + 双租叠加 + 漂移检测</span></div>
-      <div class="node"><b>mock-model / live</b><span>OpenAI 兼容 · 录制回放</span></div>
+      <div class="node"><b>模型网关</b><span>GLM-5.3 live · mock · replay</span></div>
     </div>
     <div class="arrow">T3（单工具 · 60s · 委托链保留）</div>
     <div class="row">
       <div class="node"><b>legacy-erp-ap · erp-ap（Java）</b><span>UI API + BO API + 规则引擎 + PermissionService（三维数据权限）+ Spring AI MCP + 事件 outbox</span></div>
       <div class="node"><b>PostgreSQL :15432</b><span>审计 / 审批 / 幂等 / 成本 / 检查点</span></div>
-      <div class="node"><b>Jaeger :16687</b><span>OTel span 树</span></div>
+      <div class="node"><b><a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">Jaeger :16687</a></b><span>OTel span 树</span></div>
     </div>
     <div class="note">
       ★ 规格真源 <code>boapi-spec/bo-ap.yaml</code>（OpenAPI 3.1 + x-bo-extensions）——MCP 工具定义、
@@ -255,37 +383,43 @@
   <div class="grid c3" style="margin-top:14px">
     <div class="card"><h4>逐跳收窄</h4>
       <p><span class="mono">T1[chat] → T2[场景∩清单] → T3[单工具 60s] → OT[单工具+参数指纹 120s]</span><br>
-      每跳权限是上跳子集，<code>act</code> 委托链单调增长，进审计与 trace。</p></div>
+      每跳权限是上跳子集，<code>act</code> 委托链单调增长，进审计与 trace。详见 <a href="token-design.md">令牌设计</a>。</p></div>
     <div class="card"><h4>权限只在存量域</h4>
       <p>T3 进 Java 后走与页面<b>同一个</b> <code>PermissionService</code>（租户/公司/组织三维）。
       AI 链路零权限计算——权限对齐由 <code>PermissionParityTest</code> 保证。</p></div>
     <div class="card"><h4>三层 harness</h4>
       <p>Standard → Partner → Tenant 确定性解析；仅 <code>overridable</code> 资产可覆盖，
-      护栏只加严（放松类叠加被拒），WorkBuddy「解析查看器」可视化每次运行用了哪层哪版本。</p></div>
+      护栏只加严（放松类叠加被拒），<a href="http://localhost:8088/resolution" target="_blank" rel="noopener">WorkBuddy 解析查看器</a>可视化每次运行用了哪层哪版本。</p></div>
   </div>
 </section>
 
 <!-- ============ 03 六幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">03</span>六幕演示（每幕 = 一组脚本化断言）</h2>
+  <h2><span class="no">03</span>六幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
-    <tr><th style="width:70px">幕</th><th>内容</th><th style="width:120px">类型</th><th style="width:290px">命令</th></tr>
+    <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
-      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_1.py</td></tr>
+      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_1.py</td>
+      <td class="lnk"><a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面 · zhangsan</a><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">AI 同题（披露过滤维度）</a></td></tr>
     <tr><td class="mono">scene_2</td><td><b>completeness 披露</b>：张三见数量差异 +「预算校验未执行」，不泄露预算发现；李四见完整结论</td>
-      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_2.py</td></tr>
+      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_2.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">同题换人：zhangsan / lisi</a></td></tr>
     <tr><td class="mono">scene_3</td><td><b>越权诱导阻断</b>：护栏拒绝（零工具调用）+ SoD 注册被拒 + 清单外工具交换被拒</td>
-      <td><span class="pill code">拦截</span></td><td class="mono">python scripts/demo/scene_3.py</td></tr>
+      <td><span class="pill code">拦截</span></td><td class="mono">python scripts/demo/scene_3.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E5%B8%AE%E6%88%91%E7%9B%B4%E6%8E%A5%E6%8A%8A%20INV-A-001%20%E8%BF%87%E8%B4%A6%E5%B9%B6%E4%BB%98%E6%AC%BE%EF%BC%8C%E4%B8%8D%E7%94%A8%E8%B5%B0%E5%AE%A1%E6%89%B9" target="_blank" rel="noopener">诱导话术（HUB.GUARDRAIL_BLOCKED）</a></td></tr>
     <tr><td class="mono">scene_4</td><td><b>未注册 / 吊销即时生效</b>：在期 T2 下一次调用即 401，不用等过期</td>
-      <td><span class="pill code">拦截</span></td><td class="mono">python scripts/demo/scene_4.py</td></tr>
+      <td><span class="pill code">拦截</span></td><td class="mono">python scripts/demo/scene_4.py</td>
+      <td class="lnk"><a href="demo-script.md">无浏览器面（管理侧动作，见剧本）</a></td></tr>
     <tr><td class="mono">scene_5</td><td><b>双租同题不同答</b>：阈值 / 术语「进货单」/ 余额口径，互不泄露，派生指标不变式成立</td>
-      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_5.py</td></tr>
+      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_5.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">lisi（50 万口径）/ qianqi（500 万口径）</a></td></tr>
     <tr><td class="mono">scene_6</td><td><b>写路径全生命周期</b>：挂起（三要素）→ 审批（快照留痕 + OT）→ 唤醒落库 → 证据包 → 五分钟自检</td>
-      <td><span class="pill write">写</span></td><td class="mono">python scripts/demo/scene_6.py</td></tr>
+      <td><span class="pill write">写</span></td><td class="mono">python scripts/demo/scene_6.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">发起 · lisi</a><a href="http://localhost:8088/approvals" target="_blank" rel="noopener">审批 · wangwu</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，17 项检查）。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">六幕演示剧本</a>。
   </p>
 </section>
 
@@ -297,34 +431,41 @@
     <div class="n">1</div>
     <div class="b">
       <h4>一键启动（Docker Desktop / WSL2）</h4>
-      <p>无需模型 API key——默认 <code>MODEL_MODE=mock</code>（脚本化确定性应答）。首次构建约 2-4 分钟（含 Java + Flyway 迁移 + 种子）。</p>
+      <p>无需模型 API key——开箱默认 <code>MODEL_MODE=mock</code>（脚本化确定性应答）。首次构建约 2-4 分钟（含 Java + Flyway 迁移 + 种子）。</p>
 <pre><span class="c"># 在仓库根目录</span>
 cd compose
 docker-compose up -d --build
 docker-compose ps          <span class="c"># 全部 Up/healthy 后（约 30-60 秒）即可验证</span></pre>
-      <p>想接真实模型（OpenAI 兼容：DeepSeek / GLM / Qwen）：复制 <code>compose/.env.example</code> 为 <code>compose/.env</code>，
-      设置 <code>MODEL_MODE=live</code> 与 <code>LIVE_*</code> 后重启。</p>
+      <p>想接真实模型：复制 <code>compose/.env.example</code> 为 <code>compose/.env</code>，设 <code>MODEL_MODE=live</code> 与 <code>LIVE_*</code>。
+      协议两选一：<code>LIVE_PROTOCOL=openai</code>（DeepSeek / GLM / Qwen 的 OpenAI 兼容端点）或
+      <code>LIVE_PROTOCOL=anthropic</code>（Anthropic Messages 兼容端点，本演示机当前即以 GLM-5.3 经此协议接入）。
+      切 live 后<b>评测与演示脚本仍保持确定性</b>——它们按请求钉定 <code>X-Model-Mode: mock</code>，只有交互面（WorkBuddy / ERP 页面）走真实模型。</p>
     </div>
   </div>
 
   <div class="step">
     <div class="n">2</div>
     <div class="b">
-      <h4>浏览器入口</h4>
+      <h4>浏览器入口（点击直达）</h4>
       <table>
         <tr><th>入口</th><th>地址</th><th>登录</th><th>看点</th></tr>
-        <tr><td>ERP 页面（形态①）</td><td class="mono">http://localhost:8080/login</td><td class="mono">zhangsan / demo123</td>
+        <tr><td>WorkBuddy（形态②）</td><td class="mono"><a href="http://localhost:8088" target="_blank" rel="noopener">http://localhost:8088</a></td><td class="mono">lisi / demo123</td>
+          <td>OAuth 授权码登录 → 聊天（真实 GLM-5.3）→ 写请求出审批卡 → 换 <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">wangwu 批准</a>（三要素+快照）→ <a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器</a> → <a href="http://localhost:8088/notifications" target="_blank" rel="noopener">通知</a></td></tr>
+        <tr><td>ERP 页面（形态①）</td><td class="mono"><a href="http://localhost:8080/login" target="_blank" rel="noopener">http://localhost:8080/login</a></td><td class="mono">zhangsan / demo123</td>
           <td>发票列表（~50 条口径）+ 页内嵌 copilot + AI Command</td></tr>
-        <tr><td>WorkBuddy（形态②）</td><td class="mono">http://localhost:8088</td><td class="mono">lisi / demo123</td>
-          <td>OAuth 授权码登录 → 聊天 → 写请求出审批卡 → 换 wangwu 批准（三要素+快照）→ 解析查看器 → 通知</td></tr>
-        <tr><td>Jaeger</td><td class="mono">http://localhost:16687</td><td>—</td>
+        <tr><td>Jaeger</td><td class="mono"><a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">http://localhost:16687</a></td><td>—</td>
           <td>GenAI span 树：invoke_agent → chat → execute_tool，六组扩展字段</td></tr>
-        <tr><td>网关面</td><td class="mono">:8000/gw/agents · /gw/versions</td><td>—</td>
+        <tr><td>网关面（需凭据）</td><td class="mono">:8000/gw/agents · /gw/versions</td><td class="mono">见下方 curl</td>
           <td>Agent 清册（吊销状态）/ 版本四件套（spec·ruleset·seed·semantics）</td></tr>
       </table>
+<pre><span class="c"># 网关管理面（浏览器不带凭据访问会 401，用 curl 看 Agent 清册与版本）</span>
+curl -s -u admin:admin-demo-pwd http://localhost:8000/gw/agents
+curl -s -u admin:admin-demo-pwd http://localhost:8000/gw/versions
+curl -s -u admin:admin-demo-pwd http://localhost:8000/gw/modelgw/status   <span class="c"># 模型模式：live(glm-5.3)/mock/replay</span></pre>
       <p style="font-size:13.5px;color:var(--ink-soft);margin-top:8px">
         演示账号（口令均 <code>demo123</code>）——T-EAST 华东制造：张三（采购经理，无预算权限）/ 李四（财务，全权限）/ 王五（经理，审批人）；
-        T-UNI 星联科技：赵六 / 钱七 / 孙八。注意 WorkBuddy 必须用 <code>localhost:8088</code> 打开（OAuth redirect_uri 登记）。</p>
+        T-UNI 星联科技：赵六 / 钱七 / 孙八。注意 WorkBuddy 必须用 <code>localhost:8088</code> 打开（OAuth redirect_uri 登记）。
+        深链格式 <code>/chat?scene=…&amp;q=…</code> 登录后自动发起对话（本文所有「&#9654;」链接即此格式）。</p>
     </div>
   </div>
 
@@ -338,7 +479,7 @@ python -X utf8 scripts/selfcheck.py
 <span class="c"># 多租六项：A0 叠加 / 术语 / 派生指标 / 三层解析 / 跨租隔离 / 成本归集</span>
 python -X utf8 scripts/tenant_checks.py
 
-<span class="c"># 全量评测：50 条锚点用例（replay 确定性层，六类）</span>
+<span class="c"># 全量评测：50 条锚点用例（确定性层锁 mock，六类）</span>
 python -X utf8 eval/runner/run_eval.py --tier full
 
 <span class="c"># 语义漂移检测：预埋 2 处漂移必须全部检出</span>
@@ -356,7 +497,7 @@ python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoice
   <div class="step">
     <div class="n">4</div>
     <div class="b">
-      <h4>当前验证结果（全部体系绿）</h4>
+      <h4>当前验证结果（全部体系绿，<a href="verification-report.md">点此看完整报告</a>）</h4>
       <div class="verdict">
         <div class="v"><div class="num">50/50</div><div class="lab">评测用例（工具正确性 1.0 · 步数 ≤ 4 · 越权 0）</div></div>
         <div class="v"><div class="num">37/37</div><div class="lab">多租六项检验</div></div>
@@ -371,7 +512,7 @@ python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoice
     <div class="n">5</div>
     <div class="b">
       <h4>数据复位（演示副作用清理）</h4>
-      <p>种子「只增不改」：写路径演示会累积审批单与税码变更（断言不受影响，幂等设计会重放首次结果并引用原审批单号）。彻底复位：</p>
+      <p>种子「只增不改」：写路径演示会累积审批单与税码变更（断言不受影响，幂等设计会重放首次结果并引用原审批单号——同一发票同税码同期间重复发起，看到的始终是首次结果）。彻底复位：</p>
 <pre>cd compose
 docker-compose down -v      <span class="c"># 连数据卷一起删（审批/审计/检查点清空，录制在宿主机不受影响）</span>
 docker-compose up -d --build</pre>
@@ -388,20 +529,20 @@ erp-ai-action/          <span class="c">Python AI 网关（注册中心 / 令牌
 erp-ai-hub/             <span class="c">LangGraph Hub（薄封装 + 三场景图 + interrupt 审批断点 + 三层解析器）</span>
 erp-ai-context/         <span class="c">语义服务（三段式语义文件 + 七工具 + 双租叠加 + 漂移检测）</span>
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
-workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器）</span>
+workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
 scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 六幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
     <div class="card"><h4>总纲 14 章 ↔ 代码映射</h4>
-      <p><code>docs/architecture-mapping.md</code> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
+      <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
-      <p><code>docs/token-design.md</code> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
+      <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
     <div class="card"><h4>六幕演示剧本</h4>
-      <p><code>docs/demo-script.md</code> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 25 分钟节奏。</p></div>
+      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 25 分钟节奏。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>
-      <p><code>docs/windows-notes.md</code> —— UTF-8 / Python 选择 / localhost vs 127.0.0.1 / 管道退出码 / 数据复位。</p></div>
+      <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / localhost vs 127.0.0.1 / 管道退出码 / 数据复位。</p></div>
   </div>
 </section>
 
@@ -409,8 +550,100 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
 
 <footer>
   ERP-AI · Agentic-ERP AI 参考架构演示 · 内部技术参考<br>
-  <span class="mono" style="font-size:12px">spec 1.0.0 · ruleset AP-RS-1.2.0 · seed ap-seed-1.0.0 · semantics ap-sem-1.0.0</span>
+  <span class="mono" style="font-size:12px">spec 1.0.0 · ruleset AP-RS-1.2.0 · seed ap-seed-1.0.0 · semantics ap-sem-1.0.0 · model glm-5.3 (live)</span>
 </footer>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- 数据：两幕链路的分步脚本 ----------
+  var READ = [
+    { n: [0], tk: ["t1"], c: "<b>① 用户发起</b>　李四在 WorkBuddy 提问：「INV-A-001 校验失败的原因是什么？」——请求携带 T1（scope=[chat]，azp=surface-workbuddy）" },
+    { n: [0, 1], tk: ["t1", "t2"], c: "<b>② 网关 · 令牌交换</b>　验证 T1 → 查 Agent 注册中心（ap-copilot 在册且未吊销）→ 铸 T2：sub=李四 不变，scope 收窄为「场景工具 ∩ Agent 清单」，act 委托链 +1 跳" },
+    { n: [1, 2], tk: ["t2"], c: "<b>③ hub 场景图</b>　LangGraph 分类意图 → 决定调用 BO 工具（校验 + 差异下钻）" },
+    { n: [2, 3], tk: ["t3"], c: "<b>④ 网关 MCP 代理 · 铸 T3</b>　scope=[单工具] · 60 秒短时 · 委托链完整保留——工具级最小授权" },
+    { n: [3, 4], tk: ["t3"], c: "<b>⑤ Java 存量域</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维过滤）→ ap.invoice.checkValidation + getMatchDetail" },
+    { n: [2, 4], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回，completeness 披露（未执行的规则组）一并带回，绝不静默" },
+    { n: [0, 2], tk: [], c: "<b>⑦ 流式应答 + 留痕</b>　场景图组装结论 → SSE 流式回 WorkBuddy；span 树（invoke_agent→chat→execute_tool）入 Jaeger，审计五要素入库" }
+  ];
+  var WRITE = [
+    { n: [0], tk: ["t1"], c: "<b>① 写路径开始</b>　李四请求：「把 INV-A-052 的税码补全为 CN-VAT-13」——携带 T1 进网关" },
+    { n: [1, 2], tk: ["t2"], c: "<b>② 网关铸 T2 → hub suggest</b>　场景图结合模型与税码规则给出建议（发票 / 税码 / 理由）" },
+    { n: [3, 4], tk: ["t3"], c: "<b>③ 网关见「不可逆」</b>　hub 携业务幂等键调 applyTaxCode → 规格标记 irreversible=true → 网关创建 approval_task，返回 <b>GW.APPROVAL_REQUIRED</b>（不落库）" },
+    { n: [5], tk: [], c: "<b>④ interrupt 挂起</b>　场景图在审批门挂起（检查点落库，<b>挂起期零常驻凭据</b>）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响范围（三要素）" },
+    { n: [5, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 网关落 approver + 确认时快照（批准人所见内容）→ 铸一次性令牌 <b>OT</b>：scope=[单工具] + 参数指纹 · 120 秒 · 只能用一次" },
+    { n: [2, 3], tk: ["ot"], c: "<b>⑥ resume 唤醒</b>　POST /internal/resume → 场景图从审批门继续 → 携 OT 重发（业务幂等键不变，网络重传命中网关短窗）" },
+    { n: [3, 4], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效 + 未用 + 指纹匹配）→ 铸 T3 → Java 与变更同事务落库：税码变更记录 + 幂等表（重放返回首次结果）" },
+    { n: [0, 4], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；审计五要素 + 审批快照留痕，租户证据包可导出" }
+  ];
+  var STEPS = { read: READ, write: WRITE };
+  var mode = "read", idx = 0, timer = null, restartTimer = null;
+  var chain = document.getElementById("chain");
+  var packet = document.getElementById("packet");
+  var capt = document.getElementById("capt");
+  var nodes = [].slice.call(chain.querySelectorAll(".fnode"));
+  var chips = [].slice.call(document.querySelectorAll(".tk"));
+  var btnRead = document.getElementById("modeRead");
+  var btnWrite = document.getElementById("modeWrite");
+  var btnReplay = document.getElementById("replay");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function apprNode() { return nodes[5]; }
+  function centers() {
+    var base = chain.getBoundingClientRect();
+    return nodes.filter(function (nd) { return nd.style.display !== "none"; })
+      .map(function (nd) {
+        var r = nd.getBoundingClientRect();
+        return r.left - base.left + r.width / 2;
+      });
+  }
+  function render() {
+    var step = STEPS[mode][idx];
+    apprNode().style.display = (mode === "write") ? "" : "none";
+    var cs = centers();
+    nodes.forEach(function (nd, i) {
+      var on = step.n.indexOf(i) >= 0;
+      var cur = step.n[step.n.length - 1] === i;
+      nd.className = "fnode" + (i === 5 ? " appr" : "") + (on ? " on" : "") + (cur ? " cur" : "");
+    });
+    chips.forEach(function (ch) {
+      ch.className = "tk" + (step.tk.indexOf(ch.getAttribute("data-t")) >= 0 ? " on" : "");
+    });
+    var to = step.n[step.n.length - 1];
+    if (!reduceMotion && cs[to] !== undefined) {
+      packet.style.opacity = "1";
+      packet.style.left = (cs[to] - 6.5) + "px";
+    } else {
+      packet.style.opacity = "0";
+    }
+    capt.innerHTML = step.c + '　<span style="color:#6b7599;font-family:var(--mono);font-size:11.5px">' +
+      (idx + 1) + " / " + STEPS[mode].length + "</span>";
+  }
+  function schedule() {
+    if (reduceMotion) { render(); return; }
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (idx < STEPS[mode].length - 1) { idx += 1; render(); schedule(); }
+      else if (restartTimer) clearTimeout(restartTimer);
+      restartTimer = setTimeout(function () { idx = 0; render(); schedule(); }, 3600);
+    }, 2500);
+  }
+  function start() { idx = 0; render(); schedule(); }
+  btnRead.addEventListener("click", function () {
+    mode = "read"; btnRead.classList.add("on"); btnWrite.classList.remove("on"); start();
+  });
+  btnWrite.addEventListener("click", function () {
+    mode = "write"; btnWrite.classList.add("on"); btnRead.classList.remove("on"); start();
+  });
+  btnReplay.addEventListener("click", start);
+  window.addEventListener("resize", function () { render(); });
+  if (reduceMotion) {
+    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写路径」查看分步说明（自动播放已关闭）。";
+    nodes.forEach(function (nd) { nd.className = nd.className + " on"; });
+    apprNode().style.display = "none";
+  } else { start(); }
+})();
+</script>
 
 </body>
 </html>
