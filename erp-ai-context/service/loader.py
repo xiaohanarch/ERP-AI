@@ -54,6 +54,23 @@ def load_overlay(tenant_id: str | None) -> dict | None:
     return None
 
 
+def load_partner(tenant_id: str | None) -> dict | None:
+    """行业语义包（Partner 层）：按租户叠加声明的 industry 匹配 overlays/partner-*.yaml。
+
+    解析顺序：租户叠加（tenant）-> 行业包（partner）-> Standard 语义文件。
+    """
+    if not tenant_id:
+        return None
+    industry = (load_overlay(tenant_id) or {}).get("industry")
+    if not industry:
+        return None
+    for path in sorted((BASE_DIR / "overlays").glob("partner-*.yaml")):
+        data = _read(path).get("overlay", {})
+        if data.get("industry") == industry:
+            return data
+    return None
+
+
 def live_metadata() -> dict | None:
     """存量元数据现状（投影段实时取数 + 漂移比对基准）。不可达时 None。"""
     def _fetch():

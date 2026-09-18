@@ -8,7 +8,7 @@
   semantic.operation.explain   BO 操作解释（规格即工具：读 bo-ap.yaml x-bo-*）
   semantic.drift.status        漂移检测（增量段 vs 元数据现状）
 
-每个工具返回 (result, sourceLayer)；sourceLayer ∈ standard | tenant。
+每个工具返回 (result, sourceLayer)；sourceLayer ∈ standard | partner | tenant（partner = 行业语义包）。
 """
 from __future__ import annotations
 
@@ -94,13 +94,14 @@ def tool_metadata_fields(args: dict, tenant: str | None) -> tuple[dict, str]:
 
 
 def tool_metric_get(args: dict, tenant: str | None) -> tuple[dict, str]:
-    """派生指标口径：阈值/公式按 A0 租户叠加解析，必须给出取值来源取证。"""
+    """派生指标口径：阈值/公式按 租户叠加 -> 行业包 -> Standard 逐层解析，必须给出取值来源取证。"""
     metric = str(args.get("metric") or "").strip()
     if not metric:
         raise ToolError("参数 metric 必填（如 large_risk_amount）")
 
     sem = loader.load_semantics()
     overlay = loader.load_overlay(tenant)
+    partner = loader.load_partner(tenant)
     defs = {m.get("name"): m for m in sem.get("increment", {}).get("metrics", [])}
     if metric not in defs:
         raise ToolError(f"未知指标「{metric}」，可用指标：{', '.join(defs) or '（无）'}")
@@ -110,18 +111,24 @@ def tool_metric_get(args: dict, tenant: str | None) -> tuple[dict, str]:
     if metric == "large_risk_amount":
         param = m.get("parameter")
         ov_param = ((overlay or {}).get("parameters") or {}).get(param) if param else None
+        p_param = ((partner or {}).get("parameters") or {}).get(param) if param else None
         if ov_param is not None:
             threshold, source, source_layer = ov_param.get("value"), ov_param.get("source"), "tenant"
+        elif p_param is not None:
+            threshold, source, source_layer = p_param.get("value"), p_param.get("source"), "partner"
         else:
-            threshold, source = m.get("default_threshold"), "Standard 层语义文件默认阈值（无租户叠加）"
+            threshold, source = m.get("default_threshold"), "Standard 层语义文件默认阈值（无租户/行业叠加）"
         caliber = {"threshold": threshold, "thresholdSource": source,
                    "apply": m.get("apply"), "unit": m.get("unit")}
     elif metric == "net_payable":
         ov_metric = ((overlay or {}).get("metrics") or {}).get(metric)
+        p_metric = ((partner or {}).get("metrics") or {}).get(metric)
         if ov_metric is not None:
             formula, note, source_layer = ov_metric.get("formula"), ov_metric.get("note"), "tenant"
+        elif p_metric is not None:
+            formula, note, source_layer = p_metric.get("formula"), p_metric.get("note"), "partner"
         else:
-            formula, note = m.get("caliber_default"), "Standard 层默认口径（无租户叠加）"
+            formula, note = m.get("caliber_default"), "Standard 层默认口径（无租户/行业叠加）"
         caliber = {"formula": formula, "includesAccrual": "accrual" in str(formula),
                    "note": note}
     else:
@@ -132,19 +139,22 @@ def tool_metric_get(args: dict, tenant: str | None) -> tuple[dict, str]:
         "description": m.get("description"),
         "caliber": caliber,
         "caliberSource": {"layer": source_layer, "tenantId": tenant,
-                          "overlayVersion": (overlay or {}).get("version") if source_layer == "tenant" else None},
+                          "overlayVersion": (overlay or {}).get("version") if source_layer == "tenant" else None,
+                          "partnerId": (partner or {}).get("partner_id") if source_layer == "partner" else None,
+                          "partnerVersion": (partner or {}).get("version") if source_layer == "partner" else None},
     }
     return result, source_layer
 
 
 def tool_term_translate(args: dict, tenant: str | None) -> tuple[dict, str]:
-    """业务术语 -> 语义实体。解析顺序：租户叠加术语 -> Standard 投影段术语 -> 反查。"""
+    """业务术语 -> 语义实体。解析顺序：租户叠加 -> 行业包 -> Standard 投影段 -> 反查。"""
     term = str(args.get("term") or "").strip()
     if not term:
         raise ToolError("参数 term 必填（如「进货单」）")
 
     sem = loader.load_semantics()
     overlay = loader.load_overlay(tenant)
+    partner = loader.load_partner(tenant)
     base = {"term": term}
 
     # 1) 租户 A0 叠加术语（最高优先）
@@ -155,26 +165,35 @@ def tool_term_translate(args: dict, tenant: str | None) -> tuple[dict, str]:
                           overlayVersion=(overlay or {}).get("version"))
             return result, "tenant"
 
-    # 2) Standard 投影段实体术语
+    # 2) 行业语义包术语（Partner 层：按租户行业匹配的行业包）
+    for t in (partner or {}).get("terms", []):
+        if t.get("business") == term:
+            result = dict(base, matched=True, semantic=t.get("semantic"), entity=t.get("semantic"),
+                          note=t.get("note"), tenantId=tenant,
+                          partnerId=(partner or {}).get("partner_id"),
+                          partnerVersion=(partner or {}).get("version"))
+            return result, "partner"
+
+    # 3) Standard 投影段实体术语
     for e in sem.get("projection", {}).get("entities", []):
         if term in (e.get("terms") or []):
             result = dict(base, matched=True, semantic=e.get("entity"), entity=e.get("entity"),
                           note="Standard 投影段术语（全租户一致）")
             return result, "standard"
 
-    # 3) 反查：语义实体名/别名
+    # 4) 反查：语义实体名/别名
     for e in sem.get("projection", {}).get("entities", []):
         if term.lower() == str(e.get("entity", "")).lower():
             result = dict(base, matched=True, semantic=e.get("entity"), entity=e.get("entity"),
                           note="语义实体名直接命中", terms=e.get("terms", []))
             return result, "standard"
 
-    # 4) 未命中：如果任一租户叠加定义了该术语，列出各租户口径（演示「同题不同答」）
+    # 5) 未命中：如果租户/行业包定义了该术语，列出各口径（演示「同题不同答」）
     tenant_calibers = _term_in_overlays(term)
     candidates = _term_candidates(term, sem)
     result = dict(base, matched=False, tenantCalibers=tenant_calibers, candidates=candidates,
                   note="Standard 层未定义该术语" +
-                       ("；其为租户口径术语，请携带租户上下文查询" if tenant_calibers else ""))
+                       ("；其为租户/行业包口径术语，请携带租户上下文查询" if tenant_calibers else ""))
     return result, "standard"
 
 
@@ -317,7 +336,7 @@ def _resolve_entity(raw: str, sem: dict) -> str | None:
 
 
 def _term_in_overlays(term: str) -> list[dict]:
-    """扫描全部租户叠加，报告该术语在各租户的口径（仅术语字典，不含业务数据）。"""
+    """扫描全部租户叠加与行业包，报告该术语在各层的口径（仅术语字典，不含业务数据）。"""
     import pathlib
     calibers = []
     for path in sorted((loader.BASE_DIR / "overlays").glob("*.yaml")):
@@ -325,6 +344,7 @@ def _term_in_overlays(term: str) -> list[dict]:
         for t in data.get("terms", []):
             if t.get("business") == term:
                 calibers.append({"tenantId": data.get("tenant_id"),
+                                 "industry": data.get("industry"),
                                  "semantic": t.get("semantic"), "note": t.get("note")})
     return calibers
 

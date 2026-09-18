@@ -46,6 +46,17 @@ def _layer_dir(layer: str, tenant_id: str | None) -> Path:
     return Path(config.settings.assets_root) / layer
 
 
+def _tenant_industry(tenant_id: str | None) -> str | None:
+    """租户行业声明（<tenant-dir>/tenant.yaml；非资产文件不参与叠加，行业包适配依据）。"""
+    if not tenant_id:
+        return None
+    path = _layer_dir("tenant", tenant_id) / "tenant.yaml"
+    if not path.exists():
+        return None
+    with open(path, encoding="utf-8") as f:
+        return (yaml.safe_load(f) or {}).get("industry")
+
+
 def _assets_in(layer: str, tenant_id: str | None, category: str) -> list[tuple[Path, dict]]:
     root = _layer_dir(layer, tenant_id) / category
     if not root.is_dir():
@@ -71,8 +82,16 @@ def resolve_category(category: str, tenant_id: str | None) -> dict:
     # Standard 层打底
     for name, asset in standard.items():
         merged[name] = dict(asset, source_layer="standard")
-    # Partner 层（本演示无 Partner 叠加，机制保留）
+    # Partner 层（行业包）：applies_to.industries 与租户行业声明匹配才生效；
+    # 未声明 applies_to 的 Partner 资产全局生效（ISV 通用包语义）
+    industry = _tenant_industry(tenant_id)
     for name, asset in partner.items():
+        applies = (asset.get("applies_to") or {}).get("industries")
+        if applies and (not industry or industry not in applies):
+            record.append({"asset": name, "category": category,
+                           "decision": "partner_not_applicable",
+                           "reason": f"行业包适用行业 {applies}，本租户行业为 {industry or '未声明'}，不加载"})
+            continue
         if name in merged and not merged[name].get("overridable"):
             record.append({"asset": name, "category": category,
                            "decision": "partner_overlay_rejected",
