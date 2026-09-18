@@ -15,9 +15,12 @@ docker-compose up -d --build     # 首次含 Java 构建 + Flyway 迁移 + 种�
 docker-compose ps                # 全部 healthy 后（约 30-60 秒）即可验证
 ```
 
-无需模型 API key：默认 `MODEL_MODE=mock`（脚本化确定性应答）。想接真实模型，复制
-`compose/.env.example` 为 `compose/.env`，改 `MODEL_MODE=live` + `LIVE_*`（OpenAI 兼容：
-DeepSeek/GLM/Qwen）。
+无需模型 API key 即可跑通全部验证：开箱默认 `MODEL_MODE=mock`（脚本化确定性应答）。
+想接真实模型，复制 `compose/.env.example` 为 `compose/.env`，改 `MODEL_MODE=live` + `LIVE_*`：
+协议二选一——`LIVE_PROTOCOL=openai`（DeepSeek/GLM/Qwen 的 OpenAI 兼容端点）或
+`LIVE_PROTOCOL=anthropic`（Anthropic Messages 兼容端点，如 GLM 经 Anthropic 兼容网关接入）。
+切 live 后评测/演示脚本仍保持确定性：它们按请求钉定 `X-Model-Mode: mock`，只有交互面
+（WorkBuddy / ERP 页面 copilot）走真实模型。
 
 ## 服务与端口
 
@@ -69,7 +72,7 @@ python scripts/demo/scene_4.py   # 未注册/吊销即时生效
 python scripts/demo/scene_5.py   # 双租同题不同答（阈值/术语/余额口径）
 python scripts/demo/scene_6.py   # 审批留痕 + 证据包 + 自检
 
-# 7) WorkBuddy 浏览器 E2E（Playwright，17 项检查，需系统 Python + playwright install chromium）
+# 7) WorkBuddy 浏览器 E2E（Playwright，19 项检查，需系统 Python + playwright install chromium）
 python scripts/e2e_workbuddy.py
 ```
 
@@ -81,7 +84,9 @@ Windows 环境的编码/Python 选择/端口注意事项见 [docs/windows-notes.
   copilot（SSE 流式）+ AI Command；
 - **WorkBuddy（形态②）**：http://localhost:8088（lisi 登录）→ Chat 选场景发起 →
   写请求出现审批卡片 → 换 wangwu 在 Approvals 批准（三要素 + 快照）→ 解析查看器看
-  三层护栏（standard/partner/tenant，放松类叠加被拒）→ Notifications；
+  三层护栏（standard/partner/tenant，放松类叠加被拒）→ Notifications。
+  支持深链直达演示：`/chat?scene=ap.diag&q=…` 登录后自动发起对话（`docs/intro.html`
+  里所有「▶」链接即此格式）；
 - **Agent 清册**：http://localhost:8000/gw/agents；**版本四件套**：http://localhost:8000/gw/versions；
 - **Jaeger（形态④事件链路 trace）**：http://localhost:16687；
 - **无头 MCP（形态③）**：`python scripts/headless_mcp.py list`。

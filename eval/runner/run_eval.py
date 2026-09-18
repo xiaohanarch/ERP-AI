@@ -78,7 +78,8 @@ class Client:
 
     def chat(self, username: str, message: str, scene: str, conversation_id: str) -> list[dict]:
         with httpx.stream("POST", f"{GW}/gw/chat/stream",
-                          headers={"Authorization": f"Bearer {self.token(username)}"},
+                          headers={"Authorization": f"Bearer {self.token(username)}",
+                                   "X-Model-Mode": "mock"},  # 评测锁确定性 mock，不随全局模式漂移
                           json={"message": message, "scene": scene,
                                 "conversationId": conversation_id},
                           timeout=httpx.Timeout(30, read=180)) as resp:

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from hub import gw
-from hub.graphs.state import GraphState, ctx_of, fmt_amount
+from hub.graphs.state import GraphState, contract_messages, ctx_of, fmt_amount
 from hub.graphs.agents import agent_for
 from hub.sdk import build_graph
 
@@ -11,7 +11,7 @@ SCENE = "ap.batch"
 
 
 def classify(state: GraphState) -> dict:
-    action = gw.ask_model(SCENE, [{"role": "user", "content": state["message"]}], ctx_of(state))
+    action = gw.ask_model(SCENE, contract_messages(SCENE, state["message"]), ctx_of(state))
     return {"intent": action.get("intent", "batch_screen"),
             "tool_calls": [], "error": None,
             "answer": action.get("reply") if action.get("intent") == "clarify" else None}

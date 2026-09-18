@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import Layout from './components/Layout'
 import Approvals from './pages/Approvals'
@@ -10,10 +10,16 @@ import Resolution from './pages/Resolution'
 
 function Protected() {
   const { token, loading } = useAuth()
+  const location = useLocation()
   if (loading) {
     return <div className="page-loading">正在恢复会话……</div>
   }
-  return token ? <Layout /> : <Navigate to="/login" replace />
+  // 未登录：携带当前路径（含查询参数）去登录，授权后原路返回（深链直达演示）
+  if (!token) {
+    const returnTo = encodeURIComponent(location.pathname + location.search)
+    return <Navigate to={`/login?returnTo=${returnTo}`} replace />
+  }
+  return <Layout />
 }
 
 export default function App() {

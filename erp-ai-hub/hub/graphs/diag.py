@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from hub import gw
-from hub.graphs.state import ctx_of, fmt_amount
+from hub.graphs.state import contract_messages, ctx_of, fmt_amount
 from hub.sdk import build_graph
 from hub.graphs.agents import agent_for
 from hub.graphs.state import GraphState
@@ -15,7 +15,7 @@ SCENE = "ap.diag"
 
 
 def classify(state: GraphState) -> dict:
-    action = gw.ask_model(SCENE, [{"role": "user", "content": state["message"]}], ctx_of(state))
+    action = gw.ask_model(SCENE, contract_messages(SCENE, state["message"]), ctx_of(state))
     out = {"intent": action.get("intent", "clarify"),
            "tool_calls": [], "error": None}
     if action.get("intent") in ("diagnose", "event_diag"):

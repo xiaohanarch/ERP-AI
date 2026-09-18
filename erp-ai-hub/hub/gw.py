@@ -96,17 +96,19 @@ def _first_text(result: dict) -> str:
 
 # ---------------------------------------------------------------- 模型调用
 def ask_model(scene: str, messages: list[dict], ctx: dict) -> dict:
-    """经网关模型网关的 OpenAI 兼容调用。返回解析后的「下一步动作 JSON」（mock 契约）。"""
+    """经网关模型网关的 OpenAI 兼容调用。返回解析后的「下一步动作 JSON」（动作契约）。"""
     headers = {"X-Client-Id": settings.hub_client_id,
                "X-Client-Secret": settings.hub_client_secret,
                "X-GW-User": ctx.get("user") or "erp-ai-hub",
                "X-GW-Tenant": ctx.get("tenant") or "",
                "X-GW-Agent": ctx.get("agent") or "",
                "X-GW-Trace": ctx.get("trace") or ""}
+    if ctx.get("model_mode"):
+        headers["X-Model-Mode"] = ctx["model_mode"]
     resp = httpx.post(f"{settings.gw_base}/v1/chat/completions",
                       json={"model": settings.model_name, "scene": scene,
                             "messages": messages, "stream": False},
-                      headers=headers, timeout=60)
+                      headers=headers, timeout=90)
     if resp.status_code != 200:
         err = {}
         try:
@@ -116,8 +118,20 @@ def ask_model(scene: str, messages: list[dict], ctx: dict) -> dict:
         raise GwError(err.get("code", "GW.MODEL_UPSTREAM_ERROR"),
                       err.get("message", f"模型网关返回 {resp.status_code}"))
     content = resp.json()["choices"][0]["message"]["content"]
+    return parse_action(content)
+
+
+def parse_action(content: str) -> dict:
+    """解析模型输出的动作 JSON；live 模型可能带 ```json 围栏或前后缀文字，取最外层 {}。"""
+    text = str(content).strip()
+    start, end = text.find("{"), text.rfind("}")
+    if 0 <= start < end:
+        try:
+            return json.loads(text[start:end + 1])
+        except ValueError:
+            pass
     try:
-        return json.loads(content)
+        return json.loads(text)
     except ValueError:
         return {"intent": "clarify", "reply": content}
 

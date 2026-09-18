@@ -110,15 +110,24 @@ def chat_stream(request: Request, body: dict):
                   _sse({"type": "done"})]),
             media_type="text/event-stream", headers=_SSE_HEADERS)
 
+    # 逐请求模型模式钉定（由网关透传；eval/六幕脚本锁 mock，交互面不传走全局默认）
+    model_mode = request.headers.get("X-Model-Mode", "")
+    if model_mode and model_mode not in ("mock", "replay", "live"):
+        return StreamingResponse(
+            iter([_sse({"type": "error", "code": "HUB.INVALID_MODEL_MODE",
+                        "message": f"X-Model-Mode 必须是 mock/replay/live，收到 {model_mode!r}"}),
+                  _sse({"type": "done"})]),
+            media_type="text/event-stream", headers=_SSE_HEADERS)
+
     scene_agents = {"ap.diag": "ap-copilot", "ap.batch": "ap-batch", "ap.taxcode": "ap-copilot"}
     default_agent = scene_agents.get(scene)
     agent = agent_for(default_agent, tenant) if default_agent else None
     return StreamingResponse(
-        _run_scene(scene, message, conversation_id, user, tenant, trace, agent),
+        _run_scene(scene, message, conversation_id, user, tenant, trace, agent, model_mode),
         media_type="text/event-stream", headers=_SSE_HEADERS)
 
 
-def _run_scene(scene, message, conversation_id, user, tenant, trace, agent):
+def _run_scene(scene, message, conversation_id, user, tenant, trace, agent, model_mode=""):
     yield _sse({"type": "meta", "conversationId": conversation_id, "scene": scene,
                 "agent": agent, "user": user, "tenant": tenant, "traceId": trace})
 
@@ -133,7 +142,7 @@ def _run_scene(scene, message, conversation_id, user, tenant, trace, agent):
 
     graph = GRAPHS[scene]()
     state_in = {"message": message, "user": user, "tenant": tenant, "trace": trace,
-                "conversation_id": conversation_id}
+                "conversation_id": conversation_id, "model_mode": model_mode}
     try:
         for node, delta in stream_graph(graph, state_in, conversation_id):
             if node == "__interrupt__":

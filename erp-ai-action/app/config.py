@@ -33,6 +33,7 @@ class Settings:
     live_api_key: str = _env("LIVE_API_KEY")
     live_model: str = _env("LIVE_MODEL", "deepseek-chat")
     live_provider: str = _env("LIVE_PROVIDER", "deepseek")
+    live_protocol: str = _env("LIVE_PROTOCOL", "openai")  # openai | anthropic（Messages API）
     replay_miss_mode: str = _env("REPLAY_MISS_MODE", "passthrough")  # strict | passthrough
     model_record: bool = _env("MODEL_RECORD", "false").lower() == "true"
     recordings_dir: str = _env("RECORDINGS_DIR", "/var/lib/gw/recordings")

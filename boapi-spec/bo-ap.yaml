@@ -228,7 +228,7 @@ paths:
       x-bo-idempotency:
         business_key: invoiceNo + taxCode + accountPeriod
         header: Idempotency-Key
-        semantics: "COMPLETED 返回首次结果 / 处理中返回进行中 / 参数不一致返回冲突"
+        semantics: "COMPLETED 返回首次结果 / 处理中返回进行中 / 参数哈希仅含操作性参数（taxCode+accountPeriod），reason 等说明文本不参与幂等判定"
       x-bo-permissions:
         required: [ap.taxcode.write]
       x-bo-completeness:
@@ -270,9 +270,9 @@ paths:
         - name: 正例-INV-A-003 税码补全（李四发起，王五审批）
           request: { invoiceNo: INV-A-003, taxCode: "CN-VAT-13", reason: "供应商所在地常用税码", accountPeriod: "2026-09" }
           expect: { newTaxCode: "CN-VAT-13", decidedBy: "u-wangwu" }
-        - name: 反例-同键不同参（幂等冲突）
-          request: { invoiceNo: INV-A-003, taxCode: "CN-VAT-09", accountPeriod: "2026-09" }
-          expect: { error: { code: AP.IDEMPOTENCY_CONFLICT, category: state_conflict, retryable: false } }
+        - name: 反例-同键重发（措辞不同也重放首次结果，不重复落库）
+          request: { invoiceNo: INV-A-003, taxCode: "CN-VAT-13", reason: "第二次补充说明，措辞与首次不同", accountPeriod: "2026-09" }
+          expect: { idempotentReplay: true }
 
   /boapi/payments/execute:
     post:

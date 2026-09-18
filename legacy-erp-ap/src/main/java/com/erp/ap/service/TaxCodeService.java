@@ -48,7 +48,9 @@ public class TaxCodeService {
         }
 
         String businessKey = invoiceNo + "|" + taxCode + "|" + accountPeriod;
-        String paramsHash = sha256(taxCode + "|" + reason + "|" + accountPeriod);
+        // 参数哈希只覆盖操作性参数（税码+会计期间）：reason 为人读说明文本，live 模型每次措辞不同，
+        // 不应参与幂等判定 —— 同业务键重发一律重放首次结果（与规格 x-bo-idempotency 语义一致）
+        String paramsHash = sha256(taxCode + "|" + accountPeriod);
 
         // 业务幂等：COMPLETED -> 返回首次结果；参数不一致 -> 冲突
         IdempotencyRecord existing = idempotencyRepo.findByBusinessKey(businessKey).orElse(null);

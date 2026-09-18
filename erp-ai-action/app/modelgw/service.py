@@ -122,13 +122,21 @@ def version_stamps(model: str) -> dict:
 
 
 # ---------------------------------------------------------------- 主入口
-def chat_completion(payload: dict, ctx: dict) -> tuple[dict, str]:
-    """返回 (OpenAI 兼容响应, 来源: mock|replay|live)。"""
+VALID_MODES = ("mock", "replay", "live")
+
+
+def chat_completion(payload: dict, ctx: dict, mode_override: str | None = None) -> tuple[dict, str]:
+    """返回 (OpenAI 兼容响应, 来源: mock|replay|live)。
+
+    mode_override：逐请求模式钉定（X-Model-Mode 头，eval/演示脚本用），
+    取值必须是 VALID_MODES 之一，否则回落全局 MODEL_MODE —— 评测与六幕可锁定
+    确定性 mock，而交互面（WorkBuddy）走 live。
+    """
     model = payload.get("model") or "mock-scene-model"
     scene = payload.get("scene") or ctx.get("scene") or "default"
     messages = payload.get("messages") or []
 
-    mode = settings.model_mode
+    mode = mode_override if mode_override in VALID_MODES else settings.model_mode
     source = mode
 
     if mode == "replay":
@@ -137,7 +145,7 @@ def chat_completion(payload: dict, ctx: dict) -> tuple[dict, str]:
         stamps = version_stamps(model)
         if rec is not None and rec.get("versions") == stamps:
             response = rec["response"]
-            _after_completion(response, ctx, model, scene)
+            _after_completion(response, ctx, model, scene, "replay")
             return response, "replay"
         if settings.replay_miss_mode == "strict":
             raise ModelGwError("GW.REPLAY_MISS",
@@ -161,7 +169,7 @@ def chat_completion(payload: dict, ctx: dict) -> tuple[dict, str]:
             "response": response, "ts": time.time(),
         })
 
-    _after_completion(response, ctx, model, scene)
+    _after_completion(response, ctx, model, scene, source)
     return response, source
 
 
@@ -178,6 +186,8 @@ def _call_live(payload: dict) -> dict:
         raise ModelGwError("GW.LIVE_NOT_CONFIGURED",
                            "live 模式未配置 LIVE_BASE_URL/LIVE_API_KEY（可回退 MODEL_MODE=mock）", 501,
                            retryable=False)
+    if settings.live_protocol == "anthropic":
+        return _call_live_anthropic(payload)
     clean = {k: v for k, v in payload.items() if k not in ("scene", "context")}
     clean["model"] = settings.live_model
     resp = httpx.post(f"{settings.live_base_url}/chat/completions", json=clean,
@@ -188,7 +198,53 @@ def _call_live(payload: dict) -> dict:
     return resp.json()
 
 
-def _after_completion(response: dict, ctx: dict, model: str, scene: str) -> None:
+# Anthropic Messages 协议 <-> OpenAI 兼容格式转换（如 GLM 经 Anthropic 兼容网关接入）
+_ANTHROPIC_STOP_MAP = {"end_turn": "stop", "max_tokens": "length",
+                       "stop_sequence": "stop", "tool_use": "tool_calls"}
+
+
+def _call_live_anthropic(payload: dict) -> dict:
+    """把 OpenAI 风格请求转成 Anthropic Messages 调用，再把应答转回 OpenAI 格式。
+
+    系统角色消息提取为 system 字段；应答里只取 text 块（thinking 块跳过）；
+    usage.input/output_tokens 映射为 prompt/completion_tokens —— 对上层（hub/成本/OTel）
+    完全透明。
+    """
+    src = payload.get("messages") or []
+    messages = [{"role": m.get("role", "user"), "content": str(m.get("content", ""))}
+                for m in src if m.get("role") != "system"]
+    system = "\n\n".join(str(m.get("content", "")) for m in src if m.get("role") == "system")
+    if not messages:
+        messages = [{"role": "user", "content": ""}]
+    req = {"model": settings.live_model,
+           "max_tokens": int(payload.get("max_tokens") or 1024),
+           "messages": messages}
+    if system:
+        req["system"] = system
+    resp = httpx.post(f"{settings.live_base_url}/v1/messages", json=req,
+                      headers={"Authorization": f"Bearer {settings.live_api_key}",
+                               "x-api-key": settings.live_api_key,
+                               "anthropic-version": "2023-06-01"}, timeout=60)
+    if resp.status_code != 200:
+        raise ModelGwError("GW.MODEL_UPSTREAM_ERROR",
+                           f"供应商({settings.live_provider})返回 {resp.status_code}：{resp.text[:160]}", 502)
+    data = resp.json()
+    text = "".join(str(b.get("text", "")) for b in data.get("content") or []
+                   if b.get("type") == "text")
+    usage = data.get("usage") or {}
+    prompt_tokens = int(usage.get("input_tokens") or 0)
+    completion_tokens = int(usage.get("output_tokens") or 0)
+    return {"id": data.get("id", "msg-live"), "object": "chat.completion",
+            "model": settings.live_model,
+            "choices": [{"index": 0,
+                         "message": {"role": "assistant", "content": text},
+                         "finish_reason": _ANTHROPIC_STOP_MAP.get(data.get("stop_reason"), "stop")}],
+            "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens,
+                      "total_tokens": prompt_tokens + completion_tokens}}
+
+
+def _after_completion(response: dict, ctx: dict, model: str, scene: str,
+                      source: str | None = None) -> None:
     usage = response.get("usage") or {}
     cost.record_usage(tenant_id=ctx.get("tenant"), agent_id=ctx.get("agent"),
                       scene=scene, user_id=ctx.get("user"), model=model,
@@ -198,7 +254,7 @@ def _after_completion(response: dict, ctx: dict, model: str, scene: str) -> None
     audit.record(tenant_id=ctx.get("tenant"), user_id=ctx.get("user"),
                  agent_id=ctx.get("agent"), azp="erp-ai-hub", action="model_call",
                  outcome="SUCCESS", scene=scene, trace_id=ctx.get("trace"),
-                 detail={"model": model, "source": settings.model_mode,
+                 detail={"model": model, "source": source or settings.model_mode,
                          "promptTokens": usage.get("prompt_tokens", 0),
                          "completionTokens": usage.get("completion_tokens", 0)})
     attrs = otel_setup.genai_chat_attributes(
@@ -213,7 +269,10 @@ def _after_completion(response: dict, ctx: dict, model: str, scene: str) -> None
 
 
 def status() -> dict:
+    # 状态口径的模型名（自检/报告头部展示）：mock 为脚本化模型名，replay/live 为真实模型名
+    model = "mock-scene-model" if settings.model_mode == "mock" else settings.live_model
     return {"mode": settings.model_mode, "replayMissMode": settings.replay_miss_mode,
             "recording": settings.model_record, "recordings": replay_store.count(),
             "liveProvider": settings.live_provider, "liveModel": settings.live_model,
-            "versions": version_stamps(None)}
+            "liveProtocol": settings.live_protocol, "model": model,
+            "versions": version_stamps(model)}

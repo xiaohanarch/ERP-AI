@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import date
 
 from hub import gw
-from hub.graphs.state import GraphState, ctx_of
+from hub.graphs.state import GraphState, contract_messages, ctx_of
 from hub.graphs.agents import agent_for
 from hub.sdk import build_graph, interrupt
 
@@ -25,7 +25,7 @@ def _current_period() -> str:
 
 
 def suggest(state: GraphState) -> dict:
-    action = gw.ask_model(SCENE, [{"role": "user", "content": state["message"]}], ctx_of(state))
+    action = gw.ask_model(SCENE, contract_messages(SCENE, state["message"]), ctx_of(state))
     if action.get("intent") != "suggest_tax_code" or not action.get("invoiceNo"):
         return {"intent": "clarify",
                 "answer": action.get("reply", "请提供需要补全税码的发票号（如 INV-A-003）。")}

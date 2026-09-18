@@ -24,7 +24,10 @@ export default function Callback() {
       }
       const { token } = await exchangeCode(code)
       await signIn(token)
-      navigate('/chat', { replace: true })
+      // 深链回跳：恢复登录前的原始目标（/chat?scene=...&q=... 等）；无则进对话页
+      const rt = sessionStorage.getItem('wb.returnTo')
+      sessionStorage.removeItem('wb.returnTo')
+      navigate(rt && rt.startsWith('/') ? rt : '/chat', { replace: true })
     }
     run().catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
   }, [params, signIn, navigate])

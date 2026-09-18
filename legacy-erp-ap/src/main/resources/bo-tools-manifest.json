@@ -406,18 +406,15 @@
           }
         },
         {
-          "name": "反例-同键不同参（幂等冲突）",
+          "name": "反例-同键重发（措辞不同也重放首次结果，不重复落库）",
           "request": {
             "invoiceNo": "INV-A-003",
-            "taxCode": "CN-VAT-09",
+            "taxCode": "CN-VAT-13",
+            "reason": "第二次补充说明，措辞与首次不同",
             "accountPeriod": "2026-09"
           },
           "expect": {
-            "error": {
-              "code": "AP.IDEMPOTENCY_CONFLICT",
-              "category": "state_conflict",
-              "retryable": false
-            }
+            "idempotentReplay": true
           }
         }
       ]
