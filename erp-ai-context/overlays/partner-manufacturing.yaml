@@ -1,0 +1,20 @@
+# Partner 行业语义包：制造业（erp-ai-context 语义层 Partner 层）
+# 按租户叠加声明的 industry 匹配（T-EAST = manufacturing）；
+# 解析顺序：租户叠加（tenant）-> 行业包（partner）-> Standard 语义文件。
+overlay:
+  partner_id: partner-mfg
+  industry: manufacturing
+  version: mfg-pack-1.0.0
+  description: 制造业行业语义包：行业术语与行业默认参数（租户叠加仍可覆盖）
+  parameters:
+    large_risk_threshold:
+      value: 300000
+      source: 制造业行业包默认（行业惯例：单张发票 30 万以上计入大额筛查）
+      description: 大额风险阈值 30 万（行业默认，租户可覆盖）
+  terms:
+    - business: 来料发票
+      semantic: invoice
+      note: 制造业口径：来料采购所开发票（行业包术语）
+    - business: 委外加工发票
+      semantic: invoice
+      note: 制造业口径：委外加工所开发票（行业包术语）

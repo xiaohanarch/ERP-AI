@@ -1,10 +1,10 @@
-"""erp-ai-hub 入口：FastAPI + 事件订阅线程。"""
+"""erp-ai-hub 入口：FastAPI + 事件订阅线程 + 定时调度线程。"""
 from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from hub import events
+from hub import events, scheduler
 from hub.api import router
 
 app = FastAPI(title="erp-ai-hub", version="1.0.0",
@@ -20,5 +20,6 @@ app.include_router(router)
 
 @app.on_event("startup")
 def startup():
-    # 检查点表初始化（幂等）+ 事件订阅线程
+    # 检查点表初始化（幂等）+ 事件订阅线程（形态④）+ 定时调度线程（形态⑤）
     events.start()
+    scheduler.start()

@@ -2,7 +2,8 @@
 # 解析顺序 Standard -> Partner -> Tenant；仅 overridable 资产可被覆盖。
 overlay:
   tenant_id: T-EAST
-  version: east-a0-1.0.0
+  industry: manufacturing          # 行业声明：匹配 overlays/partner-*.yaml 行业语义包
+  version: east-a0-1.1.0
   description: 华东制造租户叠加（参数 / 术语 / 派生指标口径）
   parameters:
     large_risk_threshold:

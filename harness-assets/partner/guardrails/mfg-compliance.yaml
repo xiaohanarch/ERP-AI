@@ -1,0 +1,16 @@
+# Partner 行业包：制造业合规（harness-assets 三层解析的中间层）
+# 适用行业由 applies_to.industries 声明，与租户目录 tenant.yaml 的行业声明匹配才生效；
+# 未声明 applies_to 的 Partner 资产全局生效（ISV 通用包语义）。
+asset:
+  name: mfg-compliance
+  category: guardrails
+  version: mfg-compliance-1.0.0
+  overridable: true
+  description: 制造业行业合规包：三单匹配强约束（无收货不得过账/匹配），行业级加严
+  applies_to:
+    industries: [manufacturing]
+  rules:
+    - id: mfg-no-gr-bypass
+      action: refuse
+      patterns: [跳过收货, 无收货过账, 没有收货单也, 不做收货]
+      message: 制造业行业合规（Partner 层）：三单匹配前不可跳过收货确认。请先完成收货，或走例外审批流程。

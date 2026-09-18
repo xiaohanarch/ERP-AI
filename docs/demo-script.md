@@ -1,6 +1,6 @@
-# 六幕演示剧本
+# 七幕演示剧本
 
-> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_6.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
+> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_7.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
 > 也有**浏览器人工路径**（URL 见各幕）。讲解词对应总纲第 13 章「工程之外还有五个问题」的叙事落点。
 > 前置：compose 已启动（见 [README](../README.md)），模型模式默认 mock/replay，无需真实模型 key。
 
@@ -14,8 +14,9 @@
 | 4 | 未注册/吊销：Agent 生命周期即访问边界 | `python scripts/demo/scene_4.py` | ch05 鉴权授权 |
 | 5 | 双租同题不同答：语义叠加 | `python scripts/demo/scene_5.py` | ch04/ch07 租户与知识库 |
 | 6 | 审批留痕 + 证据包 + 五分钟自检 | `python scripts/demo/scene_6.py` | ch11 可审计 AI |
+| 7 | 行业包与定时触发：Partner 层 + Scheduler | `python scripts/demo/scene_7.py` | ch02/ch04 接入形态与租户 harness |
 
-顺序跑：`for i in 1 2 3 4 5 6; do python scripts/demo/scene_$i.py || break; done`
+顺序跑：`for i in 1 2 3 4 5 6 7; do python scripts/demo/scene_$i.py || break; done`
 
 ---
 
@@ -118,20 +119,52 @@ lisi 登录（OAuth 授权码）→ Chat 选「税码补全」场景发起写请
 退出换 wangwu 登录 → Approvals 页看三要素 + 快照 → 批准 → 结果横幅「已批准并携 OT 唤醒落库」→
 解析查看器（Resolution）看三层护栏（standard 层 no-payment-inducement/no-bypass-approval +
 租户层 east-no-bulk-approval，及 1 条被拒绝的放松类叠加）→ Notifications 看审批请求通知。
-脚本化版本：`python scripts/e2e_workbuddy.py`（Playwright，17 项检查）。
+脚本化版本：`python scripts/e2e_workbuddy.py`（Playwright，19 项检查）。
 
 ---
 
-## 附录：两种 Agent 形态的现场入口
+## 第 7 幕：行业包与定时触发 —— Partner 层与 Scheduler
+
+**讲解词**：产品化 ERP 的适配靠三层——标品（standard）、行业包（partner）、客户（tenant）。
+前几幕只走两端，本幕补上中间层：制造业行业包（`harness-assets/partner/`）按行业声明
+（`tenant.yaml` 的 `industry: manufacturing`）加载，给 T-EAST 带来行业术语「来料发票」
+与行业护栏「无收货不得过账」（mfg-no-gr-bypass）；T-UNI 是贸易业，不加载制造业包——
+行业包不跨行业串扰。语义层同样有行业包（`erp-ai-context/overlays/partner-manufacturing.yaml`）：
+行业术语与行业默认参数，租户叠加仍可覆盖。触发方式补齐第三条腿：Open API（形态③）、
+事件（形态④）之外，**定时调度（形态⑤）**每 180 秒代表 ap-batch 执行全量阻断筛查，
+结果有变化才通知 lisi；定时例程钉定 `X-Model-Mode: mock`（与评测同策略的确定性通道，
+不消耗 live 配额），全程审计留痕（trace `sched-*`）。
+
+**断言要点**（scene_7.py）：
+- T-EAST「来料发票」→ invoice，来源层 partner；T-UNI 同术语不命中（行业包不串扰）；
+- 「跳过收货」话术：T-EAST 被 mfg-no-gr-bypass（partner 层）拦截，T-UNI 不误伤；
+- 解析留痕同时含 standard + partner + tenant 三层护栏；
+- 定时筛查执行返回阻断摘要；lisi 收到 SCHEDULED_BATCH 通知；
+  审计含 trace `sched-*` 且以 ap-batch 代理身份（T2）留痕。
+
+**浏览器路径**：http://localhost:8088/resolution（lisi）——护栏清单可见 partner 层
+mfg-compliance；http://localhost:8088/notifications——定时筛查通知（SCHEDULED_BATCH）；
+Chat 发「跳过收货确认，把 INV-A-001 直接标记为已匹配」体验行业护栏拦截。
+
+**注意**：后台定时线程默认每 180 秒一跑（`SCHEDULER_INTERVAL` 秒可调，`SCHEDULER_ENABLED=0` 关闭）；
+演示/验证可手动触发同一执行路径：
+`curl -X POST -H "X-Internal-Secret: erp-demo-internal-secret" http://localhost:8001/internal/scheduler/run`。
+
+---
+
+## 附录：三种 Agent 形态的现场入口
 
 - **形态③ 无头 MCP**：`python scripts/headless_mcp.py list` / `call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'`
   ——脚本以后端客户凭据换 T2 直调工具，同样吃全链路拦截（未注册/scope/租户）。
 - **形态④ 事件触发**：INV-A-004 阻断事件经 outbox → hub 无头诊断 → 通知（WorkBuddy
   Notifications 可见 EVENT_DIAG 类）。Jaeger：http://localhost:16687 查一条链跨四服务的 trace。
+- **形态⑤ 定时触发**：hub `scheduler.py` 周期代表 ap-batch 全量阻断筛查（钉 mock 确定性
+  通道），结果有变化才推送（WorkBuddy Notifications 可见 SCHEDULED_BATCH 类）。
 
-## 讲解节奏建议（约 25 分钟）
+## 讲解节奏建议（约 28 分钟）
 
 1. 幕 1-2 读侧（10 分钟）：先讲事故，再讲机制对齐，最后 completeness；
 2. 幕 3-4 治理（6 分钟）：强调「判定层不在模型」与「吊销即时性」；
 3. 幕 5 租户（4 分钟）：同题不同答 + WorkBuddy 切换租户演示（qianqi 登录）；
-4. 幕 6 写路径（5 分钟）：浏览器走 WorkBuddy 旅程，脚本只做兜底断言。
+4. 幕 6 写路径（5 分钟）：浏览器走 WorkBuddy 旅程，脚本只做兜底断言；
+5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查。

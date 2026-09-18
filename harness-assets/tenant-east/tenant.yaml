@@ -1,0 +1,5 @@
+# 租户清单：行业声明（Partner 行业包适配依据；非资产文件，不参与三层叠加）。
+# harness-assets/partner/ 下 applies_to.industries 与此处匹配的行业包才会对该租户生效。
+tenant_id: T-EAST
+industry: manufacturing
+display: 华东制造
