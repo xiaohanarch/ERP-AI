@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WorkBuddy 浏览器级 E2E：OAuth 登录 -> 对话（读/写）-> 审批 -> 通知。
+"""WorkBuddy 浏览器级 E2E：OAuth 登录 -> 对话（读/写）-> 审批 -> 通知 -> 深链。
 
 覆盖形态②（助手平台）全链路：
   1) 登录页 -> 网关统一登录（OAuth 授权码）-> 回调换 T1 -> 对话页（李四 / T-EAST）
@@ -7,6 +7,7 @@
   3) 写侧对话：INV-A-052 税码补全 -> 挂起卡片（三要素 + 审批单号）
   4) 退出 -> 王五登录 -> 审批台 -> 批准 -> 唤醒落库（result=applied）
   5) 通知中心（王五见审批请求；李四重新登录见审批结果）
+  6) 深链：登出后直开 /chat?scene=…&q=…（intro.html 演示链接）—— 登录后回跳原目标并自动发起
 
 用法: python scripts/e2e_workbuddy.py   退出码 0=全过 / 1=失败 / 2=环境不可用
 """
@@ -112,7 +113,7 @@ def main() -> int:
             # ---- 4) 王五登录审批 ----
             print("── 王五登录审批台处理")
             page.click(".side-foot button")  # 退出
-            page.wait_for_url(f"{BASE}/login")
+            page.wait_for_url(f"{BASE}/login*")  # 未登录重定向到 /login?returnTo=…
             login(page, "wangwu")
             side = page.inner_text(".side-foot")
             check("王五登录成功", "王五" in side, side)
@@ -154,6 +155,29 @@ def main() -> int:
             check("王五收到审批请求通知", "审批请求" in notif, notif[:200])
             badge = page.locator(".nav .count").count()
             print(f"  （未读角标元素：{badge} 个）")
+
+            # ---- 7) 深链：登出后直开演示链接（intro.html 的 ▶ 链接） ----
+            print("── 深链：未登录访问 /chat?scene=ap.batch&q=…（returnTo 回跳 + 自动发起）")
+            page.click(".side-foot button")  # 退出（王五）
+            page.wait_for_url(f"{BASE}/login*")
+            import urllib.parse
+            deep = f"{BASE}/chat?scene=ap.batch&q=" + urllib.parse.quote("帮我筛查大额风险的阻断发票")
+            page.goto(deep)
+            # Protected 未登录 -> /login?returnTo=…：在此页直接发起 OAuth（Login 保存 returnTo）
+            page.click("button.btn.login")
+            page.wait_for_selector("input[name=username]", timeout=10_000)
+            page.fill("input[name=username]", "lisi")
+            page.fill("input[name=password]", "demo123")
+            page.click("form button[type=submit]")
+            page.wait_for_url(f"{BASE}/chat", timeout=15_000)  # 回调后回跳原目标（参数随后被消费清掉）
+            page.wait_for_selector(".scene-opt.on:has-text('批量筛查')", timeout=10_000)
+            check("深链回跳原目标且场景预选（批量筛查）", True)
+            page.wait_for_selector(".turn .body", timeout=90_000)
+            wait_idle(page)
+            deep_ans = page.inner_text(".chat-scroll")
+            check("深链自动发起并返回筛查结论",
+                  ("大额" in deep_ans or "阻断" in deep_ans) and "INV-" in deep_ans, deep_ans[:200])
+            page.screenshot(path=str(REPO / "docs" / "screenshots" / "workbuddy-deeplink.png"))
 
             browser.close()
         except Exception as e:  # noqa: BLE001
