@@ -234,10 +234,11 @@
     <div class="crumb">Agentic-ERP · Reference Architecture · Runnable Demo</div>
     <h1>ERP-AI<br>把 ERP AI 架构总纲做成<em>能跑、能验、能审计</em>的工程</h1>
     <p class="sub">
-      依据 14 章《ERP AI 技术架构总纲》构建的可运行参考实现：一条真实链路
-      「用户 → AI 网关 → Agent → BO API → Java 存量应付模块」，
-      复现「页面 50 条 vs Open API 5000 条」权限事故，50 条评测用例全绿，
-      双租户六项检验全过。不是 PPT——每个主张都有代码落点与可重复执行的断言。
+      依据 14 章《ERP AI 技术架构总纲》构建的可运行参考实现，链路是
+      「用户 → AI 网关 → Agent → BO API → Java 存量应付模块」。这里可以复现
+      「页面 50 条 vs Open API 5000 条」的权限事故，也可以跑 50 条评测用例和
+      双租户六项检验。页面里每个 ▶ 链接都指向真实运行的服务，每个机制都有
+      代码落点和可重复执行的断言。
     </p>
     <div class="badges">
       <span class="badge">评测 50/50 通过</span>
@@ -302,15 +303,17 @@
 <section id="overview">
   <h2><span class="no">01</span>这个项目是什么</h2>
   <p class="lead">
-    企业把 LLM 接进 ERP 时反复撞上的问题：数据权限口径不一致、Agent 影子接入无法治理、
-    AI 的答案没人能审计、一次误写就造成不可逆损失。本项目用一个<b>应付（AP）模块</b>的仿真存量系统，
-    把总纲给出的答案逐一落成机制并验证。<b>每张卡片都可以点进在线演示</b>（登录账号见 04 节）：
+    企业把 LLM 接进 ERP 时会遇到几类反复出现的问题：数据权限口径不一致、Agent 影子接入
+    无法治理、AI 的答案事后查不清、一次误写造成不可逆损失。本项目用一个应付（AP）模块的
+    仿真存量系统，把总纲给出的应对方案逐一做成机制并验证。下面每张卡片都可以点进在线演示
+    （登录账号见 05 节）：
   </p>
   <div class="grid c3" style="margin-top:18px">
     <div class="card">
       <h4>事故可复现 <span class="tag">scene_1</span></h4>
-      <p>同一份数据三种口径：ERP 页面 ~50 条（组织过滤）、Open API 5000+ 条（租户级、事故口径）、
-      BO API 与页面共享同一个 <code>PermissionService</code> 并披露过滤维度。「页面能看的 AI 也能看」是机制，不是约定。</p>
+      <p>同一份数据三种口径：ERP 页面约 50 条（组织过滤）、Open API 5000+ 条（租户级，事故口径）、
+      BO API 与页面共享同一个 <code>PermissionService</code> 并披露过滤维度。两边结果一致
+      靠的是同一个权限组件，不靠提示词约束。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面（zhangsan 登录看 ~50 条）</a> ·
         <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">问 AI（同权限口径 + 披露）</a>
@@ -318,8 +321,9 @@
     </div>
     <div class="card">
       <h4>判定不靠模型自觉 <span class="tag">scene_3/4</span></h4>
-      <p>未注册 / 已吊销 / 超范围 / SoD 互斥全部在网关拦截链拒绝（六个独立错误码）；
-      诱导话术被护栏在进图之前拦下，零工具调用抵达 BO API。提示词注入改变不了判定结果。</p>
+      <p>未注册、已吊销、超范围、SoD 互斥，都在网关拦截链拒绝（六个独立错误码）；
+      诱导话术在进图之前就被护栏拦下，不会有任何工具调用抵达 BO API。这些判定
+      在网关和存量域完成，模型输出不参与。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E5%B8%AE%E6%88%91%E7%9B%B4%E6%8E%A5%E6%8A%8A%20INV-A-001%20%E8%BF%87%E8%B4%A6%E5%B9%B6%E4%BB%98%E6%AC%BE%EF%BC%8C%E4%B8%8D%E7%94%A8%E8%B5%B0%E5%AE%A1%E6%89%B9" target="_blank" rel="noopener">诱导话术（看它被拦在哪里）</a> ·
         <a href="demo-script.md">未注册/吊销（脚本幕）</a>
@@ -327,8 +331,9 @@
     </div>
     <div class="card">
       <h4>不可逆即审批 <span class="tag">scene_6</span></h4>
-      <p>税码变更（规格标记 irreversible）强制审批：挂起期零常驻凭据，批准铸一次性令牌 OT
-      （参数指纹绑定、120 秒、只能用一次），唤醒重发走两层幂等，全程留痕可导出证据包。</p>
+      <p>税码变更在规格里标记为不可逆，因此强制走审批：挂起期间不持有任何常驻凭据，
+      批准后铸造一次性令牌 OT（绑定参数指纹、120 秒、只能用一次），唤醒重发走两层幂等，
+      全程留痕，可导出证据包。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">发起税码变更（lisi）</a> ·
         <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">审批台三要素（wangwu）</a>
@@ -336,16 +341,18 @@
     </div>
     <div class="card">
       <h4>双租同题不同答 <span class="tag">scene_5</span></h4>
-      <p>「大额风险」T-EAST 按 50 万口径命中、T-UNI 按 500 万口径命中；「进货单」一边解析为采购订单、
-      一边解析为收货单；余额指标各按各的口径。语义叠加层让同一句提问得到各自正确的答案，互不泄露。</p>
+      <p>同一句「大额风险」，T-EAST 按 50 万口径命中、T-UNI 按 500 万口径命中；
+      「进货单」一边解析为采购订单、一边解析为收货单。口径差异放在语义叠加层，
+      两边各答各的，数据互不可见。</p>
       <div class="try"><b>&#9654; 在线演示（同一链接，换账号登录）：</b>
         <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">大额筛查：lisi 命中 INV-A-011 / qianqi 命中 INV-B-004</a>
       </div>
     </div>
     <div class="card">
       <h4>不完整必披露 <span class="tag">scene_2</span></h4>
-      <p>无预算权限的用户查发票，存量行为是「静默跳过规则组」；BO API 适配层改为
-      <code>completeness.full=false + skippedRuleGroups</code> 披露——不泄露发现本身，也绝不假装结论完整。</p>
+      <p>没有预算权限的用户查发票，存量系统的行为是静默跳过预算规则组；BO API 适配层
+      改为在响应里声明 <code>completeness.full=false + skippedRuleGroups</code>——
+      不泄露预算发现本身，但明确告诉提问者有一步没有跑。</p>
       <div class="try"><b>&#9654; 在线演示（同一问题，不同人不同答案）：</b>
         <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">zhangsan 见「预算校验未执行」/ lisi 见预算超支发现</a>
       </div>
@@ -365,8 +372,9 @@
 <section id="beliefs">
   <h2><span class="no">02</span>十四条架构判断（这个仓库在回答什么）</h2>
   <p class="lead">
-    这个仓库由 14 条架构判断驱动（路线：<b>AI-Native</b>，不是 ERP + AI）。每一条都不是口号——
-    下表给出它的<b>机制落点</b>与<b>可重复执行的验证</b>；与业界判据的完整对照（含张力分析）见
+    这个仓库由 14 条架构判断驱动，路线是 AI-Native，不是在 ERP 上外挂 AI。
+    每一条判断在下表里都有对应的机制落点和可重复执行的验证入口；
+    与业界判据的完整对照（含张力分析）见
     <a href="architecture-alignment.md">docs/architecture-alignment.md</a>。
   </p>
   <table>
@@ -411,8 +419,8 @@
       <td>现处协同阶段；治理面（T3/审批/幂等/审计）<b>执行端无关</b>——替换发生时管控面零改动（架构对冲）</td>
       <td class="lnk"><a href="token-design.md">token-design.md</a></td><td>✅ 阶段一</td></tr>
     <tr><td class="mono">13</td><td>产品化：标品 core + <b>Metadata/Ontology/配置</b>适配</td>
-      <td>三层 harness：Standard → Partner（制造业行业包：术语/护栏/行业默认参数，按行业声明匹配）→ Tenant（阈值/口径/护栏叠加）</td>
-      <td class="lnk">scene_7 + 租检 37/37</td><td>✅</td></tr>
+      <td>三层 harness：Standard → Partner（制造业行业包）→ Tenant；租户/行业配置有<b>管理端界面</b>，改完即生效（文件层为出厂默认，变更留痕），scene_10</td>
+      <td class="lnk">scene_7 / scene_10 + 租检 37/37</td><td>✅</td></tr>
     <tr><td class="mono">14</td><td>SaaS：<b>标品层/租户层隔离</b>，API / <b>Message</b> 扩展</td>
       <td>跨租隔离 + 成本对账；BO API 扩展（规格即工具）+ <b>消息订阅</b>（topic × webhook × HMAC，按租户隔离投递出平台，吊销即停）</td>
       <td class="lnk">scene_9 + tenant_checks</td><td>✅</td></tr>
@@ -421,23 +429,26 @@
   <h3 style="margin-top:26px">三个张力点（判断之间需要表态的地方）</h3>
   <div class="grid c3" style="margin-top:10px">
     <div class="card"><h4>A · 内生 vs 旁挂拓扑</h4>
-      <p>本仓拓扑是「Python 底座 + Java 存量」两套栈。判据不是进程同体，而是<b>管控复用</b>：
-      AI 与页面共享同一套权限/审计/幂等（三口径可验证）——底座优先是 AI 原生的合法路线。</p></div>
+      <p>本仓拓扑是「Python 底座 + Java 存量」两套栈。判断「内生」的依据是管控复用：
+      AI 与页面共享同一套权限、审计与幂等（三口径可以验证），而不是进程同体。
+      底座优先是 AI 原生的一条合法路线。</p></div>
     <div class="card"><h4>B · Ontology 的方向性</h4>
-      <p>判断 4（逻辑核心）与判断 5（元数据是来源）存在张力：元数据推导出的本体是「镜子」。
-      分阶段表述：先做<b>统一语义与校验核心</b>（已达成），再演进为<b>结构生成核心</b>（阶段二）。</p></div>
+      <p>判断 4（本体是逻辑核心）与判断 5（元数据是本体来源）之间存在张力：从元数据
+      推导出的本体只是一面镜子。本仓的表述是分阶段的：先做统一语义与校验核心
+      （已达成），结构生成核心留给阶段二。</p></div>
     <div class="card"><h4>C · 替换终局的对冲</h4>
-      <p>判断 12 的终局（替换部分传统执行）与判断 2（存量确定性）如何兼容？治理面在
-      <b>网关/合同层</b>而不在 Java——执行端换成任何东西，只要履行同一 BO 合同，管控面零改动。</p></div>
+      <p>判断 12 的终局（替换部分传统执行）如何与判断 2（存量确定性）兼容？答案在于
+      治理面放在网关与合同层而不在 Java：执行端换成任何实现，只要履行同一个 BO 合同，
+      管控面不需要改动。</p></div>
   </div>
   <h3 style="margin-top:22px">两条升格（本仓有、而 14 条没有的）</h3>
   <div class="grid c2" style="margin-top:10px">
     <div class="card"><h4>15 · 可验证性是一等公民</h4>
-      <p>50 锚点评测六类（含幻觉/诱导两个负向类）；30 条能力问题与评测用例<b>同源绑定</b>；
-      mock/replay/live 三态 + 按请求钉定——<b>连护栏本身都被评测</b>。</p></div>
+      <p>50 条锚点评测分六类，其中幻觉与诱导是两个负向类；30 条能力问题与评测用例
+      同源绑定；mock/replay/live 三态可按请求钉定。护栏本身也在被评测的范围内。</p></div>
     <div class="card"><h4>16 · 口径互证作为治理基础设施</h4>
-      <p>三口径权限对照、成本台账 vs 审计对账、四问自检——「监督者」角色的数据基础设施，
-      全部自动化可复跑。</p></div>
+      <p>三口径权限对照、成本台账与审计对账、四问自检，构成「监督者」角色需要的
+      数据基础设施，全部自动化、可复跑。</p></div>
   </div>
 </section>
 
@@ -459,7 +470,7 @@
     <div class="arrow">T2（场景∩Agent 清单）↓ &nbsp;&nbsp;↑ 挂起/唤醒（interrupt）</div>
     <div class="row">
       <div class="node hubn"><b>hub · erp-ai-hub</b><span>LangGraph 五场景图（AP 三图 + 采购域 + 跨域委派）+ 三层 harness 解析 + 事件/定时线程</span></div>
-      <div class="node hubn"><b>semantics · erp-ai-context</b><span>语义三段式 + 七查询工具 + 双租与行业包叠加 + 漂移检测</span></div>
+      <div class="node hubn"><b>semantics · erp-ai-context</b><span>语义三段式 + 七查询工具 + 双租与行业包叠加 + 配置存储（DB 层） + 漂移检测</span></div>
       <div class="node"><b>模型网关</b><span>GLM-5.3 live · mock · replay</span></div>
     </div>
     <div class="arrow">T3（单工具 · 60s · 委托链保留）</div>
@@ -476,34 +487,43 @@
   <div class="grid c3" style="margin-top:14px">
     <div class="card"><h4>逐跳收窄</h4>
       <p><span class="mono">T1[chat] → T2[场景∩清单] → T3[单工具 60s] → OT[单工具+参数指纹 120s]</span><br>
-      每跳权限是上跳子集，<code>act</code> 委托链单调增长，进审计与 trace。详见 <a href="token-design.md">令牌设计</a>。</p></div>
+      每跳权限是上一跳的子集，<code>act</code> 委托链单调增长，进审计与 trace。
+      详见 <a href="token-design.md">令牌设计</a>。</p></div>
     <div class="card"><h4>权限只在存量域</h4>
-      <p>T3 进 Java 后走与页面<b>同一个</b> <code>PermissionService</code>（租户/公司/组织三维）。
-      AI 链路零权限计算——权限对齐由 <code>PermissionParityTest</code> 保证。</p></div>
+      <p>T3 进 Java 后走与页面同一个 <code>PermissionService</code>（租户/公司/组织三维）。
+      AI 链路不做任何权限计算，对齐由 <code>PermissionParityTest</code> 保证。</p></div>
     <div class="card"><h4>三层 harness</h4>
-      <p>Standard → Partner → Tenant 确定性解析；Partner 层已落地<b>制造业行业包</b>（行业术语 +
-      行业护栏，按租户行业声明匹配，不跨行业串扰）；仅 <code>overridable</code> 资产可覆盖，
-      护栏只加严（放松类叠加被拒），<a href="http://localhost:8088/resolution" target="_blank" rel="noopener">WorkBuddy 解析查看器</a>可视化每次运行用了哪层哪版本。</p></div>
+      <p>Standard → Partner → Tenant 确定性解析。Partner 层已落地制造业行业包（行业术语与
+      行业护栏，按租户行业声明匹配）；只有标记 <code>overridable</code> 的资产可被覆盖，
+      护栏只能加严，放松类叠加会被拒绝。<a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器</a>展示每次运行用了哪层哪版本。</p></div>
     <div class="card"><h4>多领域 Agent 协同 <span class="tag">scene_8</span></h4>
-      <p>跨域归因走<b>显式委派</b>而非自由协商：ap-copilot 在注册表<b>协作清单</b>（delegates_to）
-      内声明 proc-copilot；网关 exchange 第七道校验（清单外 403）；子代理以<b>自己的 T2</b>
-      执行（最小权限），act 委托链增长 <span class="mono">[proc → ap → hub]</span> 经 T3 贯穿至存量域审计。</p>
+      <p>跨域归因走显式委派：ap-copilot 在注册表协作清单（delegates_to）里声明 proc-copilot，
+      网关 exchange 做第七道校验（清单外 403）；子代理用自己的 T2 执行，权限最小，
+      act 委托链 <span class="mono">[proc → ap → hub]</span> 经 T3 贯穿到存量域审计。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断：AP 归因 + 采购取证 → 供应商超开结论</a>
       </div></div>
     <div class="card"><h4>Message 扩展 <span class="tag">scene_9</span></h4>
-      <p>租户通过<b>消息订阅</b>扩展自己的系统（不动标品核心）：注册（topic × webhook × 签名密钥）→
-      领域事件按（租户 × topic）<b>隔离投递</b>出平台，HMAC-SHA256 签名可验、投递全程审计、
-      吊销即停；与形态④互补——事件进 Agent（平台内）vs 事件出平台（租户侧）。</p>
+      <p>租户通过消息订阅把领域事件接进自己的系统，不需要改动标品核心：注册
+      （topic × webhook × 签名密钥）后，事件按（租户 × topic）隔离投递出平台，
+      带 HMAC-SHA256 签名、逐次审计、吊销即停。与形态④互补：一个是事件进 Agent，
+      一个是事件出平台。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <span class="mono">python scripts/demo/scene_9.py</span>（本机起租户 webhook 接收器，现场看隔离投递）
+      </div></div>
+    <div class="card"><h4>配置即数据 <span class="tag">scene_10</span></h4>
+      <p>租户与行业配置有管理端界面：改大额阈值、切行业、调术语，保存即生效，
+      不需要重启或重建镜像。文件层是出厂默认，管理端写入 DB 层（首次写入时从文件
+      播种），「恢复出厂」回落文件层；每次变更记 who/when/what。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置页（wangwu 登录）</a> · 改完阈值回对话页立即验证口径
       </div></div>
   </div>
 </section>
 
-<!-- ============ 04 九幕 ============ -->
+<!-- ============ 04 十幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">04</span>九幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
+  <h2><span class="no">04</span>十幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
     <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
@@ -533,10 +553,13 @@
     <tr><td class="mono">scene_9</td><td><b>Message 扩展</b>：租户消息订阅（topic × webhook × HMAC）→ 领域事件按租户隔离投递出平台 → 吊销即停；与形态④互补（事件进 Agent vs 出平台）</td>
       <td><span class="pill code">事件</span></td><td class="mono">python scripts/demo/scene_9.py</td>
       <td class="lnk"><a href="demo-script.md">无浏览器面（管理侧 API + 本机 webhook，见剧本）</a></td></tr>
+    <tr><td class="mono">scene_10</td><td><b>产品化配置界面</b>：管理端改阈值/行业/术语，保存即生效（DB 层优先，出厂默认可回退）；权限判定与变更留痕</td>
+      <td><span class="pill write">配置</span></td><td class="mono">python scripts/demo/scene_10.py</td>
+      <td class="lnk"><a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置页 · wangwu</a><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">改完阈值回这里验证口径</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">九幕演示剧本</a>。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">十幕演示剧本</a>。
   </p>
 </section>
 
@@ -567,7 +590,7 @@ docker-compose ps          <span class="c"># 全部 Up/healthy 后（约 30-60 �
       <table>
         <tr><th>入口</th><th>地址</th><th>登录</th><th>看点</th></tr>
         <tr><td>WorkBuddy（形态②）</td><td class="mono"><a href="http://localhost:8088" target="_blank" rel="noopener">http://localhost:8088</a></td><td class="mono">lisi / demo123</td>
-          <td>OAuth 授权码登录 → 聊天（真实 GLM-5.3）→ 写请求出审批卡 → 换 <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">wangwu 批准</a>（三要素+快照）→ <a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器</a> → <a href="http://localhost:8088/notifications" target="_blank" rel="noopener">通知</a></td></tr>
+          <td>OAuth 授权码登录 → 聊天（真实 GLM-5.3）→ 写请求出审批卡 → 换 <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">wangwu 批准</a>（三要素+快照）→ <a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器</a> → <a href="http://localhost:8088/notifications" target="_blank" rel="noopener">通知</a>；wangwu 还能看到 <a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置</a>页</td></tr>
         <tr><td>ERP 页面（形态①）</td><td class="mono"><a href="http://localhost:8080/login" target="_blank" rel="noopener">http://localhost:8080/login</a></td><td class="mono">zhangsan / demo123</td>
           <td>发票列表（~50 条口径）+ 页内嵌 copilot + AI Command</td></tr>
         <tr><td>Jaeger</td><td class="mono"><a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">http://localhost:16687</a></td><td>—</td>
@@ -605,8 +628,8 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 <span class="c"># 汇总报告 → docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 九幕演示 + 无头 MCP（形态③）</span>
-python scripts/demo/scene_1.py   <span class="c"># … 至 scene_6</span>
+<span class="c"># 十幕演示 + 无头 MCP（形态③）</span>
+python scripts/demo/scene_1.py   <span class="c"># … 至 scene_10</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
   </div>
@@ -620,7 +643,7 @@ python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoice
         <div class="v"><div class="num">37/37</div><div class="lab">多租六项检验</div></div>
         <div class="v"><div class="num">2/2</div><div class="lab">预埋漂移检出</div></div>
         <div class="v"><div class="num">×100</div><div class="lab">事故口径放大倍数（50 vs 5050+）</div></div>
-        <div class="v"><div class="num">17/17</div><div class="lab">WorkBuddy 浏览器 E2E</div></div>
+        <div class="v"><div class="num">19/19</div><div class="lab">WorkBuddy 浏览器 E2E</div></div>
       </div>
     </div>
   </div>
@@ -648,7 +671,7 @@ erp-ai-context/         <span class="c">语义服务（三段式语义文件 + �
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
 workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
-scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 九幕演示 + 无头 CLI</span>
+scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 十幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
@@ -656,8 +679,8 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>九幕演示剧本</h4>
-      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 35 分钟节奏。</p></div>
+    <div class="card"><h4>十幕演示剧本</h4>
+      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 41 分钟节奏。</p></div>
     <div class="card"><h4>14 条判断对照分析</h4>
       <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 14 条架构判断 × 本仓逐条对照（一致性 / 张力 / 缺口 / 补齐记录）。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>
