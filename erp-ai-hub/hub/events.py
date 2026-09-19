@@ -83,6 +83,8 @@ def _handle(ev: dict, graph) -> bool:
                            "invoiceNo": invoice_no, "headless": True})
         gw.push_notification(tenant, "lisi", kind="event_diag", invoice_no=invoice_no,
                              summary=answer[:300])
+        # 租户消息分发（Message 扩展通道）：事件出平台，租户侧 webhook 按订阅接收
+        gw.dispatch_event(payload)
         print(f"[events] 无头诊断完成：{invoice_no}", flush=True)
     except Exception as e:  # noqa: BLE001
         print(f"[events] 无头诊断失败（{invoice_no}）：{e}", flush=True)

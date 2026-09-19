@@ -78,6 +78,18 @@ _DDL = [
     # 存量库补列（协作清单：跨域委派的目标代理白名单，声明式种子拥有）
     "ALTER TABLE agents ADD COLUMN IF NOT EXISTS delegates_to TEXT NOT NULL DEFAULT '[]'",
     """
+    CREATE TABLE IF NOT EXISTS subscriptions (
+        subscription_id TEXT PRIMARY KEY,
+        tenant_id       TEXT NOT NULL,
+        topic           TEXT NOT NULL,
+        endpoint_url    TEXT NOT NULL,
+        secret          TEXT NOT NULL,
+        status          TEXT NOT NULL DEFAULT 'ACTIVE',
+        revoked_at      TIMESTAMPTZ,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+    """,
+    """
     CREATE TABLE IF NOT EXISTS service_clients (
         client_id     TEXT PRIMARY KEY,
         client_secret TEXT NOT NULL,

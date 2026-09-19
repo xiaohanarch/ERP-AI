@@ -16,6 +16,7 @@ from app.mcp.tool_registry import tool_registry
 from app.modelgw import routes as modelgw_routes
 from app.platform_routes import router as platform_router
 from app.registry import routes as registry_routes
+from app.subscriptions import routes as subscription_routes
 
 app = FastAPI(title="erp-ai-action AI 网关", version="1.0.0",
               description="Agent 注册中心 / 逐跳令牌交换 / MCP 代理与拦截链 / 审批 / 模型网关 / 审计与成本")
@@ -37,6 +38,7 @@ app.include_router(cost_routes.router)
 app.include_router(modelgw_routes.router)
 app.include_router(chat_router)
 app.include_router(platform_router)
+app.include_router(subscription_routes.router)
 
 
 @app.on_event("startup")

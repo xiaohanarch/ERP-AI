@@ -1,6 +1,6 @@
 # 五分钟自检报告
 
-- 生成时间：2026-09-18 17:10:33
+- 生成时间：2026-09-18 19:52:54
 - 服务健康：全部可达
 - 版本戳：spec `1.1.0` / ruleset `AP-RS-1.2.0` / seed `ap-seed-1.0.0` / 语义 `ap-sem-1.0.0` / 模型 `glm-5.3`（live）
 
@@ -22,28 +22,28 @@
 
 | 时间 | 租户 | 用户 | Agent | 动作 | 结果 | 错误码 | 审批 |
 |---|---|---|---|---|---|---|---|
-| 2026-09-19T00:10:32 | - | - | - | agent.roster.view | SUCCESS | - | - |
-| 2026-09-19T00:10:21 | T-UNI | qianqi | agent:uni-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
-| 2026-09-19T00:10:21 | T-UNI | qianqi | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:21 | T-EAST | lisi | agent:ap-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
-| 2026-09-19T00:10:21 | T-EAST | lisi | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:19 | T-UNI | zhaoliu | agent:uni-copilot | ap.invoice.checkValidation | ERROR | AP.INVOICE_NOT_FOUND | - |
-| 2026-09-19T00:10:19 | T-UNI | zhaoliu | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:19 | T-EAST | zhangsan | agent:ap-copilot | ap.invoice.checkValidation | ERROR | AP.INVOICE_NOT_FOUND | - |
-| 2026-09-19T00:10:18 | T-EAST | zhangsan | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:17 | T-UNI | qianqi | agent:uni-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
-| 2026-09-19T00:10:17 | T-UNI | qianqi | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:16 | T-EAST | lisi | agent:ap-copilot | ap.invoice.getMatchDetail | SUCCESS | - | - |
-| 2026-09-19T00:10:16 | T-EAST | lisi | agent:ap-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
-| 2026-09-19T00:10:16 | T-EAST | lisi | - | model_call | SUCCESS | - | - |
-| 2026-09-19T00:10:15 | T-UNI | qianqi | agent:uni-batch | semantic.metric.get | SUCCESS | - | - |
+| 2026-09-19T02:52:53 | - | - | - | agent.roster.view | SUCCESS | - | - |
+| 2026-09-19T02:52:48 | T-UNI | qianqi | agent:uni-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
+| 2026-09-19T02:52:48 | T-UNI | qianqi | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:47 | T-EAST | lisi | agent:ap-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
+| 2026-09-19T02:52:47 | T-EAST | lisi | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:45 | T-UNI | zhaoliu | agent:uni-copilot | ap.invoice.checkValidation | ERROR | AP.INVOICE_NOT_FOUND | - |
+| 2026-09-19T02:52:45 | T-UNI | zhaoliu | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:44 | T-EAST | zhangsan | agent:ap-copilot | ap.invoice.checkValidation | ERROR | AP.INVOICE_NOT_FOUND | - |
+| 2026-09-19T02:52:44 | T-EAST | zhangsan | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:43 | T-UNI | qianqi | agent:uni-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
+| 2026-09-19T02:52:43 | T-UNI | qianqi | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:42 | T-EAST | lisi | agent:ap-copilot | ap.invoice.getMatchDetail | SUCCESS | - | - |
+| 2026-09-19T02:52:42 | T-EAST | lisi | agent:ap-copilot | ap.invoice.checkValidation | SUCCESS | - | - |
+| 2026-09-19T02:52:42 | T-EAST | lisi | - | model_call | SUCCESS | - | - |
+| 2026-09-19T02:52:41 | T-UNI | qianqi | agent:uni-batch | semantic.metric.get | SUCCESS | - | - |
 
 ## Q3 有没有异常？（拦截与拒绝分布）
 
-- 近 500 条审计中拒绝/错误 9 条：
-  - `AP.INVOICE_NOT_FOUND` × 6
-  - `AP.PERMISSION_DENIED` × 2
-  - `AP.INVOICE_IN_DRAFT` × 1
+- 近 500 条审计中拒绝/错误 18 条：
+  - `AP.INVOICE_NOT_FOUND` × 12
+  - `AP.PERMISSION_DENIED` × 4
+  - `AP.INVOICE_IN_DRAFT` × 2
 - 其中护栏拦截（诱导/越权话术）0 条 —— 拦截即机制生效，非事故。
 - 评测锚点：full 档 50/50 通过（全绿）
 
@@ -51,8 +51,8 @@
 
 | 租户 | 调用数 | token 合计 | 审计对账 |
 |---|---|---|---|
-| T-EAST | 769 | 90,225 | 一致 |
-| T-UNI | 179 | 17,890 | 一致 |
+| T-EAST | 845 | 102,269 | 一致 |
+| T-UNI | 192 | 19,995 | 一致 |
 
 ---
 结论：四问 全部可答。

@@ -32,4 +32,11 @@ public class EventController {
         outboxService.ack(idList);
         return Map.of("acked", idList.size());
     }
+
+    /** 事件重投（订阅方调试/补投）：注入 redelivered 标记后走首发同链路。 */
+    @PostMapping("/republish")
+    public Map<String, Object> republish(@RequestBody Map<String, Object> body) {
+        String eventKey = String.valueOf(body.get("eventKey") == null ? "" : body.get("eventKey"));
+        return outboxService.republish(eventKey);
+    }
 }
