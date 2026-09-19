@@ -1,6 +1,6 @@
-# 九幕演示剧本
+# 十幕演示剧本
 
-> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_9.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
+> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_10.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
 > 也有**浏览器人工路径**（URL 见各幕）。讲解词对应总纲第 13 章「工程之外还有五个问题」的叙事落点。
 > 前置：compose 已启动（见 [README](../README.md)），模型模式默认 mock/replay，无需真实模型 key。
 
@@ -17,8 +17,9 @@
 | 7 | 行业包与定时触发：Partner 层 + Scheduler | `python scripts/demo/scene_7.py` | ch02/ch04 接入形态与租户 harness |
 | 8 | 多领域 Agent 协同：AP 委派采购域跨域归因 | `python scripts/demo/scene_8.py` | ch02/ch05 架构与鉴权授权 |
 | 9 | Message 扩展：租户消息订阅与隔离投递 | `python scripts/demo/scene_9.py` | ch04/ch14 租户隔离与扩展 |
+| 10 | 产品化配置界面：配置即数据，改完即生效 | `python scripts/demo/scene_10.py` | ch04/ch13 租户 harness 与产品化 |
 
-顺序跑：`for i in 1 2 3 4 5 6 7 8 9; do python scripts/demo/scene_$i.py || break; done`
+顺序跑：`for i in $(seq 1 10); do python scripts/demo/scene_$i.py || break; done`
 
 ---
 
@@ -204,6 +205,31 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 
 ---
 
+## 第 10 幕：产品化配置界面 —— 配置即数据，改完即生效
+
+**讲解词**：此前租户/行业配置是 YAML 文件级（改文件 → 重建镜像 → 重启）。产品化之后，
+实施顾问在**管理端**改配置：把 T-EAST 的大额风险阈值 50 万调成 20 万——保存即生效，
+下一问筛查立即按新口径命中；把 T-UNI 的行业从贸易切到制造业——行业包（术语 + 护栏）
+对 T-UNI 立即生效（hub 行业声明 10s 缓存）。配置语义与 SaaS 产品一致：**文件层 = 出厂
+默认**（对照展示），**DB 层 = 管理端当前配置**（首次写入播种自文件，此后以 DB 为准），
+**恢复出厂** = 回落文件层；每次变更记 change log（who/when/what）+ 网关审计。
+权限在网关判定：租户配置管理员（演示口径：审批人兼任，wangwu/sunba）仅本租，
+平台管理员任意租——非管理员与跨租保存一律 403。
+
+**断言要点**（scene_10.py）：
+- whoami 的 configAdmin 判定（wangwu/sunba 是，lisi 不是）；
+- 读取出厂默认（source=file，阈值 500000）→ 保存 20 万（source=db，版本号）；
+- 语义工具与端到端筛查**立即**按新口径（threshold=200000，来源=管理端；筛查命中变化）；
+- 行业切换：术语立即命中制造业包（partner 层）；护栏随切换生效（≤10s 缓存）；
+- 负向：非管理员 / 跨租保存均 403；
+- 变更留痕（change log + 审计 config.update）；
+- 恢复出厂（DELETE 回落文件层）+ 护栏回落验证（保证场景可重跑、不污染租检）。
+
+**浏览器路径**：http://localhost:8088（wangwu 登录）→ 侧栏「租户配置」——
+改行业/阈值/术语 → 保存 → 切到「对话」立即验证新口径；页面含出厂默认对照与变更记录。
+
+---
+
 ## 附录：三种 Agent 形态的现场入口
 
 - **形态③ 无头 MCP**：`python scripts/headless_mcp.py list` / `call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'`
@@ -213,7 +239,7 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 - **形态⑤ 定时触发**：hub `scheduler.py` 周期代表 ap-batch 全量阻断筛查（钉 mock 确定性
   通道），结果有变化才推送（WorkBuddy Notifications 可见 SCHEDULED_BATCH 类）。
 
-## 讲解节奏建议（约 38 分钟）
+## 讲解节奏建议（约 41 分钟）
 
 1. 幕 1-2 读侧（10 分钟）：先讲事故，再讲机制对齐，最后 completeness；
 2. 幕 3-4 治理（6 分钟）：强调「判定层不在模型」与「吊销即时性」；
@@ -221,4 +247,5 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 4. 幕 6 写路径（5 分钟）：浏览器走 WorkBuddy 旅程，脚本只做兜底断言；
 5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查；
 6. 幕 8 跨域协同（4 分钟）：先展示 AP 域答不出的部分，再看委派后的综合结论与审计链；
-7. 幕 9 消息扩展（3 分钟）：动画「消息扩展」模式讲解，现场跑 scene_9 看隔离投递。
+7. 幕 9 消息扩展（3 分钟）：动画「消息扩展」模式讲解，现场跑 scene_9 看隔离投递；
+8. 幕 10 配置界面（3 分钟）：浏览器现场改阈值/行业，保存后立即回对话验证口径变化。
