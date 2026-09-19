@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Approvals from './pages/Approvals'
 import Callback from './pages/Callback'
 import Chat from './pages/Chat'
+import Config from './pages/Config'
 import Login from './pages/Login'
 import Notifications from './pages/Notifications'
 import Resolution from './pages/Resolution'
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/approvals" element={<Approvals />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/resolution" element={<Resolution />} />
+          <Route path="/config" element={<Config />} />
           <Route path="*" element={<Navigate to="/chat" replace />} />
         </Route>
       </Routes>

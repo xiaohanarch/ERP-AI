@@ -6,6 +6,36 @@ export interface WhoAmI {
   azp: string
   displayName?: string
   scope: string[]
+  configAdmin?: boolean
+}
+
+/** 租户叠加（与 erp-ai-context overlays 同构：industry / parameters / terms / metrics）。 */
+export interface TenantOverlay {
+  tenant_id?: string
+  industry?: string
+  parameters?: Record<string, { value: unknown; source?: string; description?: string }>
+  terms?: { business: string; semantic: string; note?: string }[]
+  metrics?: Record<string, { formula?: string; includes_accrual?: boolean; note?: string }>
+}
+
+/** 租户配置（管理端）：source=db 为管理端当前配置，file 为出厂默认。 */
+export interface TenantConfig {
+  tenantId: string
+  source: 'db' | 'file'
+  version: number | null
+  updatedBy: string | null
+  updatedAt: string | null
+  config: TenantOverlay | null
+  fileDefault: TenantOverlay | null
+}
+
+export interface ConfigChange {
+  id: number
+  actor: string | null
+  action: string
+  patch: Record<string, unknown> | null
+  version: number | null
+  ts: string | null
 }
 
 export interface ToolEvent {
