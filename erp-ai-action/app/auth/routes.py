@@ -151,10 +151,17 @@ def whoami(request: Request):
 # ---------------------------------------------------------------- 令牌交换（T2）
 @router.post("/gw/auth/exchange")
 def exchange(request: Request, body: dict):
-    """hub -> 网关：换取场景级 T2。拦截链：注册表 -> 吊销 -> 租户 -> 场景 -> scope -> SoD。"""
+    """hub -> 网关：换取场景级 T2。
+
+    拦截链：注册表 -> 吊销 -> 租户 -> 场景 -> scope -> SoD -> 委派授权。
+    delegatedBy（可选）：Agent 间委派 —— 委派方须在册/在期/同租户，且目标代理
+    在委派方的协作清单（agents.delegates_to）内；T2 的 act 委托链随之增长
+    （子代理 -> 委派方代理 -> hub），并经 T3 贯穿至存量域审计。
+    """
     agent_id = str(body.get("agentId", "")).strip()
     scene = str(body.get("scene", "")).strip()
     tools = body.get("tools") or []
+    delegated_by = str(body.get("delegatedBy") or "").strip()
 
     # 主体来源 A：网关铸造的 IN 令牌（用户会话链路）
     auth = request.headers.get("Authorization", "")
@@ -165,7 +172,7 @@ def exchange(request: Request, body: dict):
             username = claims["sub"][2:] if claims["sub"].startswith("u-") else claims["sub"]
             tenant = claims.get("tid")
 
-    # 主体来源 B：后端客户凭据（无头/事件链路，代表指定用户）
+    # 主体来源 B：后端客户凭据（无头/事件/委派链路，代表指定用户）
     if username is None:
         client_id = body.get("clientId")
         client_secret = body.get("clientSecret")
@@ -202,8 +209,31 @@ def exchange(request: Request, body: dict):
     conflict = registry.sod_conflict_of(allowed)
     if conflict:
         return sod_conflict(conflict)
+    # 7) Agent 间委派授权：委派方在册/在期/同租户 + 目标在协作清单内
+    act_chain = None
+    if delegated_by:
+        delegator = registry.get_agent(delegated_by)
+        if delegator is None:
+            return gw_json(403, "GW.DELEGATION_NOT_ALLOWED",
+                           f"委派方 {delegated_by} 未注册", "gateway_policy")
+        if delegator["status"] != "ACTIVE":
+            return gw_json(403, "GW.DELEGATION_NOT_ALLOWED",
+                           f"委派方 {delegated_by} 已吊销/停用", "gateway_policy")
+        if delegator["tenant_id"] != tenant:
+            return gw_json(403, "GW.DELEGATION_NOT_ALLOWED",
+                           f"委派方租户({delegator['tenant_id']})与用户租户({tenant})不符", "gateway_policy")
+        delegates_to = json.loads(delegator.get("delegates_to") or "[]")
+        if agent_id not in delegates_to:
+            return gw_json(403, "GW.DELEGATION_NOT_ALLOWED",
+                           f"代理 {delegated_by} 的协作清单不包含 {agent_id}（跨域委派须在注册表声明）",
+                           "gateway_policy")
+        # act 委托链增长（RFC 8693 嵌套）：子代理 -> 委派方代理 -> hub
+        act_chain = {"sub": f"agent:{agent_id}",
+                     "act": {"sub": f"agent:{delegated_by}", "act": {"sub": "erp-ai-hub"}}}
 
-    token = ts.mint_t2(username, tenant, agent_id, allowed, scene)
+    token = ts.mint_t2(username, tenant, agent_id, allowed, scene, act_chain=act_chain)
+    chain = act_chain or {"sub": f"u-{username}",
+                          "act": {"sub": f"agent:{agent_id}", "act": {"sub": "erp-ai-hub"}}}
     return {"token": token, "tokenType": "Bearer", "expiresIn": 900, "scope": allowed,
-            "agent": agent_id, "scene": scene, "delegationChain": {
-                "sub": f"u-{username}", "act": {"sub": f"agent:{agent_id}", "act": {"sub": "erp-ai-hub"}}}}
+            "agent": agent_id, "scene": scene, "delegatedBy": delegated_by or None,
+            "delegationChain": chain}
