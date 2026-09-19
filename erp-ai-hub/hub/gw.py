@@ -32,13 +32,20 @@ class GwToolError(Exception):
 
 # ---------------------------------------------------------------- 令牌交换
 def exchange(agent_id: str, scene: str, tools: list[str], username: str,
-             tenant: str | None) -> str:
-    """后端客户凭据换 T2（拦截链在网关：注册表/吊销/租户/场景/scope/SoD）。"""
+             tenant: str | None, delegated_by: str | None = None) -> str:
+    """后端客户凭据换 T2（拦截链在网关：注册表/吊销/租户/场景/scope/SoD/委派授权）。
+
+    delegated_by：Agent 间委派（跨域协同）——网关校验委派方在册/在期/同租户且
+    目标代理在其协作清单内，T2 的 act 委托链随之增长。
+    """
+    body = {"agentId": agent_id, "scene": scene, "tools": tools,
+            "clientId": settings.hub_client_id, "clientSecret": settings.hub_client_secret,
+            "username": username, "tenantId": tenant}
+    if delegated_by:
+        body["delegatedBy"] = delegated_by
     resp = httpx.post(
         f"{settings.gw_base}/gw/auth/exchange",
-        json={"agentId": agent_id, "scene": scene, "tools": tools,
-              "clientId": settings.hub_client_id, "clientSecret": settings.hub_client_secret,
-              "username": username, "tenantId": tenant},
+        json=body,
         timeout=15)
     if resp.status_code != 200:
         err = {}

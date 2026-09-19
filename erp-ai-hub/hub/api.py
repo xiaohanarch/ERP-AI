@@ -119,7 +119,8 @@ def chat_stream(request: Request, body: dict):
                   _sse({"type": "done"})]),
             media_type="text/event-stream", headers=_SSE_HEADERS)
 
-    scene_agents = {"ap.diag": "ap-copilot", "ap.batch": "ap-batch", "ap.taxcode": "ap-copilot"}
+    scene_agents = {"ap.diag": "ap-copilot", "ap.batch": "ap-batch", "ap.taxcode": "ap-copilot",
+                    "proc.diag": "proc-copilot", "xdom.diag": "ap-copilot"}
     default_agent = scene_agents.get(scene)
     agent = agent_for(default_agent, tenant) if default_agent else None
     return StreamingResponse(

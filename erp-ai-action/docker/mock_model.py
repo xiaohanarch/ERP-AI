@@ -12,7 +12,9 @@
   ap.batch   -> {"intent":"batch_screen","reply":"..."}
   ap.taxcode -> {"intent":"suggest_tax_code","invoiceNo":"...","taxCode":"...","reason":"..."}
   ap.event   -> {"intent":"event_diag","invoiceNo":"...","reply":"..."}
-  无发票号   -> {"intent":"clarify","reply":"请提供发票号..."}
+  proc.diag  -> {"intent":"po_lookup","poNo":"PO-A-0001","reply":"..."}
+  xdom.diag  -> {"intent":"diagnose_cross","invoiceNo":"...","reply":"..."}
+  无单号     -> {"intent":"clarify","reply":"请提供发票号/采购订单号..."}
 """
 from __future__ import annotations
 
@@ -22,7 +24,17 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 INVOICE_NO = re.compile(r"INV-[A-Z0-9\-]+")
+PO_NO = re.compile(r"PO-[A-Z0-9\-]+")
 RULESET_VERSION = "AP-RS-1.2.0"
+
+
+def extract_po(messages: list[dict]) -> str | None:
+    for m in reversed(messages or []):
+        if m.get("role") == "user":
+            found = PO_NO.search(m.get("content", ""))
+            if found:
+                return found.group(0)
+    return None
 
 
 def extract_invoice(messages: list[dict]) -> str | None:
@@ -43,12 +55,37 @@ def last_user_text(messages: list[dict]) -> str:
 
 def scripted_content(scene: str, messages: list[dict]) -> str:
     inv = extract_invoice(messages)
+    po = extract_po(messages)
     text = last_user_text(messages)
 
     if scene == "ap.batch":
         return json.dumps({
             "intent": "batch_screen",
             "reply": "好的，我来筛查当前权限范围内被阻断的发票，并统计主要原因。",
+        }, ensure_ascii=False)
+
+    if scene == "proc.diag":
+        if po:
+            return json.dumps({
+                "intent": "po_lookup",
+                "poNo": po,
+                "reply": f"好的，我查询采购订单 {po} 的详情与收货情况。",
+            }, ensure_ascii=False)
+        return json.dumps({
+            "intent": "clarify",
+            "reply": "请提供采购订单号（如 PO-A-0001）。",
+        }, ensure_ascii=False)
+
+    if scene == "xdom.diag":
+        if inv:
+            return json.dumps({
+                "intent": "diagnose_cross",
+                "invoiceNo": inv,
+                "reply": f"好的，我对发票 {inv} 做跨域归因：先 AP 侧诊断，再委派采购域取证。",
+            }, ensure_ascii=False)
+        return json.dumps({
+            "intent": "clarify",
+            "reply": "请提供发票号（如 INV-A-001）。",
         }, ensure_ascii=False)
 
     if scene == "ap.taxcode":
