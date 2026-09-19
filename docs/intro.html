@@ -390,11 +390,11 @@
       <td>内生 = 共享同一套本体/权限/审计与幂等（底座式），而非进程同体；BO 工具与页面同权限组件</td>
       <td class="lnk">PermissionParityTest</td><td>✅</td></tr>
     <tr><td class="mono">4</td><td><b>Ontology</b> = 统一语义模型 + 逻辑核心</td>
-      <td>语义三段式（投影/增量/原生）= 统一语义与校验核心（术语/指标/规则/护栏/能力问题唯一真相源）；「结构生成核心」为阶段二愿景</td>
-      <td class="lnk">scene_5 + 漂移检测</td><td>⚠️ 分阶段</td></tr>
+      <td>统一语义与校验核心（术语/指标/规则/护栏/能力问题唯一真相源）已达成；<b>本体驱动结构第一切片已落地</b>：增量段派生字段 → 构建期生成 → BO API（Java 零字段特定逻辑）</td>
+      <td class="lnk">scene_5 + scene_11</td><td>⚠️ 分阶段</td></tr>
     <tr><td class="mono">5</td><td><b>Metadata</b> 是 Ontology 的输入与来源</td>
-      <td>投影段实时取存量元数据；漂移检测把「本体引用与元数据一致」做成可检验不变式（预埋漂移必检出）</td>
-      <td class="lnk"><span class="mono">drift_check.py</span></td><td>✅</td></tr>
+      <td><b>自动喂养已落地</b>：投影段实体清单/标签/枚举由存量元数据实时生成（人工只维护业务术语口径层）；漂移检测把一致性做成可检验不变式（含术语目标与派生基字段两条新规则）</td>
+      <td class="lnk"><span class="mono">drift_check.py</span> + scene_11</td><td>✅</td></tr>
     <tr><td class="mono">6</td><td><b>多领域 Agent</b> + 协同组合</td>
       <td>AP × 采购跨域委派：注册表协作清单 + act 委托链增长 + 子代理最小权限 T2；清单外委派 403</td>
       <td class="lnk"><a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">scene_8 跨域诊断</a></td>
@@ -521,9 +521,9 @@
   </div>
 </section>
 
-<!-- ============ 04 十幕 ============ -->
+<!-- ============ 04 十一幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">04</span>十幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
+  <h2><span class="no">04</span>十一幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
     <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
@@ -556,10 +556,13 @@
     <tr><td class="mono">scene_10</td><td><b>产品化配置界面</b>：管理端改阈值/行业/术语，保存即生效（DB 层优先，出厂默认可回退）；权限判定与变更留痕</td>
       <td><span class="pill write">配置</span></td><td class="mono">python scripts/demo/scene_10.py</td>
       <td class="lnk"><a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置页 · wangwu</a><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">改完阈值回这里验证口径</a></td></tr>
+    <tr><td class="mono">scene_11</td><td><b>元数据喂养 + 本体驱动</b>：投影段由存量元数据实时生成（未手写实体自动出现）；本体派生字段 → 构建期生成 → BO API（Java 零字段逻辑）；漂移新增两条不变式</td>
+      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_11.py</td>
+      <td class="lnk"><a href="demo-script.md">无浏览器面（无头链路调用，见剧本）</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">十幕演示剧本</a>。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">十一幕演示剧本</a>。
   </p>
 </section>
 
@@ -628,8 +631,8 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 <span class="c"># 汇总报告 → docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 十幕演示 + 无头 MCP（形态③）</span>
-python scripts/demo/scene_1.py   <span class="c"># … 至 scene_10</span>
+<span class="c"># 十一幕演示 + 无头 MCP（形态③）</span>
+python scripts/demo/scene_1.py   <span class="c"># … 至 scene_11</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
   </div>
@@ -671,7 +674,7 @@ erp-ai-context/         <span class="c">语义服务（三段式语义文件 + �
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
 workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
-scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 十幕演示 + 无头 CLI</span>
+scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 十一幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
@@ -679,8 +682,8 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>十幕演示剧本</h4>
-      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 41 分钟节奏。</p></div>
+    <div class="card"><h4>十一幕演示剧本</h4>
+      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 45 分钟节奏。</p></div>
     <div class="card"><h4>14 条判断对照分析</h4>
       <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 14 条架构判断 × 本仓逐条对照（一致性 / 张力 / 缺口 / 补齐记录）。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>

@@ -1,17 +1,22 @@
 # ============================================================
 # 语义文件：AP 应付发票域（三段式：投影 / 增量 / 原生）
 # ============================================================
-#  - 投影段：业务术语 -> 实体/字段（实时取存量元数据 + 合并版本号）
-#  - 增量段：语义层新增（派生字段/派生指标/规则引用）—— 漂移检测比对对象
+#  - 投影段：人工口径层（业务术语/维度分组——元数据推不出的东西）+ 冷启动回退清单；
+#             实体清单/标签/枚举由存量元数据自动生成（loader.effective_projection），
+#             存量新增实体自动出现在投影段，不需要改本文件（元数据自动喂养）。
+#  - 增量段：语义层新增（派生字段/派生指标/规则引用）—— 漂移检测比对对象；
+#             带 compute 的派生字段经构建期生成器产出 derived-fields.json，
+#             由 Java 通用求值引擎暴露为 BO 操作（本体驱动结构）。
 #  - 原生段：存量 BO 操作直通（规格即工具：boapi-spec/bo-ap.yaml）
 semantics:
   name: ap-invoice
-  version: ap-sem-1.0.0
+  version: ap-sem-1.1.0
   description: 应付发票域语义层（阻断归因 / 批量筛查 / 税码补全）
   owner: erp-ai-context
   domain: AP
 
-  # ==================== 投影段（projection） ====================
+  # ==================== 投影段（projection：人工口径层） ====================
+  # 实体清单仅为 /metadata 不可达时的冷启动回退；生效清单见 effective_projection()。
   projection:
     entities:
       - entity: Invoice
@@ -34,12 +39,20 @@ semantics:
   #   预埋漂移（演示口径，drift_check 必须报出）：
   #     1) derived_field accrual_flag —— 元数据现状字段名是 is_accrual；
   #     2) 规则引用 AP.TAX.RATE_CHECK —— 存量规则清单中不存在。
+  #   带 compute 的派生字段不查「与存量字段同名」，改查基字段存在性（喂养校验驱动）。
   increment:
     derived_fields:
       - name: accrual_flag
         entity: Invoice
         type: boolean
         description: 暂估标记（引用了存量字段，但存量字段名为 is_accrual —— 预埋漂移）
+      - name: unpaid_cny
+        entity: Invoice
+        type: number
+        unit: CNY
+        description: 应付未付金额（发票含税金额减已付金额）
+        compute: { op: subtract, left: amount_cny, right: paid_cny }
+        formula: amount_cny - paid_cny
     metrics:
       - name: large_risk_amount
         description: 大额风险发票口径（阈值来自 A0 租户叠加，随租户不同）
@@ -68,6 +81,7 @@ semantics:
       - ap.invoice.checkValidation
       - ap.invoice.listBlocked
       - ap.invoice.getMatchDetail
+      - ap.invoice.getDerivedField
       - ap.balance.query
       - ap.invoice.applyTaxCode
       - ap.payment.execute

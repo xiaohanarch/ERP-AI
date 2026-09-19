@@ -85,6 +85,45 @@ def load_partner(tenant_id: str | None) -> dict | None:
     return None
 
 
+def effective_projection() -> dict:
+    """投影段 = 生成基础层 + 人工口径层（元数据自动喂养的落点）。
+
+    - 生成基础层：实体清单/标签/字段数/枚举，取自存量元数据 /metadata（实时）——
+      存量新增实体，投影段自动出现，不需要改语义文件；
+    - 人工口径层：业务术语（进货单 -> PO 这类元数据推不出的口径）与维度分组，
+      来自语义文件的 projection 段（人只写机器推不出来的东西）；
+    - 冷启动回退：/metadata 不可达时，用语义文件里的静态实体清单（同 live_metadata 模式）。
+    """
+    sem = load_semantics()
+    curated = sem.get("projection", {}) or {}
+    live = live_metadata()
+    live_entities = (live or {}).get("entities") or {}
+    if not live_entities:
+        fallback = {**curated, "source": "fallback"}
+        fallback["note"] = "存量元数据不可达：实体清单为语义文件冷启动回退"
+        return fallback
+    curated_terms: dict[str, list[str]] = {
+        str(e.get("entity")): list(e.get("terms") or [])
+        for e in curated.get("entities", [])}
+    entities = []
+    for name, meta in live_entities.items():
+        entities.append({
+            "entity": name,
+            "terms": curated_terms.get(name, []),
+            "label": meta.get("label"),
+            "fieldCount": len(meta.get("fields", [])),
+        })
+    live_enums = (live or {}).get("enums") or {}
+    return {
+        "entities": entities,
+        "dimensions": curated.get("dimensions", []),
+        "enums": list(live_enums.keys()) if live_enums else curated.get("enums", []),
+        "source": "generated",
+        "metaVersion": (live or {}).get("ruleSetVersion"),
+        "note": "实体清单/枚举由存量元数据生成（自动喂养）；术语与维度为人工口径层",
+    }
+
+
 def live_metadata() -> dict | None:
     """存量元数据现状（投影段实时取数 + 漂移比对基准）。不可达时 None。"""
     def _fetch():

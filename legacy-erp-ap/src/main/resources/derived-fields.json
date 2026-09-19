@@ -1,0 +1,19 @@
+{
+  "semanticVersion": "ap-sem-1.1.0",
+  "generatedBy": "scripts/gen_derived_fields.py（本体增量段 -> 派生字段定义；生成物，勿手改；本体改定义后重跑本脚本并重建 legacy-erp-ap）",
+  "derivedFields": [
+    {
+      "name": "unpaid_cny",
+      "entity": "Invoice",
+      "type": "number",
+      "unit": "CNY",
+      "description": "应付未付金额（发票含税金额减已付金额）",
+      "compute": {
+        "op": "subtract",
+        "left": "amount_cny",
+        "right": "paid_cny"
+      },
+      "formula": "amount_cny - paid_cny"
+    }
+  ]
+}

@@ -11,10 +11,23 @@ FAKE_LIVE = {
             {"name": "invoice_no", "type": "string", "label": "发票号"},
             {"name": "supplier", "type": "string", "label": "供应商"},
             {"name": "amount_cny", "type": "number", "label": "金额"},
+            {"name": "paid_cny", "type": "number", "label": "已付金额"},
             {"name": "is_accrual", "type": "boolean", "label": "暂估标记"},
         ]},
         "Supplier": {"label": "供应商", "fields": [
             {"name": "supplier_code", "type": "string", "label": "供应商编码"},
+        ]},
+        "PurchaseOrder": {"label": "采购订单", "fields": [
+            {"name": "po_no", "type": "string", "label": "订单号"},
+        ]},
+        "GoodsReceipt": {"label": "收货单", "fields": [
+            {"name": "gr_no", "type": "string", "label": "收货单号"},
+        ]},
+        "BudgetOccupancy": {"label": "预算占用", "fields": [
+            {"name": "period", "type": "string", "label": "会计期间"},
+        ]},
+        "InvoiceTaxChange": {"label": "税码变更", "fields": [
+            {"name": "invoice_no", "type": "string", "label": "发票号"},
         ]},
     },
     "rules": [
@@ -41,17 +54,22 @@ def check(name, cond, detail=""):
         failures.append(name)
 
 
-# 1) 实体清单
+# 1) 实体清单（元数据自动喂养：清单来自 live，术语来自人工口径层）
 r, layer = tools.tool_metadata_entities({}, None)
-check("entities", len(r["entities"]) == 6 and r["liveMetadata"]["available"], f"n={len(r['entities'])}")
+check("entities:generated", r["projectionSource"] == "generated"
+      and len(r["entities"]) == 6 and r["liveMetadata"]["available"],
+      f"n={len(r['entities'])} src={r['projectionSource']}")
+check("entities:terms-attached",
+      any(e["entity"] == "Invoice" and "发票" in e["terms"] for e in r["entities"]))
 
-# 2) 字段（实体名 + 中文术语）
+# 2) 字段（实体名 + 中文术语；live 实体名直接可查——含口径层没写的实体）
 r, _ = tools.tool_metadata_fields({"entity": "Invoice"}, None)
-check("fields:live", r["fieldCount"] == 4, f"n={r['fieldCount']}")
+check("fields:live", r["fieldCount"] == 5, f"n={r['fieldCount']}")
 r2, _ = tools.tool_metadata_fields({"entity": "发票"}, None)
 check("fields:term", r2["entity"] == "Invoice", r2["entity"])
 r3, _ = tools.tool_metadata_fields({"entity": "Invoice"}, None)
 check("fields:derived", any(d["name"] == "accrual_flag" for d in r3["derivedFields"]))
+check("fields:derived-computed", any(d["name"] == "unpaid_cny" for d in r3["derivedFields"]))
 try:
     tools.tool_metadata_fields({"entity": "Nope"}, None)
     check("fields:unknown", False, "应抛 ToolError")
@@ -101,7 +119,7 @@ check("task:miss", r["matched"] is False, f"score={r['score']}")
 
 # 6) 操作解释：列表 + 单个 + 未知
 r, _ = tools.tool_operation_explain({}, None)
-check("op:list", len(r["operations"]) == 6, f"n={len(r['operations'])}")
+check("op:list", len(r["operations"]) == 9, f"n={len(r['operations'])}")
 r, _ = tools.tool_operation_explain({"operation": "ap.invoice.applyTaxCode"}, None)
 check("op:apply", r["irreversible"] is True and r["sodGroup"] == "ap-tax-write"
       and "GW.APPROVAL_REQUIRED" in str(r["approvalPolicy"]))
@@ -123,7 +141,7 @@ check("drift:rule", ("RULE_DRIFT", "AP.TAX.RATE_CHECK") in kinds)
 
 # 8) 信封：main.py 包装逻辑（不启服务器，直接调 handler 走 _meta 路径）
 r, layer = tools.tool_metric_get({"metric": "large_risk_amount"}, "T-UNI")
-check("envelope:meta", layer == "tenant" and loader.semantic_version() == "ap-sem-1.0.0")
+check("envelope:meta", layer == "tenant" and loader.semantic_version() == "ap-sem-1.1.0")
 
 print()
 print("RESULT:", "ALL_PASS" if not failures else f"FAILED: {failures}")

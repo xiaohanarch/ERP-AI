@@ -211,7 +211,7 @@ _DDL = [
 # ---------------------------------------------------------------- 种子
 _READ_TOOLS = [
     "ap.invoice.checkValidation", "ap.invoice.getMatchDetail",
-    "ap.invoice.listBlocked", "ap.balance.query",
+    "ap.invoice.getDerivedField", "ap.invoice.listBlocked", "ap.balance.query",
 ]
 _SEMANTIC_TOOLS = [
     "semantic.metadata.entities", "semantic.metadata.fields", "semantic.metric.get",
@@ -253,7 +253,8 @@ def _seed() -> None:
                 cur.execute(
                     "INSERT INTO agents (agent_id, display_name, appid, tenant_id, tools, owner, delegates_to) "
                     "VALUES (%s, %s, 'erp-ai-hub', %s, %s, %s, %s) "
-                    "ON CONFLICT (agent_id) DO UPDATE SET delegates_to = EXCLUDED.delegates_to",
+                    "ON CONFLICT (agent_id) DO UPDATE SET tools = EXCLUDED.tools, "
+                    "delegates_to = EXCLUDED.delegates_to",
                     (agent_id, display, tenant, json.dumps(tools), owner, json.dumps(delegates_to)))
             for client_id, secret, kind, uris in _SEED_CLIENTS:
                 cur.execute(
