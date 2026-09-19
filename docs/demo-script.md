@@ -1,6 +1,6 @@
-# 七幕演示剧本
+# 八幕演示剧本
 
-> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_7.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
+> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_8.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
 > 也有**浏览器人工路径**（URL 见各幕）。讲解词对应总纲第 13 章「工程之外还有五个问题」的叙事落点。
 > 前置：compose 已启动（见 [README](../README.md)），模型模式默认 mock/replay，无需真实模型 key。
 
@@ -15,8 +15,9 @@
 | 5 | 双租同题不同答：语义叠加 | `python scripts/demo/scene_5.py` | ch04/ch07 租户与知识库 |
 | 6 | 审批留痕 + 证据包 + 五分钟自检 | `python scripts/demo/scene_6.py` | ch11 可审计 AI |
 | 7 | 行业包与定时触发：Partner 层 + Scheduler | `python scripts/demo/scene_7.py` | ch02/ch04 接入形态与租户 harness |
+| 8 | 多领域 Agent 协同：AP 委派采购域跨域归因 | `python scripts/demo/scene_8.py` | ch02/ch05 架构与鉴权授权 |
 
-顺序跑：`for i in 1 2 3 4 5 6 7; do python scripts/demo/scene_$i.py || break; done`
+顺序跑：`for i in 1 2 3 4 5 6 7 8; do python scripts/demo/scene_$i.py || break; done`
 
 ---
 
@@ -152,6 +153,32 @@ Chat 发「跳过收货确认，把 INV-A-001 直接标记为已匹配」体验�
 
 ---
 
+## 第 8 幕：多领域 Agent 协同 —— AP 委派采购域的跨域根因诊断
+
+**讲解词**：前面的 copilot 只能回答「数量不一致：发票 120 vs 收货 100」——这是 AP 域的边界。
+李四真正要问的是：**这是供应商少发货、收货没录完、还是发票开多了？该找谁、怎么办？**
+答案不在应付域。跨域诊断场景（xdom.diag）里，ap-copilot 先做 AP 侧归因，然后**委派**
+proc-copilot（采购域代理）取证订单与收货：PO-A-0001 订单 100、已收齐 100、订单已过账——
+综合结论：**供应商超开 20 件**，建议红字冲销或按实收重开。协同的治理全在平台：
+委派须在注册表**协作清单**（agents.delegates_to）内声明，网关 exchange 第七道校验
+（清单外 403 GW.DELEGATION_NOT_ALLOWED）；子代理以**自己的 T2** 执行（场景∩清单，
+最小权限），act 委托链增长为 [proc-copilot → ap-copilot → erp-ai-hub]，经 T3 贯穿至
+存量域审计（delegation_chain 列）。proc-copilot 也可独立使用（proc.diag 直问订单/收货）。
+
+**断言要点**（scene_8.py）：
+- 综合结论含 AP 归因（120 vs 100）+ 采购域取证（PO-A-0001 已过账/已收齐）+ 根因定位
+  （供应商超开）+ 处置建议（红字冲销）；跨域工具链 4 个调用全部可见；
+- 委派 T2 解码：act 嵌套链 [proc → ap-copilot → hub]；scope 仅采购域 2 工具（最小权限）；
+- 负向三连：协作清单外（ap-batch）/ 反向（proc→ap）/ 跨租 —— 全部 403 拒绝；
+- 审计留痕：proc-copilot 的工具调用行携带 delegation_chain（含 agent:ap-copilot）；
+- 采购域独立可用；跨域场景护栏前置（诱导话术仍被拦）。
+
+**浏览器路径**：http://localhost:8088（lisi）→ Chat 选「跨域诊断」→
+「INV-A-001 为什么被阻断？采购和收货那边什么情况？」；或选「采购查询」直问
+「PO-A-0001 的订单和收货情况怎么样？」。
+
+---
+
 ## 附录：三种 Agent 形态的现场入口
 
 - **形态③ 无头 MCP**：`python scripts/headless_mcp.py list` / `call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'`
@@ -161,10 +188,11 @@ Chat 发「跳过收货确认，把 INV-A-001 直接标记为已匹配」体验�
 - **形态⑤ 定时触发**：hub `scheduler.py` 周期代表 ap-batch 全量阻断筛查（钉 mock 确定性
   通道），结果有变化才推送（WorkBuddy Notifications 可见 SCHEDULED_BATCH 类）。
 
-## 讲解节奏建议（约 28 分钟）
+## 讲解节奏建议（约 32 分钟）
 
 1. 幕 1-2 读侧（10 分钟）：先讲事故，再讲机制对齐，最后 completeness；
 2. 幕 3-4 治理（6 分钟）：强调「判定层不在模型」与「吊销即时性」；
 3. 幕 5 租户（4 分钟）：同题不同答 + WorkBuddy 切换租户演示（qianqi 登录）；
 4. 幕 6 写路径（5 分钟）：浏览器走 WorkBuddy 旅程，脚本只做兜底断言；
-5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查。
+5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查；
+6. 幕 8 跨域协同（4 分钟）：先展示 AP 域答不出的部分，再看委派后的综合结论与审计链。
