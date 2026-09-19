@@ -9,12 +9,16 @@ const SCENES = [
   { id: 'ap.diag', name: '发票诊断', desc: '单票校验归因 / 差异下钻（读）', write: false },
   { id: 'ap.batch', name: '批量筛查', desc: '阻断清单 / 大额风险（读）', write: false },
   { id: 'ap.taxcode', name: '税码补全', desc: '税码建议与变更（写 · 需审批）', write: true },
+  { id: 'proc.diag', name: '采购查询', desc: '订单详情 / 收货取证（读）', write: false },
+  { id: 'xdom.diag', name: '跨域诊断', desc: 'AP 归因 + 委派采购域取证（读）', write: false },
 ] as const
 
 const SAMPLES: Record<string, string[]> = {
   'ap.diag': ['INV-A-001 校验失败的原因是什么？', 'INV-A-003 有什么风险提示？'],
   'ap.batch': ['帮我筛查大额风险的阻断发票', '当前应付余额情况如何？'],
   'ap.taxcode': ['把 INV-A-052 的税码补全为 CN-VAT-13'],
+  'proc.diag': ['PO-A-0001 的订单和收货情况怎么样？'],
+  'xdom.diag': ['INV-A-001 为什么被阻断？采购和收货那边什么情况？'],
 }
 
 export default function Chat() {

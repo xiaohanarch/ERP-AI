@@ -60,6 +60,22 @@ public class BoApiController {
         return executor.execute("ap.invoice.getMatchDetail", args, null, null);
     }
 
+    @GetMapping("/proc/pos/{poNo}")
+    public Map<String, Object> poDetail(@PathVariable String poNo) {
+        requireTool("proc.po.getDetail");
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("poNo", poNo);
+        return executor.execute("proc.po.getDetail", args, null, null);
+    }
+
+    @GetMapping("/proc/grs")
+    public Map<String, Object> grListForPo(@RequestParam String poNo) {
+        requireTool("proc.gr.listForPo");
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("poNo", poNo);
+        return executor.execute("proc.gr.listForPo", args, null, null);
+    }
+
     @GetMapping("/balance/query")
     public Map<String, Object> balanceQuery(@RequestParam String metric,
                                             @RequestParam(required = false) String period,

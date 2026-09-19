@@ -124,6 +124,8 @@
   .fnode.cur { border-color: #cdd6ff; background: #37436f; box-shadow: 0 0 20px rgba(159,176,255,.35); transform: translateY(-2px); }
   .fnode.appr { border-style: dashed; }
   .fnode.appr b::after { content: " · 写路径"; font-size: 9.5px; color: #8b93ad; font-weight: 400; }
+  .fnode.proc { border-style: dashed; border-color: #7fd8c0; }
+  .fnode.proc b::after { content: " · 跨域"; font-size: 9.5px; color: #7fd8c0; font-weight: 400; }
   .tokens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .tk {
     font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 6px;
@@ -252,10 +254,11 @@
 <section id="flow">
   <div class="flow-panel">
     <div class="flow-top">
-      <div class="flow-title">实际运行时的请求链路<span class="dot">逐跳令牌收窄 T1 → T2 → T3 → OT · 判定在网关与存量域，不在模型</span></div>
+      <div class="flow-title">实际运行时的请求链路<span class="dot">逐跳令牌收窄 T1 → T2 → T3 → OT · 跨域协同 act 委托链增长 · 判定在网关与存量域，不在模型</span></div>
       <div class="flow-ctl">
         <button type="button" id="modeRead" class="on">读路径 ap.diag</button>
         <button type="button" id="modeWrite">写路径 ap.taxcode（审批）</button>
+        <button type="button" id="modeXdom">跨域协同 xdom.diag（委派）</button>
         <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
       </div>
     </div>
@@ -265,15 +268,17 @@
         <div class="packet" id="packet"></div>
         <div class="fnode" data-i="0"><b>李四 · WorkBuddy</b><span>T1 · azp=surface-workbuddy</span></div>
         <div class="fnode" data-i="1"><b>ai-gateway</b><span>注册中心 · 令牌交换 · 审批</span></div>
-        <div class="fnode" data-i="2"><b>hub 场景图</b><span>LangGraph · intent 分类</span></div>
-        <div class="fnode" data-i="3"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
-        <div class="fnode" data-i="4"><b>Java 存量域</b><span>PermissionService · 规则引擎</span></div>
-        <div class="fnode appr" data-i="5"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
+        <div class="fnode" data-i="2"><b>hub · AP 场景图</b><span>LangGraph · intent 分类</span></div>
+        <div class="fnode proc" data-i="3"><b>hub · 采购域图</b><span>proc-copilot · 被委派</span></div>
+        <div class="fnode" data-i="4"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
+        <div class="fnode" data-i="5"><b>Java 存量域</b><span>PermissionService · 规则引擎</span></div>
+        <div class="fnode appr" data-i="6"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
       </div>
     </div>
     <div class="tokens" id="tokens">
       <span class="tk" data-t="t1">T1 [chat]</span>
       <span class="tk" data-t="t2">T2 [场景 ∩ Agent 清单]</span>
+      <span class="tk" data-t="t2p">T2′ [采购域 ∩ 清单 · act+委派链]</span>
       <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
       <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性] <small>（写路径）</small></span>
     </div>
@@ -282,6 +287,7 @@
       <span class="lbl">点一下就在真实系统里跑（登录后自动发起对话）：</span>
       <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起读路径</a>
       <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%8E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起写路径（出审批卡）</a>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起跨域协同（委派采购域）</a>
     </div>
   </div>
 </section>
@@ -358,6 +364,7 @@
       <div class="node"><b><a href="http://localhost:8088" target="_blank" rel="noopener">WorkBuddy 助手平台</a></b><span>形态② React OAuth :8088</span></div>
       <div class="node"><b>无头 MCP 脚本</b><span>形态③ headless CLI</span></div>
       <div class="node"><b>事件触发</b><span>形态④ outbox→hub</span></div>
+      <div class="node"><b>定时调度</b><span>形态⑤ scheduler→ap-batch</span></div>
     </div>
     <div class="arrow">SSO / OAuth 授权码（T1，scope=[chat]）</div>
     <div class="row">
@@ -365,8 +372,8 @@
     </div>
     <div class="arrow">T2（场景∩Agent 清单）↓ &nbsp;&nbsp;↑ 挂起/唤醒（interrupt）</div>
     <div class="row">
-      <div class="node hubn"><b>hub · erp-ai-hub</b><span>LangGraph 三场景图 + 三层 harness 解析</span></div>
-      <div class="node hubn"><b>semantics · erp-ai-context</b><span>语义三段式 + 七查询工具 + 双租叠加 + 漂移检测</span></div>
+      <div class="node hubn"><b>hub · erp-ai-hub</b><span>LangGraph 五场景图（AP 三图 + 采购域 + 跨域委派）+ 三层 harness 解析 + 事件/定时线程</span></div>
+      <div class="node hubn"><b>semantics · erp-ai-context</b><span>语义三段式 + 七查询工具 + 双租与行业包叠加 + 漂移检测</span></div>
       <div class="node"><b>模型网关</b><span>GLM-5.3 live · mock · replay</span></div>
     </div>
     <div class="arrow">T3（单工具 · 60s · 委托链保留）</div>
@@ -391,12 +398,19 @@
       <p>Standard → Partner → Tenant 确定性解析；Partner 层已落地<b>制造业行业包</b>（行业术语 +
       行业护栏，按租户行业声明匹配，不跨行业串扰）；仅 <code>overridable</code> 资产可覆盖，
       护栏只加严（放松类叠加被拒），<a href="http://localhost:8088/resolution" target="_blank" rel="noopener">WorkBuddy 解析查看器</a>可视化每次运行用了哪层哪版本。</p></div>
+    <div class="card"><h4>多领域 Agent 协同 <span class="tag">scene_8</span></h4>
+      <p>跨域归因走<b>显式委派</b>而非自由协商：ap-copilot 在注册表<b>协作清单</b>（delegates_to）
+      内声明 proc-copilot；网关 exchange 第七道校验（清单外 403）；子代理以<b>自己的 T2</b>
+      执行（最小权限），act 委托链增长 <span class="mono">[proc → ap → hub]</span> 经 T3 贯穿至存量域审计。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断：AP 归因 + 采购取证 → 供应商超开结论</a>
+      </div></div>
   </div>
 </section>
 
-<!-- ============ 03 七幕 ============ -->
+<!-- ============ 03 八幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">03</span>七幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
+  <h2><span class="no">03</span>八幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
     <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
@@ -420,10 +434,13 @@
     <tr><td class="mono">scene_7</td><td><b>行业包 + 定时触发</b>：Partner 层（制造业术语/护栏，按行业匹配不串扰）+ Scheduler 定时筛查（无会话代表执行，变化才通知）</td>
       <td><span class="pill code">拦截+读</span></td><td class="mono">python scripts/demo/scene_7.py</td>
       <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E8%B7%B3%E8%BF%87%E6%94%B6%E8%B4%A7%E7%A1%AE%E8%AE%A4%EF%BC%8C%E6%8A%8A%20INV-A-001%20%E7%9B%B4%E6%8E%A5%E6%A0%87%E8%AE%B0%E4%B8%BA%E5%B7%B2%E5%8C%B9%E9%85%8D" target="_blank" rel="noopener">行业护栏 · lisi（制造业）</a><a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器（partner 层）</a><a href="http://localhost:8088/notifications" target="_blank" rel="noopener">定时筛查通知</a></td></tr>
+    <tr><td class="mono">scene_8</td><td><b>多领域 Agent 协同</b>：AP 归因 → 委派采购域取证（协作清单 + act 链 + 最小权限）→ 综合根因（供应商超开 20 件）</td>
+      <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_8.py</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断 · lisi</a><a href="http://localhost:8088/chat?scene=proc.diag&amp;q=PO-A-0001%20%E7%9A%84%E8%AE%A2%E5%8D%95%E5%92%8C%E6%94%B6%E8%B4%A7%E6%83%85%E5%86%B5%E6%80%8E%E4%B9%88%E6%A0%B7%EF%BC%9F" target="_blank" rel="noopener">采购查询 · lisi</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">七幕演示剧本</a>。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">八幕演示剧本</a>。
   </p>
 </section>
 
@@ -492,7 +509,7 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 <span class="c"># 汇总报告 → docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 七幕演示 + 无头 MCP（形态③）</span>
+<span class="c"># 八幕演示 + 无头 MCP（形态③）</span>
 python scripts/demo/scene_1.py   <span class="c"># … 至 scene_6</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
@@ -535,7 +552,7 @@ erp-ai-context/         <span class="c">语义服务（三段式语义文件 + �
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
 workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
-scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 七幕演示 + 无头 CLI</span>
+scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 八幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
@@ -543,8 +560,8 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>七幕演示剧本</h4>
-      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 25 分钟节奏。</p></div>
+    <div class="card"><h4>八幕演示剧本</h4>
+      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 32 分钟节奏。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>
       <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / localhost vs 127.0.0.1 / 管道退出码 / 数据复位。</p></div>
   </div>
@@ -554,33 +571,43 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
 
 <footer>
   ERP-AI · Agentic-ERP AI 参考架构演示 · 内部技术参考<br>
-  <span class="mono" style="font-size:12px">spec 1.0.0 · ruleset AP-RS-1.2.0 · seed ap-seed-1.0.0 · semantics ap-sem-1.0.0 · model glm-5.3 (live)</span>
+  <span class="mono" style="font-size:12px">spec 1.1.0 · ruleset AP-RS-1.2.0 · seed ap-seed-1.0.0 · semantics ap-sem-1.0.0 · model glm-5.3 (live)</span>
 </footer>
 
 <script>
 (function () {
   "use strict";
-  // ---------- 数据：两幕链路的分步脚本 ----------
+  // ---------- 数据：三条链路的分步脚本（节点 data-i：0李四 1网关 2AP图 3采购图 4MCP 5Java 6审批台） ----------
   var READ = [
     { n: [0], tk: ["t1"], c: "<b>① 用户发起</b>　李四在 WorkBuddy 提问：「INV-A-001 校验失败的原因是什么？」——请求携带 T1（scope=[chat]，azp=surface-workbuddy）" },
     { n: [0, 1], tk: ["t1", "t2"], c: "<b>② 网关 · 令牌交换</b>　验证 T1 → 查 Agent 注册中心（ap-copilot 在册且未吊销）→ 铸 T2：sub=李四 不变，scope 收窄为「场景工具 ∩ Agent 清单」，act 委托链 +1 跳" },
     { n: [1, 2], tk: ["t2"], c: "<b>③ hub 场景图</b>　LangGraph 分类意图 → 决定调用 BO 工具（校验 + 差异下钻）" },
-    { n: [2, 3], tk: ["t3"], c: "<b>④ 网关 MCP 代理 · 铸 T3</b>　scope=[单工具] · 60 秒短时 · 委托链完整保留——工具级最小授权" },
-    { n: [3, 4], tk: ["t3"], c: "<b>⑤ Java 存量域</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维过滤）→ ap.invoice.checkValidation + getMatchDetail" },
-    { n: [2, 4], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回，completeness 披露（未执行的规则组）一并带回，绝不静默" },
+    { n: [2, 4], tk: ["t3"], c: "<b>④ 网关 MCP 代理 · 铸 T3</b>　scope=[单工具] · 60 秒短时 · 委托链完整保留——工具级最小授权" },
+    { n: [4, 5], tk: ["t3"], c: "<b>⑤ Java 存量域</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维过滤）→ ap.invoice.checkValidation + getMatchDetail" },
+    { n: [2, 5], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回，completeness 披露（未执行的规则组）一并带回，绝不静默" },
     { n: [0, 2], tk: [], c: "<b>⑦ 流式应答 + 留痕</b>　场景图组装结论 → SSE 流式回 WorkBuddy；span 树（invoke_agent→chat→execute_tool）入 Jaeger，审计五要素入库" }
   ];
   var WRITE = [
     { n: [0], tk: ["t1"], c: "<b>① 写路径开始</b>　李四请求：「把 INV-A-052 的税码补全为 CN-VAT-13」——携带 T1 进网关" },
     { n: [1, 2], tk: ["t2"], c: "<b>② 网关铸 T2 → hub suggest</b>　场景图结合模型与税码规则给出建议（发票 / 税码 / 理由）" },
-    { n: [3, 4], tk: ["t3"], c: "<b>③ 网关见「不可逆」</b>　hub 携业务幂等键调 applyTaxCode → 规格标记 irreversible=true → 网关创建 approval_task，返回 <b>GW.APPROVAL_REQUIRED</b>（不落库）" },
-    { n: [5], tk: [], c: "<b>④ interrupt 挂起</b>　场景图在审批门挂起（检查点落库，<b>挂起期零常驻凭据</b>）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响范围（三要素）" },
-    { n: [5, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 网关落 approver + 确认时快照（批准人所见内容）→ 铸一次性令牌 <b>OT</b>：scope=[单工具] + 参数指纹 · 120 秒 · 只能用一次" },
-    { n: [2, 3], tk: ["ot"], c: "<b>⑥ resume 唤醒</b>　POST /internal/resume → 场景图从审批门继续 → 携 OT 重发（业务幂等键不变，网络重传命中网关短窗）" },
-    { n: [3, 4], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效 + 未用 + 指纹匹配）→ 铸 T3 → Java 与变更同事务落库：税码变更记录 + 幂等表（重放返回首次结果）" },
-    { n: [0, 4], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；审计五要素 + 审批快照留痕，租户证据包可导出" }
+    { n: [4, 5], tk: ["t3"], c: "<b>③ 网关见「不可逆」</b>　hub 携业务幂等键调 applyTaxCode → 规格标记 irreversible=true → 网关创建 approval_task，返回 <b>GW.APPROVAL_REQUIRED</b>（不落库）" },
+    { n: [6], tk: [], c: "<b>④ interrupt 挂起</b>　场景图在审批门挂起（检查点落库，<b>挂起期零常驻凭据</b>）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响范围（三要素）" },
+    { n: [6, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 网关落 approver + 确认时快照（批准人所见内容）→ 铸一次性令牌 <b>OT</b>：scope=[单工具] + 参数指纹 · 120 秒 · 只能用一次" },
+    { n: [2, 4], tk: ["ot"], c: "<b>⑥ resume 唤醒</b>　POST /internal/resume → 场景图从审批门继续 → 携 OT 重发（业务幂等键不变，网络重传命中网关短窗）" },
+    { n: [4, 5], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效 + 未用 + 指纹匹配）→ 铸 T3 → Java 与变更同事务落库：税码变更记录 + 幂等表（重放返回首次结果）" },
+    { n: [0, 5], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；审计五要素 + 审批快照留痕，租户证据包可导出" }
   ];
-  var STEPS = { read: READ, write: WRITE };
+  var XDOM = [
+    { n: [0], tk: ["t1"], c: "<b>① 跨域问题</b>　李四：「INV-A-001 为什么被阻断？采购和收货那边什么情况？」——AP 域只能看到数量差异，根因需要采购域上下文" },
+    { n: [1, 2], tk: ["t2"], c: "<b>② AP 侧归因</b>　铸 T2[ap-copilot ∩ xdom.diag] → AP 图调 checkValidation + getMatchDetail：发票 120 vs 收货 100，关联 PO-A-0001" },
+    { n: [2, 3], tk: ["t2", "t2p"], c: "<b>③ 显式委派</b>　ap-copilot 的注册表协作清单（delegates_to）声明了 proc-copilot → hub 以 delegate_from 启动采购域子图（清单外委派会被拒绝）" },
+    { n: [3, 1], tk: ["t2p"], c: "<b>④ 网关第七道校验</b>　exchange(delegatedBy=ap-copilot)：委派方在册 / 同租户 / 清单内 → 铸 proc-copilot <b>自己的 T2′</b>，act 委托链增长 <b>[proc → ap → hub]</b>" },
+    { n: [3, 4], tk: ["t2p", "t3"], c: "<b>⑤ 采购域取证（最小权限）</b>　T2′ scope 仅 2 个采购工具 → proc.po.getDetail + proc.gr.listForPo：订单 100 = 已收 100，整单已收齐" },
+    { n: [4, 5], tk: ["t3"], c: "<b>⑥ T3 进 Java · 委托链贯穿</b>　act 链随 T3 传入存量域，delegation_chain 落审计；PermissionService 组织覆盖判定（越界按未找到）" },
+    { n: [2], tk: [], c: "<b>⑦ 综合归因</b>　AP 差异 + 采购上下文 → 根因 = <b>供应商超开 20 件</b>（订单量 = 收货量 &lt; 开票量）；处置：红字冲销或按实收重开" },
+    { n: [0, 2], tk: [], c: "<b>⑧ 完成与留痕</b>　双 Agent 审计（ap-copilot + proc-copilot，含委派链）；负向保证：清单外 / 反向 / 跨租委派一律 403 GW.DELEGATION_NOT_ALLOWED" }
+  ];
+  var STEPS = { read: READ, write: WRITE, xdom: XDOM };
   var mode = "read", idx = 0, timer = null, restartTimer = null;
   var chain = document.getElementById("chain");
   var packet = document.getElementById("packet");
@@ -589,31 +616,40 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
   var chips = [].slice.call(document.querySelectorAll(".tk"));
   var btnRead = document.getElementById("modeRead");
   var btnWrite = document.getElementById("modeWrite");
+  var btnXdom = document.getElementById("modeXdom");
   var btnReplay = document.getElementById("replay");
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function apprNode() { return nodes[5]; }
+  function apprNode() { return nodes[6]; }
+  function procNode() { return nodes[3]; }
   function centers() {
+    // 可见节点 data-i -> 中心坐标。两个可隐藏节点（3 采购图 / 6 审批台）夹在链路中间，
+    // 必须按 data-i 映射（不能按可见序号），否则包的落点会错位。
     var base = chain.getBoundingClientRect();
-    return nodes.filter(function (nd) { return nd.style.display !== "none"; })
-      .map(function (nd) {
-        var r = nd.getBoundingClientRect();
-        return r.left - base.left + r.width / 2;
-      });
+    var map = {};
+    nodes.forEach(function (nd) {
+      if (nd.style.display === "none") return;
+      var r = nd.getBoundingClientRect();
+      map[nd.getAttribute("data-i")] = r.left - base.left + r.width / 2;
+    });
+    return map;
   }
   function render() {
     var step = STEPS[mode][idx];
     apprNode().style.display = (mode === "write") ? "" : "none";
+    procNode().style.display = (mode === "xdom") ? "" : "none";
     var cs = centers();
-    nodes.forEach(function (nd, i) {
-      var on = step.n.indexOf(i) >= 0;
-      var cur = step.n[step.n.length - 1] === i;
-      nd.className = "fnode" + (i === 5 ? " appr" : "") + (on ? " on" : "") + (cur ? " cur" : "");
+    nodes.forEach(function (nd) {
+      var di = nd.getAttribute("data-i");
+      var on = step.n.indexOf(Number(di)) >= 0;
+      var cur = String(step.n[step.n.length - 1]) === di;
+      nd.className = "fnode" + (di === "6" ? " appr" : "") + (di === "3" ? " proc" : "")
+        + (on ? " on" : "") + (cur ? " cur" : "");
     });
     chips.forEach(function (ch) {
       ch.className = "tk" + (step.tk.indexOf(ch.getAttribute("data-t")) >= 0 ? " on" : "");
     });
-    var to = step.n[step.n.length - 1];
+    var to = String(step.n[step.n.length - 1]);
     if (!reduceMotion && cs[to] !== undefined) {
       packet.style.opacity = "1";
       packet.style.left = (cs[to] - 6.5) + "px";
@@ -633,18 +669,22 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
     }, 2500);
   }
   function start() { idx = 0; render(); schedule(); }
-  btnRead.addEventListener("click", function () {
-    mode = "read"; btnRead.classList.add("on"); btnWrite.classList.remove("on"); start();
-  });
-  btnWrite.addEventListener("click", function () {
-    mode = "write"; btnWrite.classList.add("on"); btnRead.classList.remove("on"); start();
-  });
+  function setMode(m) {
+    mode = m;
+    [btnRead, btnWrite, btnXdom].forEach(function (b) { b.classList.remove("on"); });
+    ({ read: btnRead, write: btnWrite, xdom: btnXdom })[m].classList.add("on");
+    start();
+  }
+  btnRead.addEventListener("click", function () { setMode("read"); });
+  btnWrite.addEventListener("click", function () { setMode("write"); });
+  btnXdom.addEventListener("click", function () { setMode("xdom"); });
   btnReplay.addEventListener("click", start);
   window.addEventListener("resize", function () { render(); });
   if (reduceMotion) {
-    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写路径」查看分步说明（自动播放已关闭）。";
+    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写 / 跨域」路径查看分步说明（自动播放已关闭）。";
     nodes.forEach(function (nd) { nd.className = nd.className + " on"; });
     apprNode().style.display = "none";
+    procNode().style.display = "none";
   } else { start(); }
 })();
 </script>

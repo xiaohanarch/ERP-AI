@@ -13,9 +13,16 @@ class GraphState(TypedDict, total=False):
     trace: str
     conversation_id: str
     model_mode: str                # 逐请求模型模式钉定（mock/replay/live；空=全局默认）
-    # 模型动作（动作契约：intent + invoiceNo + reply / taxCode + reason）
+    delegate_from: str             # 委派方代理 id（被委派执行时携带；exchange 时 act 链增长）
+    # 模型动作（动作契约：intent + invoiceNo/poNo + reply / taxCode + reason）
     intent: str
     invoice_no: str
+    po_no: str                     # 采购域（proc.diag / xdom 委派）
+    # 跨域协同（xdom.diag）
+    ap_result: dict
+    proc_result: dict
+    proc_answer: str
+    proc_error: str | None
     # 税码建议（写路径）
     suggestion: dict
     pending_args: dict
@@ -70,6 +77,20 @@ CONTRACTS: dict[str, str] = {
         '"reply":"根据供应商所在地常用税码，建议将 <发票号> 的税码调整为 CN-VAT-13。是否提交申请？（提交后将进入审批流程）"}\n'
         "（用户未明确指定税码时一律建议 CN-VAT-13；用户明确给了税码则用用户的值）\n"
         '2. 没有发票号 -> {"intent":"clarify","reply":"请提供需要补全税码的发票号（如 INV-A-003）。"}'
+    ),
+    "proc.diag": (
+        "你是采购域查询助手。只输出一个 JSON 对象（不要 markdown 代码块、不要任何多余文字）：\n"
+        '1. 用户提到采购订单号（形如 PO-A-0001）或询问订单/收货情况 -> '
+        '{"intent":"po_lookup","poNo":"<订单号>","reply":"好的，我查询该采购订单的详情与收货情况。"}\n'
+        '2. 信息不足 -> {"intent":"clarify","reply":"请提供采购订单号（如 PO-A-0001）。"}'
+    ),
+    "xdom.diag": (
+        "你是应付（AP）域跨域诊断助手的意图分类器。只输出一个 JSON 对象（不要 markdown 代码块、"
+        "不要任何多余文字）：\n"
+        '1. 用户提到具体发票号（形如 INV-A-001）并想了解阻断原因（含采购/收货侧情况） -> '
+        '{"intent":"diagnose_cross","invoiceNo":"<发票号>",'
+        '"reply":"好的，我做跨域归因：先 AP 侧诊断，再委派采购域取证。"}\n'
+        '2. 信息不足 -> {"intent":"clarify","reply":"请提供发票号（如 INV-A-001）。"}'
     ),
 }
 

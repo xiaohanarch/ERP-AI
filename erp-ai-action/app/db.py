@@ -71,9 +71,12 @@ _DDL = [
         status       TEXT NOT NULL DEFAULT 'ACTIVE',
         revoked_at   TIMESTAMPTZ,
         owner        TEXT,
+        delegates_to TEXT NOT NULL DEFAULT '[]',
         created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     )
     """,
+    # 存量库补列（协作清单：跨域委派的目标代理白名单，声明式种子拥有）
+    "ALTER TABLE agents ADD COLUMN IF NOT EXISTS delegates_to TEXT NOT NULL DEFAULT '[]'",
     """
     CREATE TABLE IF NOT EXISTS service_clients (
         client_id     TEXT PRIMARY KEY,
@@ -205,19 +208,23 @@ _SEMANTIC_TOOLS = [
 ]
 _TAX_TOOLS = ["ap.invoice.applyTaxCode"]
 
+_PROC_TOOLS = ["proc.po.getDetail", "proc.gr.listForPo"]
+
 _SEED_AGENTS = [
-    # (agent_id, display_name, tenant, tools, owner)
-    ("ap-copilot", "AP 诊断 Copilot（页面内嵌）", "T-EAST", _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "lisi"),
+    # (agent_id, display_name, tenant, tools, owner, delegates_to)
+    ("ap-copilot", "AP 诊断 Copilot（页面内嵌）", "T-EAST",
+     _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "lisi", ["proc-copilot"]),
+    ("proc-copilot", "采购查询 Copilot（跨域协同标的）", "T-EAST", _PROC_TOOLS, "lisi", []),
     ("ap-batch", "AP 批量筛查助手", "T-EAST",
      ["ap.invoice.listBlocked", "ap.balance.query", "semantic.term.translate", "semantic.task.match",
-      "semantic.metric.get", "semantic.metadata.fields"], "lisi"),
-    ("ap-headless", "AP 无头脚本代理（形态③）", "T-EAST", _READ_TOOLS, "zhangsan"),
+      "semantic.metric.get", "semantic.metadata.fields"], "lisi", []),
+    ("ap-headless", "AP 无头脚本代理（形态③）", "T-EAST", _READ_TOOLS, "zhangsan", []),
     ("event-diag", "AP 事件触发诊断代理（形态④）", "T-EAST",
-     ["ap.invoice.checkValidation", "ap.invoice.getMatchDetail"], "lisi"),
-    ("uni-copilot", "AP 诊断 Copilot（星联科技）", "T-UNI", _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "qianqi"),
+     ["ap.invoice.checkValidation", "ap.invoice.getMatchDetail"], "lisi", []),
+    ("uni-copilot", "AP 诊断 Copilot（星联科技）", "T-UNI", _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "qianqi", []),
     ("uni-batch", "AP 批量筛查助手（星联科技）", "T-UNI",
      ["ap.invoice.listBlocked", "ap.balance.query", "semantic.term.translate", "semantic.task.match",
-      "semantic.metric.get", "semantic.metadata.fields"], "qianqi"),
+      "semantic.metric.get", "semantic.metadata.fields"], "qianqi", []),
 ]
 
 _SEED_CLIENTS = [
@@ -230,12 +237,12 @@ _SEED_CLIENTS = [
 def _seed() -> None:
     with Db() as conn:
         with conn.cursor() as cur:
-            for agent_id, display, tenant, tools, owner in _SEED_AGENTS:
+            for agent_id, display, tenant, tools, owner, delegates_to in _SEED_AGENTS:
                 cur.execute(
-                    "INSERT INTO agents (agent_id, display_name, appid, tenant_id, tools, owner) "
-                    "VALUES (%s, %s, 'erp-ai-hub', %s, %s, %s) "
-                    "ON CONFLICT (agent_id) DO NOTHING",
-                    (agent_id, display, tenant, json.dumps(tools), owner))
+                    "INSERT INTO agents (agent_id, display_name, appid, tenant_id, tools, owner, delegates_to) "
+                    "VALUES (%s, %s, 'erp-ai-hub', %s, %s, %s, %s) "
+                    "ON CONFLICT (agent_id) DO UPDATE SET delegates_to = EXCLUDED.delegates_to",
+                    (agent_id, display, tenant, json.dumps(tools), owner, json.dumps(delegates_to)))
             for client_id, secret, kind, uris in _SEED_CLIENTS:
                 cur.execute(
                     "INSERT INTO service_clients (client_id, client_secret, kind, redirect_uris) "

@@ -72,7 +72,8 @@ def main() -> int:
 
     print("=== WorkBuddy 浏览器 E2E ===")
     with sync_playwright() as pw:
-        browser = pw.chromium.launch()
+        # 只访问 localhost：绕过系统代理（VPN/代理软件开启时 Chromium 会被截走本地请求）
+        browser = pw.chromium.launch(args=["--no-proxy-server"])
         page = browser.new_page(viewport={"width": 1440, "height": 960})
         page.set_default_timeout(20_000)
         try:

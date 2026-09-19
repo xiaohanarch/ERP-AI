@@ -18,6 +18,7 @@ public class BoToolExecutor {
 
     private final ValidationService validationService;
     private final InvoiceQueryService invoiceQueryService;
+    private final ProcurementQueryService procurementQueryService;
     private final TaxCodeService taxCodeService;
     private final PaymentService paymentService;
 
@@ -31,6 +32,8 @@ public class BoToolExecutor {
                     args.get("pageSize") == null ? null : num(args.get("pageSize")).intValue(),
                     args.get("minAmountCny") == null ? null : num(args.get("minAmountCny")));
             case "ap.invoice.getMatchDetail" -> invoiceQueryService.matchDetail(str(args.get("invoiceNo")));
+            case "proc.po.getDetail" -> procurementQueryService.poDetail(str(args.get("poNo")));
+            case "proc.gr.listForPo" -> procurementQueryService.grListForPo(str(args.get("poNo")));
             case "ap.balance.query" -> invoiceQueryService.balanceQuery(
                     str(args.get("metric")), strOrNull(args.get("period")), strOrNull(args.get("scope")));
             case "ap.invoice.applyTaxCode" -> taxCodeService.applyTaxCode(

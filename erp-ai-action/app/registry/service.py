@@ -31,6 +31,7 @@ def list_agents(tenant_id: str | None = None) -> list[dict]:
             "tenantId": r["tenant_id"], "tools": json.loads(r["tools"]), "status": r["status"],
             "revokedAt": r["revoked_at"].isoformat() if r["revoked_at"] else None,
             "owner": r["owner"],
+            "delegatesTo": json.loads(r.get("delegates_to") or "[]"),
             "sodGroups": sorted(tool_registry.sod_groups_of(json.loads(r["tools"]))),
             "createdAt": r["created_at"].isoformat(),
         })

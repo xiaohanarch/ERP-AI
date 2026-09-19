@@ -54,8 +54,9 @@ def mint_in(username: str, tenant: str, *, display_name: str | None = None,
 
 # ---------------------------------------------------------------- T2（hub->网关，场景级）
 def mint_t2(username: str, tenant: str, agent_id: str, tools: list[str], scene: str,
-            ttl: int = 900) -> str:
-    act = {"sub": f"agent:{agent_id}", "act": {"sub": "erp-ai-hub"}}
+            ttl: int = 900, act_chain: dict | None = None) -> str:
+    """act_chain：Agent 间委派时传入增长的委托链（子代理 -> 委派方代理 -> hub）。"""
+    act = act_chain or {"sub": f"agent:{agent_id}", "act": {"sub": "erp-ai-hub"}}
     claims = _base(f"u-{username}", tenant, "erp-ai-hub", tools, ttl,
                    act=act, scene=scene, agent=agent_id)
     return _mint(claims)

@@ -43,3 +43,17 @@ scenes:
     tools:
       - ap.invoice.checkValidation
       - ap.invoice.getMatchDetail
+
+  proc.diag:
+    enabled: true
+    description: 采购域查询（订单详情 / 收货取证，读侧；可独立使用或被 AP 域委派）
+    tools:
+      - proc.po.getDetail
+      - proc.gr.listForPo
+
+  xdom.diag:
+    enabled: true
+    description: 跨域根因诊断（AP 归因 -> 委派采购域取证 -> 综合结论；委派走注册表协作清单）
+    tools:
+      - ap.invoice.checkValidation
+      - ap.invoice.getMatchDetail
