@@ -157,3 +157,17 @@ def push_notification(tenant_id: str | None, username: str, *, kind: str = "info
                    timeout=10)
     except httpx.HTTPError:
         pass  # 通知失败不阻断主流程
+
+
+def dispatch_event(event: dict) -> None:
+    """领域事件扇出到租户订阅（网关消息分发：SaaS 的 Message 扩展通道）。
+
+    事件出平台——与形态④（事件触发平台内 Agent）互补：投递按（租户 × topic）
+    隔离并由网关 HMAC 签名；无订阅即无操作，失败不阻断事件主流程。
+    """
+    try:
+        httpx.post(f"{settings.gw_base}/internal/events/dispatch",
+                   headers={"X-Internal-Secret": settings.internal_secret},
+                   json={"event": event}, timeout=15)
+    except httpx.HTTPError:
+        pass  # 分发失败不阻断（形态④ 的通知已独立完成）
