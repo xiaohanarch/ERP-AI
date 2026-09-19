@@ -38,6 +38,10 @@ export default function Layout() {
             {unread > 0 && <span className="count">{unread > 99 ? '99+' : unread}</span>}
           </NavLink>
           <NavLink to="/resolution" className={navCls}><span className="ic">⌘</span> 解析查看器</NavLink>
+          {/* 租户配置管理员可见（whoami.configAdmin，网关 CONFIG_ADMINS 清单判定） */}
+          {user?.configAdmin && (
+            <NavLink to="/config" className={navCls}><span className="ic">⚙</span> 租户配置</NavLink>
+          )}
         </nav>
         <div className="side-foot">
           <div className="who">{user?.displayName || user?.sub || '…'}</div>

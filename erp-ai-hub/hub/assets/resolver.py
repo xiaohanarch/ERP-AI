@@ -8,13 +8,19 @@
 """
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
+import httpx
 import yaml
 
 from hub import config
 
 LAYERS = ["standard", "partner", "tenant"]
+
+# 行业声明缓存（管理端改行业后 ≤10s 生效；语义层不可达回退本地 tenant.yaml）
+_INDUSTRY_TTL = 10
+_industry_cache: dict[str, tuple[float, str | None]] = {}
 
 
 class AssetError(ValueError):
@@ -47,9 +53,26 @@ def _layer_dir(layer: str, tenant_id: str | None) -> Path:
 
 
 def _tenant_industry(tenant_id: str | None) -> str | None:
-    """租户行业声明（<tenant-dir>/tenant.yaml；非资产文件不参与叠加，行业包适配依据）。"""
+    """租户行业声明：<tenant-dir>/tenant.yaml（非资产文件不参与叠加，行业包适配依据）。
+
+    优先语义层配置 API（管理端可改，产品化配置界面写 DB 层；10s 缓存），
+    不可达或未配置时回退本地声明文件（标品默认）。
+    """
     if not tenant_id:
         return None
+    hit = _industry_cache.get(tenant_id)
+    if hit and time.time() - hit[0] < _INDUSTRY_TTL:
+        return hit[1]
+    try:
+        resp = httpx.get(f"{config.settings.semantics_base}/internal/config/tenants/{tenant_id}",
+                         headers={"X-Internal-Secret": config.settings.internal_secret},
+                         timeout=3)
+        if resp.status_code == 200:
+            industry = ((resp.json().get("config") or {}).get("industry")) or None
+            _industry_cache[tenant_id] = (time.time(), industry)
+            return industry
+    except Exception:  # noqa: BLE001 —— 语义层不可达回退本地文件
+        pass
     path = _layer_dir("tenant", tenant_id) / "tenant.yaml"
     if not path.exists():
         return None

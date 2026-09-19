@@ -64,7 +64,7 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 # 5) 汇总报告 → docs/verification-report.md
 python -X utf8 scripts/gen_report.py
 
-# 6) 九幕演示（每幕一断言集）
+# 6) 十幕演示（每幕一断言集）
 python scripts/demo/scene_1.py   # 事故复现：页面 ~50 / Open API 5000+ / BO API 同权限口径
 python scripts/demo/scene_2.py   # completeness：张三见数量差异+披露，李四见完整结论
 python scripts/demo/scene_3.py   # 越权诱导三道拦截（护栏/SoD/scope）
@@ -74,6 +74,7 @@ python scripts/demo/scene_6.py   # 审批留痕 + 证据包 + 自检
 python scripts/demo/scene_7.py   # 行业包（Partner 层）+ 定时触发（Scheduler）
 python scripts/demo/scene_8.py   # 多领域 Agent 协同（AP 委派采购域，act 链 + 协作清单）
 python scripts/demo/scene_9.py   # Message 扩展（租户消息订阅，隔离投递 + HMAC + 吊销即停）
+python scripts/demo/scene_10.py  # 产品化配置界面（配置即数据：阈值/行业/术语改完即生效）
 
 # 7) WorkBuddy 浏览器 E2E（Playwright，19 项检查，需系统 Python + playwright install chromium）
 python scripts/e2e_workbuddy.py
@@ -105,7 +106,7 @@ erp-ai-context/           语义服务（domains/ 三段式 + overlays/ 双租�
 harness-assets/           资产层（standard/ + partner/ 行业包 + tenant-east/ + tenant-uni/）
 workbuddy/                React 助手平台
 eval/                     50 条锚点用例 + 三层 runner（deterministic/judge/采样）
-scripts/                  检验体系（tenant_checks/selfcheck/gen_report）+ demo 九幕 + headless
+scripts/                  检验体系（tenant_checks/selfcheck/gen_report）+ demo 十幕 + headless
 compose/                  docker-compose 一键起
 docs/                     映射表 / 演示剧本 / 令牌设计 / Windows 注意事项 / 验证报告（生成物）
 ```
@@ -130,7 +131,7 @@ docs/                     映射表 / 演示剧本 / 令牌设计 / Windows 注�
 | [docs/intro.html](docs/intro.html) | 项目介绍页（概况 + 架构 + 使用指南，可直接浏览器打开） |
 | [docs/architecture-mapping.md](docs/architecture-mapping.md) | 总纲 14 章 ↔ 代码映射 + 验证入口 |
 | [docs/architecture-alignment.md](docs/architecture-alignment.md) | 14 条 AI-Native 架构判断 × 本仓对照（一致性/张力/缺口） |
-| [docs/demo-script.md](docs/demo-script.md) | 九幕演示剧本（讲解词 + 断言 + 浏览器路径） |
+| [docs/demo-script.md](docs/demo-script.md) | 十幕演示剧本（讲解词 + 断言 + 浏览器路径） |
 | [docs/token-design.md](docs/token-design.md) | 令牌链路 / claims / 拦截链 / 审批 OT / 幂等 |
 | [docs/windows-notes.md](docs/windows-notes.md) | Windows 编码 / Python / Docker 注意事项 |
 | [docs/verification-report.md](docs/verification-report.md) | 检验报告（`gen_report.py` 生成物） |

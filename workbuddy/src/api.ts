@@ -1,6 +1,7 @@
 /** API 客户端：OAuth 授权码换令牌 + 网关审批/通知 + hub 聊天（SSE）与解析留痕。 */
 import type {
-  Approval, DecideResult, NotificationItem, ResolutionItem, ResumeResult, WhoAmI,
+  Approval, ConfigChange, DecideResult, NotificationItem, ResolutionItem, ResumeResult,
+  TenantConfig, WhoAmI,
 } from './types'
 
 const GW = (import.meta.env.VITE_GW_BASE as string | undefined) ?? 'http://localhost:8000'
@@ -173,4 +174,31 @@ function dispatch(text: string, h: ChatHandlers): void {
     case 'approval_required': h.onApproval?.(ev as never); break
     default: break
   }
+}
+
+// ---------------------------------------------------------------- 租户配置（管理端）
+/** 产品化配置界面：阈值/术语/行业改完即生效（语义层 DB 优先，文件层为出厂默认）。 */
+export async function getTenantConfig(token: string, tenantId: string): Promise<TenantConfig> {
+  return (await req(`${GW}/gw/tenants/${encodeURIComponent(tenantId)}/config`, token)).json()
+}
+
+export async function putTenantConfig(
+  token: string, tenantId: string, patch: Record<string, unknown>,
+): Promise<TenantConfig> {
+  return (await req(`${GW}/gw/tenants/${encodeURIComponent(tenantId)}/config`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ patch }),
+  })).json()
+}
+
+export async function resetTenantConfig(token: string, tenantId: string): Promise<TenantConfig> {
+  return (await req(`${GW}/gw/tenants/${encodeURIComponent(tenantId)}/config`, token, {
+    method: 'DELETE',
+  })).json()
+}
+
+export async function configChanges(token: string, tenantId: string): Promise<ConfigChange[]> {
+  const data = await (await req(
+    `${GW}/gw/tenants/${encodeURIComponent(tenantId)}/config/changes`, token)).json()
+  return data.changes ?? []
 }

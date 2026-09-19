@@ -132,3 +132,82 @@ async def call_tool(name: str, request: Request,
             "user": (x_user or "").strip() or None,
         },
     }
+
+
+# ---------------------------------------------------------------- 租户配置（产品化配置界面后端）
+# 管理端（经网关代理，鉴权在网关）：GET 生效配置 / PUT 按字段合并 / DELETE 恢复出厂。
+# 文件层 = 标品出厂默认；DB 层 = 管理端当前配置；每次变更记 sem_config_change_log。
+@app.on_event("startup")
+def _init_config_store():
+    from service import config_store
+    config_store.init()
+
+
+@app.get("/internal/config/tenants/{tenant_id}")
+def get_tenant_config(tenant_id: str, x_internal_secret: str | None = Header(None)):
+    denied = _check(x_internal_secret)
+    if denied:
+        return denied
+    from service import config_store
+    file_overlay = loader.load_file_overlay(tenant_id)
+    stored = config_store.get_stored(tenant_id) if config_store.enabled() else None
+    if stored is not None:
+        return {"tenantId": tenant_id, "source": "db", "version": stored["version"],
+                "updatedBy": stored["updatedBy"], "updatedAt": stored["updatedAt"],
+                "config": stored["config"], "fileDefault": file_overlay}
+    return {"tenantId": tenant_id, "source": "file", "version": None,
+            "updatedBy": None, "updatedAt": None,
+            "config": file_overlay, "fileDefault": file_overlay}
+
+
+@app.put("/internal/config/tenants/{tenant_id}")
+async def put_tenant_config(tenant_id: str, request: Request,
+                            x_internal_secret: str | None = Header(None)):
+    denied = _check(x_internal_secret)
+    if denied:
+        return denied
+    from service import config_store
+    if not config_store.enabled():
+        return JSONResponse(status_code=503, content={
+            "error": {"code": "SEMANTIC.CONFIG_STORE_DISABLED",
+                      "message": f"配置存储不可用（{config_store.reason()}），当前为文件层只读"}})
+    try:
+        body = await request.json()
+        patch = body.get("patch")
+        actor = str(body.get("actor") or "unknown")
+        if not isinstance(patch, dict) or not patch:
+            raise ValueError("patch 必填（可含 industry / parameters / terms / metrics）")
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={
+            "error": {"code": "SEMANTIC.VALIDATION_ERROR", "message": str(e)}})
+    result = config_store.apply_patch(
+        tenant_id, patch, actor, loader.load_file_overlay(tenant_id))
+    return {"tenantId": tenant_id, "source": "db", "version": result["version"],
+            "updatedBy": result["updatedBy"], "config": result["config"],
+            "fileDefault": loader.load_file_overlay(tenant_id)}
+
+
+@app.delete("/internal/config/tenants/{tenant_id}")
+def reset_tenant_config(tenant_id: str, request: Request,
+                        actor: str = "unknown",
+                        x_internal_secret: str | None = Header(None)):
+    denied = _check(x_internal_secret)
+    if denied:
+        return denied
+    from service import config_store
+    if not config_store.enabled():
+        return JSONResponse(status_code=503, content={
+            "error": {"code": "SEMANTIC.CONFIG_STORE_DISABLED",
+                      "message": f"配置存储不可用（{config_store.reason()}）"}})
+    config_store.reset(tenant_id, actor)
+    return {"tenantId": tenant_id, "source": "file", "reset": True,
+            "config": loader.load_file_overlay(tenant_id)}
+
+
+@app.get("/internal/config/tenants/{tenant_id}/changes")
+def tenant_config_changes(tenant_id: str, x_internal_secret: str | None = Header(None)):
+    denied = _check(x_internal_secret)
+    if denied:
+        return denied
+    from service import config_store
+    return {"tenantId": tenant_id, "changes": config_store.changes(tenant_id)}
