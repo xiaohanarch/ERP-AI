@@ -1,6 +1,6 @@
-# 八幕演示剧本
+# 九幕演示剧本
 
-> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_8.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
+> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_9.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
 > 也有**浏览器人工路径**（URL 见各幕）。讲解词对应总纲第 13 章「工程之外还有五个问题」的叙事落点。
 > 前置：compose 已启动（见 [README](../README.md)），模型模式默认 mock/replay，无需真实模型 key。
 
@@ -16,8 +16,9 @@
 | 6 | 审批留痕 + 证据包 + 五分钟自检 | `python scripts/demo/scene_6.py` | ch11 可审计 AI |
 | 7 | 行业包与定时触发：Partner 层 + Scheduler | `python scripts/demo/scene_7.py` | ch02/ch04 接入形态与租户 harness |
 | 8 | 多领域 Agent 协同：AP 委派采购域跨域归因 | `python scripts/demo/scene_8.py` | ch02/ch05 架构与鉴权授权 |
+| 9 | Message 扩展：租户消息订阅与隔离投递 | `python scripts/demo/scene_9.py` | ch04/ch14 租户隔离与扩展 |
 
-顺序跑：`for i in 1 2 3 4 5 6 7 8; do python scripts/demo/scene_$i.py || break; done`
+顺序跑：`for i in 1 2 3 4 5 6 7 8 9; do python scripts/demo/scene_$i.py || break; done`
 
 ---
 
@@ -179,6 +180,30 @@ proc-copilot（采购域代理）取证订单与收货：PO-A-0001 订单 100、
 
 ---
 
+## 第 9 幕：Message 扩展 —— 租户消息订阅与隔离投递
+
+**讲解词**：SaaS 的扩展边界有两个半边：API（BO 工具，前八幕的主角）与 Message（本幕）。
+华东制造想让自己租户侧的合规监控实时响应「发票被阻断」——平台不开放核心改造，租户通过
+**消息订阅**扩展：注册（topic × webhook × 签名密钥，`POST /gw/subscriptions`），平台把领域
+事件按（租户 × topic）**隔离投递**出平台。链路与形态④互补且同源：同一 outbox 事件，
+hub 事件线程消费后既做平台内归因（event-diag → 通知），又扇出到网关消息分发——
+「事件进 Agent」与「事件出平台」不是两套事件。投递带 HMAC-SHA256 签名（租户侧验签防伪造）、
+每次投递审计留痕（event.dispatch）、吊销订阅对后续投递即时生效。触发方式用**事件重投**
+（`POST /internal/events/republish`，消息平台的标准补投能力）保证场景可重跑。
+
+**断言要点**（scene_9.py，本机起两个 webhook 接收器分别扮演 T-EAST / T-UNI 租户系统）：
+- T-EAST webhook 收到投递：载荷正确（invoiceNo / tenantId / eventType / redelivered / deliveryId）；
+- HMAC-SHA256 签名验证通过（接收端用注册密钥验 X-ERP-Signature）；
+- 投递审计留痕（event.dispatch · SUCCESS，含订阅号与投递号）；
+- **租户隔离**：T-UNI 的订阅收不到 T-EAST 的事件（消息通道的标品/租户隔离）；
+- 同事件双路消费：EVENT_DIAG 通知（形态④）与 webhook 投递同时发生；
+- 吊销订阅后重投事件，不再投递（生命周期即边界）。
+
+**浏览器路径**：无浏览器面（管理侧 API + 本机 webhook 接收器）；可视化见
+`docs/intro.html` 顶部动画「消息扩展（事件出平台）」模式。
+
+---
+
 ## 附录：三种 Agent 形态的现场入口
 
 - **形态③ 无头 MCP**：`python scripts/headless_mcp.py list` / `call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'`
@@ -188,11 +213,12 @@ proc-copilot（采购域代理）取证订单与收货：PO-A-0001 订单 100、
 - **形态⑤ 定时触发**：hub `scheduler.py` 周期代表 ap-batch 全量阻断筛查（钉 mock 确定性
   通道），结果有变化才推送（WorkBuddy Notifications 可见 SCHEDULED_BATCH 类）。
 
-## 讲解节奏建议（约 32 分钟）
+## 讲解节奏建议（约 38 分钟）
 
 1. 幕 1-2 读侧（10 分钟）：先讲事故，再讲机制对齐，最后 completeness；
 2. 幕 3-4 治理（6 分钟）：强调「判定层不在模型」与「吊销即时性」；
 3. 幕 5 租户（4 分钟）：同题不同答 + WorkBuddy 切换租户演示（qianqi 登录）；
 4. 幕 6 写路径（5 分钟）：浏览器走 WorkBuddy 旅程，脚本只做兜底断言；
 5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查；
-6. 幕 8 跨域协同（4 分钟）：先展示 AP 域答不出的部分，再看委派后的综合结论与审计链。
+6. 幕 8 跨域协同（4 分钟）：先展示 AP 域答不出的部分，再看委派后的综合结论与审计链；
+7. 幕 9 消息扩展（3 分钟）：动画「消息扩展」模式讲解，现场跑 scene_9 看隔离投递。

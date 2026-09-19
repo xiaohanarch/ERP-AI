@@ -126,6 +126,8 @@
   .fnode.appr b::after { content: " · 写路径"; font-size: 9.5px; color: #8b93ad; font-weight: 400; }
   .fnode.proc { border-style: dashed; border-color: #7fd8c0; }
   .fnode.proc b::after { content: " · 跨域"; font-size: 9.5px; color: #7fd8c0; font-weight: 400; }
+  .fnode.ten { border-style: dashed; border-color: #f0b37a; }
+  .fnode.ten b::after { content: " · 租户侧"; font-size: 9.5px; color: #f0b37a; font-weight: 400; }
   .tokens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .tk {
     font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 6px;
@@ -241,7 +243,8 @@
       <span class="badge">评测 50/50 通过</span>
       <span class="badge">多租六项 37/37</span>
       <span class="badge">双租户 T-EAST / T-UNI</span>
-      <span class="badge">四种 Agent 形态</span>
+      <span class="badge">五种 Agent 形态</span>
+      <span class="badge">14 条架构判断逐条对照</span>
       <span class="badge">GLM-5.3 live 已接（Anthropic 协议）</span>
       <span class="badge">docker-compose 一键起</span>
     </div>
@@ -254,11 +257,12 @@
 <section id="flow">
   <div class="flow-panel">
     <div class="flow-top">
-      <div class="flow-title">实际运行时的请求链路<span class="dot">逐跳令牌收窄 T1 → T2 → T3 → OT · 跨域协同 act 委托链增长 · 判定在网关与存量域，不在模型</span></div>
+      <div class="flow-title">实际运行时的请求链路<span class="dot">读 / 写 / 跨域 / 消息四条链 · 逐跳令牌收窄 T1 → T2 → T3 → OT · 跨域 act 委托链增长 · 消息按租户隔离投递 · 判定在网关与存量域，不在模型</span></div>
       <div class="flow-ctl">
         <button type="button" id="modeRead" class="on">读路径 ap.diag</button>
         <button type="button" id="modeWrite">写路径 ap.taxcode（审批）</button>
         <button type="button" id="modeXdom">跨域协同 xdom.diag（委派）</button>
+        <button type="button" id="modeMsg">消息扩展（事件出平台）</button>
         <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
       </div>
     </div>
@@ -273,6 +277,7 @@
         <div class="fnode" data-i="4"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
         <div class="fnode" data-i="5"><b>Java 存量域</b><span>PermissionService · 规则引擎</span></div>
         <div class="fnode appr" data-i="6"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
+        <div class="fnode ten" data-i="7"><b>租户系统 · webhook</b><span>订阅 · HMAC 验签</span></div>
       </div>
     </div>
     <div class="tokens" id="tokens">
@@ -281,6 +286,7 @@
       <span class="tk" data-t="t2p">T2′ [采购域 ∩ 清单 · act+委派链]</span>
       <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
       <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性] <small>（写路径）</small></span>
+      <span class="tk" data-t="msg">MSG [租户订阅 · HMAC 签名] <small>（消息路径）</small></span>
     </div>
     <div class="capt" id="capt"></div>
     <div class="flow-links">
@@ -355,9 +361,89 @@
   </div>
 </section>
 
-<!-- ============ 02 架构 ============ -->
+<!-- ============ 02 十四条架构判断 ============ -->
+<section id="beliefs">
+  <h2><span class="no">02</span>十四条架构判断（这个仓库在回答什么）</h2>
+  <p class="lead">
+    这个仓库由 14 条架构判断驱动（路线：<b>AI-Native</b>，不是 ERP + AI）。每一条都不是口号——
+    下表给出它的<b>机制落点</b>与<b>可重复执行的验证</b>；与业界判据的完整对照（含张力分析）见
+    <a href="architecture-alignment.md">docs/architecture-alignment.md</a>。
+  </p>
+  <table>
+    <tr><th style="width:34px">#</th><th style="width:250px">判断</th><th>本仓落点（机制）</th><th style="width:190px">验证</th><th style="width:64px">状态</th></tr>
+    <tr><td class="mono">1</td><td><b>AI-Native</b>，不是 ERP + AI</td>
+      <td>底座优先：AI 动作全走 T2/T3 + BO 合同 + 存量校验/幂等/审计，无平行权限体系；三口径对照证明「页面能看的 AI 也能看」</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">scene_1 三口径</a></td>
+      <td>✅</td></tr>
+    <tr><td class="mono">2</td><td>传统 ERP = <b>SoR + 确定性执行</b></td>
+      <td>Java 存量域：事务 + 业务幂等（同键重放首次结果）+ 稳定错误码；AI 只经 BO 合同进入，不绕过</td>
+      <td class="lnk">scene_6 幂等重放</td><td>✅</td></tr>
+    <tr><td class="mono">3</td><td><b>AI 是 ERP 内生</b>组成部分</td>
+      <td>内生 = 共享同一套本体/权限/审计与幂等（底座式），而非进程同体；BO 工具与页面同权限组件</td>
+      <td class="lnk">PermissionParityTest</td><td>✅</td></tr>
+    <tr><td class="mono">4</td><td><b>Ontology</b> = 统一语义模型 + 逻辑核心</td>
+      <td>语义三段式（投影/增量/原生）= 统一语义与校验核心（术语/指标/规则/护栏/能力问题唯一真相源）；「结构生成核心」为阶段二愿景</td>
+      <td class="lnk">scene_5 + 漂移检测</td><td>⚠️ 分阶段</td></tr>
+    <tr><td class="mono">5</td><td><b>Metadata</b> 是 Ontology 的输入与来源</td>
+      <td>投影段实时取存量元数据；漂移检测把「本体引用与元数据一致」做成可检验不变式（预埋漂移必检出）</td>
+      <td class="lnk"><span class="mono">drift_check.py</span></td><td>✅</td></tr>
+    <tr><td class="mono">6</td><td><b>多领域 Agent</b> + 协同组合</td>
+      <td>AP × 采购跨域委派：注册表协作清单 + act 委托链增长 + 子代理最小权限 T2；清单外委派 403</td>
+      <td class="lnk"><a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">scene_8 跨域诊断</a></td>
+      <td>✅</td></tr>
+    <tr><td class="mono">7</td><td>业务执行：Agent → API → 微服务 → 事务</td>
+      <td>hub 场景图 → 网关 MCP 代理 → Java BO API → 数据库事务；Jaeger 全链 trace</td>
+      <td class="lnk">顶部「读路径」动画</td><td>✅</td></tr>
+    <tr><td class="mono">8</td><td>流程以<b>预定义</b>为主，不要求自适应</td>
+      <td>LangGraph 图静态装配；模型只按动作契约（CONTRACTS）填意图与参数，不自主规划路径</td>
+      <td class="lnk"><span class="mono">hub/graphs/*</span></td><td>✅</td></tr>
+    <tr><td class="mono">9</td><td>业务规则：AI 可理解使用、<b>不可修改</b></td>
+      <td>护栏三层解析只加严（放松被拒）+ 解析留痕；规则经语义工具供理解；不存在任何写规则的模型工具</td>
+      <td class="lnk"><a href="http://localhost:8088/resolution" target="_blank" rel="noopener">scene_3 + 解析查看器</a></td>
+      <td>✅</td></tr>
+    <tr><td class="mono">10</td><td>触发：<b>Open API / Event / Scheduler</b></td>
+      <td>形态③无头（API）、形态④事件（outbox→Agent）、形态⑤定时（scheduler→Agent）</td>
+      <td class="lnk">scene_7</td><td>✅</td></tr>
+    <tr><td class="mono">11</td><td>人：执行者 → <b>确认者 / 例外处理者 / 监督者</b></td>
+      <td>审批台（三要素+快照+参数指纹）、挂起/唤醒（例外）、解析查看器 + 审计五要素 + 四问自检 + 成本对账（监督）</td>
+      <td class="lnk">scene_6 + E2E 19 项</td><td>✅</td></tr>
+    <tr><td class="mono">12</td><td>Agent 演进：先协同传统，终局替换部分执行</td>
+      <td>现处协同阶段；治理面（T3/审批/幂等/审计）<b>执行端无关</b>——替换发生时管控面零改动（架构对冲）</td>
+      <td class="lnk"><a href="token-design.md">token-design.md</a></td><td>✅ 阶段一</td></tr>
+    <tr><td class="mono">13</td><td>产品化：标品 core + <b>Metadata/Ontology/配置</b>适配</td>
+      <td>三层 harness：Standard → Partner（制造业行业包：术语/护栏/行业默认参数，按行业声明匹配）→ Tenant（阈值/口径/护栏叠加）</td>
+      <td class="lnk">scene_7 + 租检 37/37</td><td>✅</td></tr>
+    <tr><td class="mono">14</td><td>SaaS：<b>标品层/租户层隔离</b>，API / <b>Message</b> 扩展</td>
+      <td>跨租隔离 + 成本对账；BO API 扩展（规格即工具）+ <b>消息订阅</b>（topic × webhook × HMAC，按租户隔离投递出平台，吊销即停）</td>
+      <td class="lnk">scene_9 + tenant_checks</td><td>✅</td></tr>
+  </table>
+
+  <h3 style="margin-top:26px">三个张力点（判断之间需要表态的地方）</h3>
+  <div class="grid c3" style="margin-top:10px">
+    <div class="card"><h4>A · 内生 vs 旁挂拓扑</h4>
+      <p>本仓拓扑是「Python 底座 + Java 存量」两套栈。判据不是进程同体，而是<b>管控复用</b>：
+      AI 与页面共享同一套权限/审计/幂等（三口径可验证）——底座优先是 AI 原生的合法路线。</p></div>
+    <div class="card"><h4>B · Ontology 的方向性</h4>
+      <p>判断 4（逻辑核心）与判断 5（元数据是来源）存在张力：元数据推导出的本体是「镜子」。
+      分阶段表述：先做<b>统一语义与校验核心</b>（已达成），再演进为<b>结构生成核心</b>（阶段二）。</p></div>
+    <div class="card"><h4>C · 替换终局的对冲</h4>
+      <p>判断 12 的终局（替换部分传统执行）与判断 2（存量确定性）如何兼容？治理面在
+      <b>网关/合同层</b>而不在 Java——执行端换成任何东西，只要履行同一 BO 合同，管控面零改动。</p></div>
+  </div>
+  <h3 style="margin-top:22px">两条升格（本仓有、而 14 条没有的）</h3>
+  <div class="grid c2" style="margin-top:10px">
+    <div class="card"><h4>15 · 可验证性是一等公民</h4>
+      <p>50 锚点评测六类（含幻觉/诱导两个负向类）；30 条能力问题与评测用例<b>同源绑定</b>；
+      mock/replay/live 三态 + 按请求钉定——<b>连护栏本身都被评测</b>。</p></div>
+    <div class="card"><h4>16 · 口径互证作为治理基础设施</h4>
+      <p>三口径权限对照、成本台账 vs 审计对账、四问自检——「监督者」角色的数据基础设施，
+      全部自动化可复跑。</p></div>
+  </div>
+</section>
+
+<!-- ============ 03 架构 ============ -->
 <section id="arch">
-  <h2><span class="no">02</span>架构与部署（L0 七层 → 四个服务）</h2>
+  <h2><span class="no">03</span>架构与部署（L0 七层 → 四个服务）</h2>
   <div class="arch">
     <div class="row">
       <div class="node"><b><a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面内嵌 copilot</a></b><span>形态① Thymeleaf+SSE :8080</span></div>
@@ -368,7 +454,7 @@
     </div>
     <div class="arrow">SSO / OAuth 授权码（T1，scope=[chat]）</div>
     <div class="row">
-      <div class="node gw"><b>ai-gateway · erp-ai-action</b><span>注册中心 · 逐跳令牌 · MCP 代理 · 审批 OT · 模型网关 · 审计/成本/OTel</span></div>
+      <div class="node gw"><b>ai-gateway · erp-ai-action</b><span>注册中心 · 逐跳令牌 · MCP 代理 · 审批 OT · 模型网关 · 消息分发（租户订阅） · 审计/成本/OTel</span></div>
     </div>
     <div class="arrow">T2（场景∩Agent 清单）↓ &nbsp;&nbsp;↑ 挂起/唤醒（interrupt）</div>
     <div class="row">
@@ -405,12 +491,19 @@
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断：AP 归因 + 采购取证 → 供应商超开结论</a>
       </div></div>
+    <div class="card"><h4>Message 扩展 <span class="tag">scene_9</span></h4>
+      <p>租户通过<b>消息订阅</b>扩展自己的系统（不动标品核心）：注册（topic × webhook × 签名密钥）→
+      领域事件按（租户 × topic）<b>隔离投递</b>出平台，HMAC-SHA256 签名可验、投递全程审计、
+      吊销即停；与形态④互补——事件进 Agent（平台内）vs 事件出平台（租户侧）。</p>
+      <div class="try"><b>&#9654; 在线演示：</b>
+        <span class="mono">python scripts/demo/scene_9.py</span>（本机起租户 webhook 接收器，现场看隔离投递）
+      </div></div>
   </div>
 </section>
 
-<!-- ============ 03 八幕 ============ -->
+<!-- ============ 04 九幕 ============ -->
 <section id="scenes">
-  <h2><span class="no">03</span>八幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
+  <h2><span class="no">04</span>九幕演示（每幕 = 一组脚本化断言 + 可点击在线版）</h2>
   <table>
     <tr><th style="width:66px">幕</th><th>内容</th><th style="width:66px">类型</th><th style="width:250px">命令（退出码即结论）</th><th style="width:300px">在线演示（登录后自动发起）</th></tr>
     <tr><td class="mono">scene_1</td><td><b>事故复现</b>：同一份数据，页面 ~50 / Open API 5000+（约 100 倍）/ BO API 同权限口径 + 披露</td>
@@ -437,16 +530,19 @@
     <tr><td class="mono">scene_8</td><td><b>多领域 Agent 协同</b>：AP 归因 → 委派采购域取证（协作清单 + act 链 + 最小权限）→ 综合根因（供应商超开 20 件）</td>
       <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_8.py</td>
       <td class="lnk"><a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断 · lisi</a><a href="http://localhost:8088/chat?scene=proc.diag&amp;q=PO-A-0001%20%E7%9A%84%E8%AE%A2%E5%8D%95%E5%92%8C%E6%94%B6%E8%B4%A7%E6%83%85%E5%86%B5%E6%80%8E%E4%B9%88%E6%A0%B7%EF%BC%9F" target="_blank" rel="noopener">采购查询 · lisi</a></td></tr>
+    <tr><td class="mono">scene_9</td><td><b>Message 扩展</b>：租户消息订阅（topic × webhook × HMAC）→ 领域事件按租户隔离投递出平台 → 吊销即停；与形态④互补（事件进 Agent vs 出平台）</td>
+      <td><span class="pill code">事件</span></td><td class="mono">python scripts/demo/scene_9.py</td>
+      <td class="lnk"><a href="demo-script.md">无浏览器面（管理侧 API + 本机 webhook，见剧本）</a></td></tr>
   </table>
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     退出码约定：0 = 断言全过 · 1 = 失败 · 2 = 服务不可达（CI 可直接用）。浏览器人工版第 6 幕 = WorkBuddy 用户旅程，
-    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">八幕演示剧本</a>。
+    见 <code>python scripts/e2e_workbuddy.py</code>（Playwright，19 项检查）。完整讲解词见 <a href="demo-script.md">九幕演示剧本</a>。
   </p>
 </section>
 
-<!-- ============ 04 使用 ============ -->
+<!-- ============ 05 使用 ============ -->
 <section id="quickstart">
-  <h2><span class="no">04</span>如何使用</h2>
+  <h2><span class="no">05</span>如何使用</h2>
 
   <div class="step">
     <div class="n">1</div>
@@ -509,7 +605,7 @@ python -X utf8 erp-ai-context/drift/drift_check.py --base legacy-erp-ap
 <span class="c"># 汇总报告 → docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 八幕演示 + 无头 MCP（形态③）</span>
+<span class="c"># 九幕演示 + 无头 MCP（形态③）</span>
 python scripts/demo/scene_1.py   <span class="c"># … 至 scene_6</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
@@ -541,9 +637,9 @@ docker-compose up -d --build</pre>
   </div>
 </section>
 
-<!-- ============ 05 目录与文档 ============ -->
+<!-- ============ 06 目录与文档 ============ -->
 <section id="docs">
-  <h2><span class="no">05</span>仓库结构与延伸阅读</h2>
+  <h2><span class="no">06</span>仓库结构与延伸阅读</h2>
   <pre>boapi-spec/bo-ap.yaml   <span class="c">★ 全项目唯一规格真源（OpenAPI 3.1 + x-bo-extensions），其余全派生</span>
 legacy-erp-ap/          <span class="c">Java 存量域（UI/BO/Open 三口径 API + 规则引擎 + PermissionService + MCP）</span>
 erp-ai-action/          <span class="c">Python AI 网关（注册中心 / 令牌 / 审批 OT / 模型网关 / 审计 / 成本 / OTel）</span>
@@ -552,7 +648,7 @@ erp-ai-context/         <span class="c">语义服务（三段式语义文件 + �
 harness-assets/         <span class="c">标品资产层（standard/ + tenant-east/ + tenant-uni/）</span>
 workbuddy/              <span class="c">React 助手平台（OAuth / 聊天 / 审批 / 通知 / 解析查看器 / 深链）</span>
 eval/                   <span class="c">50 条锚点用例 + 三层 runner（deterministic / judge / 采样）</span>
-scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 八幕演示 + 无头 CLI</span>
+scripts/                <span class="c">检验体系（租检 / 自检 / 报告）+ 九幕演示 + 无头 CLI</span>
 compose/                <span class="c">docker-compose 一键起（postgres / jaeger / 五服务）</span>
 docs/                   <span class="c">映射表 · 演示剧本 · 令牌设计 · Windows 注意事项 · 验证报告</span></pre>
   <div class="grid c2">
@@ -560,8 +656,10 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 每一章落在哪个目录、怎么验证（含规格派生关系与版本四件套）。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、拦截链六检查、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>八幕演示剧本</h4>
-      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 32 分钟节奏。</p></div>
+    <div class="card"><h4>九幕演示剧本</h4>
+      <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词（对应总纲第 13 章叙事）+ 断言要点 + 浏览器路径 + 35 分钟节奏。</p></div>
+    <div class="card"><h4>14 条判断对照分析</h4>
+      <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 14 条架构判断 × 本仓逐条对照（一致性 / 张力 / 缺口 / 补齐记录）。</p></div>
     <div class="card"><h4>Windows 注意事项</h4>
       <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / localhost vs 127.0.0.1 / 管道退出码 / 数据复位。</p></div>
   </div>
@@ -607,7 +705,15 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
     { n: [2], tk: [], c: "<b>⑦ 综合归因</b>　AP 差异 + 采购上下文 → 根因 = <b>供应商超开 20 件</b>（订单量 = 收货量 &lt; 开票量）；处置：红字冲销或按实收重开" },
     { n: [0, 2], tk: [], c: "<b>⑧ 完成与留痕</b>　双 Agent 审计（ap-copilot + proc-copilot，含委派链）；负向保证：清单外 / 反向 / 跨租委派一律 403 GW.DELEGATION_NOT_ALLOWED" }
   ];
-  var STEPS = { read: READ, write: WRITE, xdom: XDOM };
+  var MSG = [
+    { n: [5], tk: [], c: "<b>① 领域事件产生</b>　Java 存量域判定发票 BLOCKED → 幂等写入 outbox（事件契约 ap.invoice.blocked：租户 / 组织 / 金额 / 阻断发现）" },
+    { n: [5, 2], tk: [], c: "<b>② hub 事件线程拉取（形态④）</b>　轮询 /internal/events 并确认 → 无头诊断（event-diag 代理，T2 代表执行）→ 通知李四" },
+    { n: [2, 1], tk: ["msg"], c: "<b>③ 事件扇出至网关</b>　hub 调 /internal/events/dispatch —— 消息分发与平台内消费<b>同源同事件</b>，不是两套事件" },
+    { n: [1], tk: ["msg"], c: "<b>④ 订阅匹配（租户 × topic）</b>　只投本租户的活跃订阅：T-EAST 命中、T-UNI 不投——SaaS 标品层/租户层隔离在消息通道同样成立" },
+    { n: [1, 7], tk: ["msg"], c: "<b>⑤ 投递 + HMAC 签名</b>　POST 租户 webhook（X-ERP-Signature: sha256=…）→ 租户侧验签后执行自己的扩展逻辑；平台不开放核心改造" },
+    { n: [7, 1], tk: [], c: "<b>⑥ 投递留痕与生命周期</b>　每次投递审计（event.dispatch）；吊销订阅对后续投递即时生效；事件重投（republish）可补发——订阅方调试/补投的标准能力" }
+  ];
+  var STEPS = { read: READ, write: WRITE, xdom: XDOM, msg: MSG };
   var mode = "read", idx = 0, timer = null, restartTimer = null;
   var chain = document.getElementById("chain");
   var packet = document.getElementById("packet");
@@ -617,11 +723,13 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
   var btnRead = document.getElementById("modeRead");
   var btnWrite = document.getElementById("modeWrite");
   var btnXdom = document.getElementById("modeXdom");
+  var btnMsg = document.getElementById("modeMsg");
   var btnReplay = document.getElementById("replay");
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function apprNode() { return nodes[6]; }
   function procNode() { return nodes[3]; }
+  function tenNode() { return nodes[7]; }
   function centers() {
     // 可见节点 data-i -> 中心坐标。两个可隐藏节点（3 采购图 / 6 审批台）夹在链路中间，
     // 必须按 data-i 映射（不能按可见序号），否则包的落点会错位。
@@ -638,13 +746,14 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
     var step = STEPS[mode][idx];
     apprNode().style.display = (mode === "write") ? "" : "none";
     procNode().style.display = (mode === "xdom") ? "" : "none";
+    tenNode().style.display = (mode === "msg") ? "" : "none";
     var cs = centers();
     nodes.forEach(function (nd) {
       var di = nd.getAttribute("data-i");
       var on = step.n.indexOf(Number(di)) >= 0;
       var cur = String(step.n[step.n.length - 1]) === di;
       nd.className = "fnode" + (di === "6" ? " appr" : "") + (di === "3" ? " proc" : "")
-        + (on ? " on" : "") + (cur ? " cur" : "");
+        + (di === "7" ? " ten" : "") + (on ? " on" : "") + (cur ? " cur" : "");
     });
     chips.forEach(function (ch) {
       ch.className = "tk" + (step.tk.indexOf(ch.getAttribute("data-t")) >= 0 ? " on" : "");
@@ -663,28 +772,43 @@ docs/                   <span class="c">映射表 · 演示剧本 · 令牌设�
     if (reduceMotion) { render(); return; }
     if (timer) clearTimeout(timer);
     timer = setTimeout(function () {
-      if (idx < STEPS[mode].length - 1) { idx += 1; render(); schedule(); }
-      else if (restartTimer) clearTimeout(restartTimer);
-      restartTimer = setTimeout(function () { idx = 0; render(); schedule(); }, 3600);
+      if (idx < STEPS[mode].length - 1) {
+        idx += 1; render(); schedule();
+      } else {
+        // 仅在最后一步挂循环重启（挂前必清）；步进 tick 内不挂——否则每个 tick
+        // 泄漏一个重启定时器，动画会莫名跳回第①步
+        if (restartTimer) clearTimeout(restartTimer);
+        restartTimer = setTimeout(function () { idx = 0; render(); schedule(); }, 3600);
+      }
     }, 2500);
   }
-  function start() { idx = 0; render(); schedule(); }
+  function start() {
+    idx = 0;
+    // 两个定时器都要清：切模式/重播时若留有上一轮的循环重启定时器，
+    // 它会把 idx 反复归零，表现为动画卡在第①步
+    if (timer) clearTimeout(timer);
+    if (restartTimer) clearTimeout(restartTimer);
+    render();
+    schedule();
+  }
   function setMode(m) {
     mode = m;
-    [btnRead, btnWrite, btnXdom].forEach(function (b) { b.classList.remove("on"); });
-    ({ read: btnRead, write: btnWrite, xdom: btnXdom })[m].classList.add("on");
+    [btnRead, btnWrite, btnXdom, btnMsg].forEach(function (b) { b.classList.remove("on"); });
+    ({ read: btnRead, write: btnWrite, xdom: btnXdom, msg: btnMsg })[m].classList.add("on");
     start();
   }
   btnRead.addEventListener("click", function () { setMode("read"); });
   btnWrite.addEventListener("click", function () { setMode("write"); });
   btnXdom.addEventListener("click", function () { setMode("xdom"); });
+  btnMsg.addEventListener("click", function () { setMode("msg"); });
   btnReplay.addEventListener("click", start);
   window.addEventListener("resize", function () { render(); });
   if (reduceMotion) {
-    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写 / 跨域」路径查看分步说明（自动播放已关闭）。";
+    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写 / 跨域 / 消息」路径查看分步说明（自动播放已关闭）。";
     nodes.forEach(function (nd) { nd.className = nd.className + " on"; });
     apprNode().style.display = "none";
     procNode().style.display = "none";
+    tenNode().style.display = "none";
   } else { start(); }
 })();
 </script>
