@@ -24,6 +24,7 @@ class Settings:
     # 网关与存量域
     gw_base = _env("GW_BASE", "http://localhost:8000")
     erp_ap_base = _env("ERP_AP_BASE", "http://localhost:8080")
+    semantics_base = _env("SEMANTICS_BASE", "http://localhost:8002")
     # 后端客户凭据（exchange 换 T2 / 模型网关调用）
     hub_client_id = "erp-ai-hub"
     hub_client_secret = _env("HUB_CLIENT_SECRET", "hub-demo-secret")

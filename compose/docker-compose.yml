@@ -61,10 +61,15 @@ services:
       ERP_AP_BASE: ${ERP_AP_BASE:-http://legacy-erp-ap:8080}
       GW_INTERNAL_SECRET: ${GW_INTERNAL_SECRET}
       JAEGER_OTLP: ${JAEGER_OTLP:-http://jaeger:4318}
+      # 租户配置存储（产品化配置界面）：DB 层优先，未配置/不可达回落文件层
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp}:${POSTGRES_PASSWORD:-erp-demo-pwd}@postgres:5432/erp
     ports:
       - "8002:8002"
     depends_on:
-      - legacy-erp-ap
+      postgres:
+        condition: service_healthy
+      legacy-erp-ap:
+        condition: service_started
 
   # ---------- AI 网关（appid: erp-ai-action） ----------
   ai-gateway:
@@ -118,6 +123,7 @@ services:
       HUB_CLIENT_SECRET: ${HUB_CLIENT_SECRET}
       JAEGER_OTLP: ${JAEGER_OTLP:-http://jaeger:4318}
       GW_JWT_SECRET: ${GW_JWT_SECRET}
+      SEMANTICS_BASE: ${SEMANTICS_BASE:-http://semantics:8002}
       SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-1}
       SCHEDULER_INTERVAL: ${SCHEDULER_INTERVAL:-180}
     ports:

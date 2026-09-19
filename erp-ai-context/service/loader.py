@@ -42,8 +42,8 @@ def load_spec() -> dict:
     return _cached("spec", 30, _load)
 
 
-def load_overlay(tenant_id: str | None) -> dict | None:
-    """租户 A0 叠加（不存在则 None —— 全部回退 Standard 层）。"""
+def load_file_overlay(tenant_id: str | None) -> dict | None:
+    """租户叠加的文件层（标品出厂默认；产品化配置的回退基准）。"""
     if not tenant_id:
         return None
     overlays_dir = BASE_DIR / "overlays"
@@ -52,6 +52,20 @@ def load_overlay(tenant_id: str | None) -> dict | None:
         if data.get("tenant_id") == tenant_id:
             return data
     return None
+
+
+def load_overlay(tenant_id: str | None) -> dict | None:
+    """租户 A0 叠加：DB 层（管理端可改，产品化配置）优先，文件层为出厂默认/回退。"""
+    if not tenant_id:
+        return None
+    try:  # 惰性导入：无 DB/psycopg2 环境下文件层照常工作
+        from service import config_store
+        stored = config_store.get_stored(tenant_id)
+        if stored is not None:
+            return stored["config"]
+    except Exception:  # noqa: BLE001 —— 存储异常回落文件层，不阻断语义工具
+        pass
+    return load_file_overlay(tenant_id)
 
 
 def load_partner(tenant_id: str | None) -> dict | None:

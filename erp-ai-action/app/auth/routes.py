@@ -144,8 +144,13 @@ def oauth_token(grant_type: str = Form(...), code: str = Form(...),
 @router.get("/gw/auth/whoami")
 def whoami(request: Request):
     claims = require_t1(request)
-    return {"sub": claims["sub"], "tenantId": claims.get("tid"), "azp": claims.get("azp"),
-            "displayName": claims.get("name"), "scope": claims.get("scope", [])}
+    sub = claims["sub"]
+    username = sub[2:] if sub.startswith("u-") else sub
+    tenant = claims.get("tid")
+    from app.config import settings
+    return {"sub": sub, "tenantId": tenant, "azp": claims.get("azp"),
+            "displayName": claims.get("name"), "scope": claims.get("scope", []),
+            "configAdmin": username in (settings.config_admins.get(tenant) or [])}
 
 
 # ---------------------------------------------------------------- 令牌交换（T2）

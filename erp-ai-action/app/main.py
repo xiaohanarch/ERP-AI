@@ -15,6 +15,7 @@ from app.mcp.gateway import router as mcp_router
 from app.mcp.tool_registry import tool_registry
 from app.modelgw import routes as modelgw_routes
 from app.platform_routes import router as platform_router
+from app.config_routes import router as config_router
 from app.registry import routes as registry_routes
 from app.subscriptions import routes as subscription_routes
 
@@ -39,6 +40,7 @@ app.include_router(modelgw_routes.router)
 app.include_router(chat_router)
 app.include_router(platform_router)
 app.include_router(subscription_routes.router)
+app.include_router(config_router)
 
 
 @app.on_event("startup")

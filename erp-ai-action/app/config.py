@@ -49,6 +49,10 @@ class Settings:
     approvers: dict = field(default_factory=lambda: json.loads(
         _env("GW_APPROVERS_JSON", '{"T-EAST": ["wangwu"], "T-UNI": ["sunba"]}')))
 
+    # 租户配置管理员（产品化配置界面：租户 -> 可经管理端改本租配置的用户）
+    config_admins: dict = field(default_factory=lambda: json.loads(
+        _env("GW_CONFIG_ADMINS_JSON", '{"T-EAST": ["wangwu"], "T-UNI": ["sunba"]}')))
+
     # SoD 互斥组（演示口径：税码变更与付款执行不得同一主体持有）
     sod_conflicts: tuple = (("ap-tax-write", "ap-payment"),)
 
