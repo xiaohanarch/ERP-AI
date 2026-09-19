@@ -1,5 +1,5 @@
 {
-  "spec_version": "1.0.0",
+  "spec_version": "1.1.0",
   "ruleset_version": "AP-RS-1.2.0",
   "seed_version": "ap-seed-1.0.0",
   "appid": "erp-ap",
@@ -236,6 +236,115 @@
                 "invoice": 120,
                 "goods_receipt": 100,
                 "diff": 20
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "proc.po.getDetail",
+      "summary": "采购订单详情（采购域最小切片，跨域协同标的）",
+      "description": "采购域只读切片：按采购订单号返回订单头（状态/供应商/组织/日期）与行明细\n（物料/订购数量/单价），并按行汇总已收数量。跨域协同诊断的标的 ——\nAP 域只能看到「发票 120 vs 收货 100」的差异，短交还是超开要结合\n采购域的订单量才能定位（本例订单 100 = 已收 100，故为供应商超开）。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.po.read"
+      ],
+      "error_codes": [
+        "AP.PO_NOT_FOUND",
+        "AP.PERMISSION_DENIED"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/proc/pos/{poNo}"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "poNo": {
+            "type": "string",
+            "description": "采购订单号（如 PO-A-0001）"
+          }
+        },
+        "required": [
+          "poNo"
+        ]
+      },
+      "binding": {
+        "poNo": {
+          "in": "path",
+          "name": "poNo"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-INV-A-001 超开归因（订单 100 = 已收 100 < 开票 120）",
+          "request": {
+            "poNo": "PO-A-0001"
+          },
+          "expect": {
+            "status": "POSTED",
+            "lines_contains": [
+              {
+                "item": "轴承",
+                "orderQty": 100,
+                "receivedQty": 100
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "proc.gr.listForPo",
+      "summary": "采购订单的收货单列表（交付进度取证）",
+      "description": "采购域只读切片：返回某采购订单下的全部收货单（单号/日期/行明细数量），\n与 proc.po.getDetail 配合构成采购侧归因的取证数据（收货是否完整、何时收的）。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.gr.read"
+      ],
+      "error_codes": [
+        "AP.PO_NOT_FOUND",
+        "AP.PERMISSION_DENIED"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/proc/grs"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "poNo": {
+            "type": "string",
+            "description": "采购订单号"
+          }
+        },
+        "required": [
+          "poNo"
+        ]
+      },
+      "binding": {
+        "poNo": {
+          "in": "query",
+          "name": "poNo"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-收货完整取证（PO-A-0001 已收齐 100）",
+          "request": {
+            "poNo": "PO-A-0001"
+          },
+          "expect": {
+            "receipts_contains": [
+              {
+                "grNo": "GR-A-0001",
+                "item": "轴承",
+                "qty": 100
               }
             ]
           }
