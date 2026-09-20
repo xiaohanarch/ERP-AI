@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERP-AI · ERP 的 AI 技术参考架构（可运行演示 · 汇报版）</title>
+<title>ERP AI · L1 级参考架构（可运行演示 · 汇报版）</title>
 <style>
   :root {
     --paper: #f3f2ee;
@@ -310,7 +310,7 @@
   .cm-files {
     background: var(--navy); color: #dfe4f5; border-radius: 10px; padding: 14px 18px;
     font-size: 12.5px; line-height: 1.9; overflow-x: auto; margin: 10px 0;
-    font-family: var(--mono);
+    font-family: var(--mono); white-space: pre-wrap;
   }
   .cm-files .c { color: #7c88a8; }
   .cm-files .hl { color: #9fb0ff; font-weight: 600; }
@@ -459,7 +459,7 @@
 
 <nav class="toc">
   <div class="in">
-    <span class="brand">ERP-AI</span>
+    <span class="brand">ERP AI</span>
     <a href="#flow">00 场景动画</a>
     <a href="#why">01 这是什么</a>
     <a href="#logic">02 逻辑架构</a>
@@ -477,10 +477,11 @@
 
 <header>
   <div class="wrap">
-    <div class="crumb">Agentic-ERP · Reference Architecture · Runnable Demo</div>
-    <h1>把 ERP 的 AI 架构做成<br><em>能跑、能验、能审计</em>的工程</h1>
+    <div class="crumb">ERP AI · L1 Reference Architecture · Runnable Demo</div>
+    <h1>ERP AI<br><em>L1 级参考架构</em></h1>
     <p class="sub">
-      这是一份给决策层的 ERP AI 技术参考架构汇报，配一套<b style="color:#e8ecfa">可以现场跑起来的演示系统</b>。
+      把 ERP 的 AI 架构做成<b style="color:#e8ecfa">能跑、能验、能审计</b>的工程——这是一份给决策层的技术参考架构汇报，
+      配一套<b style="color:#e8ecfa">可以现场跑起来的演示系统</b>。
       核心主张一句话：<b style="color:#e8ecfa">AI 要长在 ERP 里，而不是挂在 ERP 旁边</b>——AI 替人办事时，
       必须天然复用 ERP 已有的权限、校验、审计，而不是自己另搞一套。全文所有机制都有代码落点、
       可重复执行的验证和真实运行的页面。
@@ -2129,17 +2130,30 @@ completeness.put(<span class="hl">"skippedRuleGroups"</span>, evaluation.skipped
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--bad)">AP-6</span><span class="t">元数据接口 —— 语义层的喂养源</span><span class="dir">legacy-erp-ap/…/metadata/MetadataController.java + service/MetadataRegistry.java</span></div>
+    <div class="mh"><span class="lv" style="background:var(--bad)">AP-6</span><span class="t">元数据接口 —— 把「户口本」开放给语义层</span><span class="dir">legacy-erp-ap/…/metadata/MetadataController.java + service/MetadataRegistry.java</span></div>
     <div class="mb">
-      <p>AP 要把自己的「户口本」开放出来：实体清单、字段、枚举、规则清单。
-      语义层的投影段实时读它生成（自动喂养）；漂移检测拿它当比对基准。
-      <b>不开放元数据，知识库就只能手工维护——必然腐烂。</b></p>
-      <div class="cm-files">@GetMapping                                          <span class="c">// GET /metadata —— 全量：实体/字段/枚举/规则版本</span>
-public Map&lt;String, Object&gt; full() { return registry.full(); }
+      <p><b>做什么：</b>AP 通过一个只读接口，把自己的「户口本」实时开放出去——有哪些业务对象、
+      每个对象有哪些字段和枚举、当前有哪些规则。<b>为什么必须 AP 来做：</b>这份户口本只有 AP 自己知道，
+      平台和 AI 团队谁也替不了。</p>
+      <p><b>举个例子：</b>AP 下个版本给发票新增了「币种」字段，还上线了一个新对象「费用报销单」——</p>
+      <div class="cm-files"><span class="c"># 没有这个接口（手工维护知识库的老路）：</span>
+AP 加了币种字段 → 知识库没人跟着更新 → AI 不知道这个字段存在
+→ 用户问「这张发票什么币种」，AI 只能答不知道，或者瞎编
 
-@GetMapping("/entities")                              <span class="c">// 语义层 effective_projection 的数据源</span>
-public Map&lt;String, Object&gt; entities() { return registry.entities(); }</div>
-      <div class="cm-verify"><b>验证：</b>scene_11（投影段与 /metadata 完全一致；未手写实体自动出现）</div>
+<span class="c"># 有了这个接口（自动喂养）：</span>
+AP 加了币种字段 → /metadata 下一秒就返回新字段
+→ 语义层实时读到；新对象「费用报销单」自动出现在实体清单
+→ 用户直接问「费用报销单有哪些字段」——AI 团队一行代码没改</div>
+      <div class="cm-files">@GetMapping                                 <span class="c">// GET /metadata：全量户口本</span>
+public Map&lt;String, Object&gt; full() {
+    return registry.full();                    <span class="c">// 实体 / 字段 / 枚举 / 规则版本</span>
+}
+
+@GetMapping("/entities")                       <span class="c">// 语义层投影段的数据源（60s 缓存）</span>
+public Map&lt;String, Object&gt; entities() {
+    return registry.entities();
+}</div>
+      <div class="cm-verify"><b>验证：</b>scene_11 —— 投影段实体清单与 /metadata 返回完全一致；语义文件从未手写的「采购订单行 / 收货行」自动出现</div>
     </div>
   </div>
 
@@ -2153,17 +2167,25 @@ public Map&lt;String, Object&gt; entities() { return registry.entities(); }</div
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--bad)">AP-8</span><span class="t">本体驱动引擎的宿主 —— 派生字段求值</span><span class="dir">legacy-erp-ap/…/service/DerivedFieldService.java</span></div>
+    <div class="mh"><span class="lv" style="background:var(--bad)">AP-8</span><span class="t">派生字段引擎 —— AP 出「计算器」，算什么由本体说了算</span><span class="dir">legacy-erp-ap/…/service/DerivedFieldService.java</span></div>
     <div class="mb">
-      <p>AP 提供通用求值引擎（零字段特定逻辑）：本体增量段声明的派生字段经构建期生成器产出定义文件，
-      引擎声明式求值。<b>本体改定义、重建，API 能力随之改变——AP 不写字段代码。</b></p>
-      <div class="cm-files"><span class="c">// 声明式 compute：{ op: subtract, left: amount_cny, right: paid_cny }</span>
-BigDecimal value = switch (compute.path("op").asText()) {
-    case "subtract" -&gt; left.subtract(right);
-    case "add"      -&gt; left.add(right);
-    default -&gt; throw BoApiException.validation("AP.VALIDATION_ERROR", "不支持的计算式");
-};</div>
-      <div class="cm-verify"><b>验证：</b>scene_11 驱动半场（unpaid_cny=3400.00 含公式/版本取证）</div>
+      <p><b>做什么：</b>AP 提供一个通用的「字段计算器」，但<b>不写死任何具体计算</b>——算什么、怎么算，
+      全部来自语义层（本体）的定义文件。<b>打个比方：</b>AP 交付的是 Excel 程序本身，公式写在表格里——
+      改公式不用重装 Excel。</p>
+      <p><b>举个例子：</b>财务想要一个新指标「未付金额」（发票金额减已付金额）——</p>
+      <div class="cm-files"><span class="c"># 老做法（计算写死在 AP 代码里）：提需求 → 开发 → 测试 → 发版，两周起步</span>
+
+<span class="c"># 现在的做法（本体声明式）：语义文件增量段加三行——</span>
+derived_fields:
+  - name: unpaid_cny
+    compute: { op: subtract, left: amount_cny, right: paid_cny }
+
+<span class="c"># → 跑一次生成器、重建镜像，BO API 立即多出 ap.invoice.getDerivedField 能力</span>
+<span class="c"># → Java 零业务代码：引擎按声明反射读取 Invoice 的两个字段相减</span></div>
+      <p><b>为什么引擎在 AP、定义在语义层：</b>计算必须读 AP 的实体字段（amount_cny、paid_cny），
+      只有 AP 能执行；但「未付金额怎么算」是业务口径，属于语义资产——两边各干自己擅长的事。
+      本体改定义、重建，<b>API 能力随之改变</b>。</p>
+      <div class="cm-verify"><b>验证：</b>scene_11 驱动半场 —— unpaid_cny = 3400.00（含公式 / 基字段 / 语义版本取证）；未在本体定义的字段被拒（AP.DERIVED_FIELD_NOT_FOUND）</div>
     </div>
   </div>
 
@@ -2207,37 +2229,49 @@ payload: { tenantId, orgId, invoiceNo, amountCny, findings[] }   <span class="c"
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-3</span><span class="t">SoD 互斥与 Agent 协作清单治理</span><span class="dir">erp-ai-action/app/db.py（注册表种子）</span></div>
+    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-3</span><span class="t">SoD 互斥与协作清单 —— 谁能用什么、谁能委托谁</span><span class="dir">erp-ai-action/app/db.py（注册表种子：规则内容在这，注册机制在平台）</span></div>
     <div class="mb">
-      <p>注册中心是平台建的，但<b>清单内容是治理决策</b>：哪些工具互斥（申请与审批不可同 Agent）、
-      哪个 Agent 可以委派哪个——这是跨产品的职责分离规则，归应用层。</p>
-      <div class="cm-files"><span class="c"># Agent 种子（治理决策在这，注册机制在平台）</span>
-_SEED_AGENTS = [
-  ("ap-copilot", "应付 Copilot", "T-EAST",
-   _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "lisi",
-   <span class="hl">["proc-copilot"]</span>),      <span class="c"># delegates_to：允许委派采购域（清单外 403）</span>
-  ("proc-copilot", "采购查询 Copilot", "T-EAST", _PROC_TOOLS, "lisi", []),
-]
-<span class="c"># SoD 互斥：ap.taxcode.write 与 ap.payment.execute 分属不同互斥组（bo-ap.yaml x-bo-sod-group）</span></div>
-      <div class="cm-verify"><b>验证：</b>scene_3（SoD 注册被拒）+ scene_8（清单外/反向/跨租委派 403）</div>
+      <p><b>两条跨产品的治理规则，各举个例子：</b></p>
+      <p><b>① SoD 互斥（申请与审批必须分家）：</b>如果一个 Agent 同时能「申请付款」和「审批付款」，
+      等于自己申请自己批——所以这两个工具分属不同互斥组，<b>同一 Agent 不能同时持有</b>，
+      注册时网关直接拒绝（GW.SOD_CONFLICT）。这不是 AP 一家的规则：采购、费用都有同样的申请/审批分家，
+      是全 ERP 的职责分离原则。</p>
+      <p><b>② 协作清单（谁能委托谁）：</b>应付 Agent 查发票数量差异，根因要到采购域取证——它能委托采购 Agent 吗？看清单：</p>
+      <div class="cm-files"><span class="c"># 应付 Agent 的注册种子：delegates_to 声明它可委托谁</span>
+("ap-copilot", "应付 Copilot", "T-EAST",
+ _READ_TOOLS + _TAX_TOOLS + _SEMANTIC_TOOLS, "lisi",
+ <span class="hl">["proc-copilot"]</span>)        <span class="c"># ← 只能委托采购域，别的都 403</span>
+
+<span class="c"># 网关第七道校验的实际效果：</span>
+ap-copilot    委托 proc-copilot    → 放行（在清单内）
+ap-copilot    委托 rogue-agent     → 403（清单外，GW.DELEGATION_NOT_ALLOWED）
+proc-copilot  反向委托 ap-copilot  → 403（不在它的清单里）
+跨租户委托                         → 403（租户校验另拦）</div>
+      <p><b>为什么归应用层：</b>注册中心是平台建的，但「谁和谁互斥、谁信任谁」是跨产品的治理决策——
+      如果 AP 私设「我可以委托任何人」，跨域协同的信任链就断了。</p>
+      <div class="cm-verify"><b>验证：</b>scene_3（SoD 注册被拒）+ scene_8（清单外 / 反向 / 跨租委派全部 403）</div>
     </div>
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-4</span><span class="t">跨产品语义口径仲裁</span><span class="dir">erp-ai-context（三段式规范 + 术语边）</span></div>
+    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-4</span><span class="t">跨产品语义口径 —— 同一个词，谁说了算</span><span class="dir">erp-ai-context（三段式规范 + 租户术语映射）</span></div>
     <div class="mb">
-      <p>「进货单」在华东制造指采购订单、在星联科技指收货单——同一术语两租户两条边。
-      术语冲突的仲裁、三段式语义文件的规范（投影/增量/原生各放什么）、跨产品术语的统一登记，
-      归应用层；各产品只维护自己域的口径资产。</p>
-      <div class="cm-files"><span class="c"># 语义文件三段式规范（结构归应用层，内容归产品+租户）</span>
-semantics:
-  projection:   <span class="c"># 有什么 —— /metadata 自动喂养（人不写）</span>
-  increment:    <span class="c"># 什么意思怎么算 —— 人只写机器推不出的（术语/派生字段/指标口径）</span>
-    derived_fields:
-      - name: unpaid_cny
-        compute: { op: subtract, left: amount_cny, right: paid_cny }
-  native:       <span class="c"># 怎么动 —— 引用 bo-ap.yaml 规格（能力问题清单）</span></div>
-      <div class="cm-verify"><b>验证：</b>scene_5（双租同题不同答）+ scene_11（喂养 + 漂移检测）</div>
+      <p><b>问题是什么：</b>同一个业务词，在不同租户、不同产品嘴里可能指不同的东西。</p>
+      <p><b>举个例子：</b>「进货单」这个词——</p>
+      <div class="cm-files"><span class="c"># 华东制造（制造业）的财务说「进货单」：先有订单才有货 → 指采购订单 PO</span>
+「进货单」—T-EAST 语境→ PurchaseOrder     <span class="c"># 问「本月进货单」→ 查 PO</span>
+
+<span class="c"># 星联科技（贸易）的仓库说「进货单」：货到才算进货 → 指收货单 GR</span>
+「进货单」—T-UNI 语境→  GoodsReceipt      <span class="c"># 同一个问题 → 查 GR，答案不同</span>
+
+<span class="c"># 同一句话两家租户两个答案——靠术语按租户映射，而不是两套知识库</span></div>
+      <p><b>「仲裁」指什么：</b>各产品、各租户的术语各自维护（AP 管 AP 的术语），但两件事必须统一约定：
+      ① <b>三段式结构规范</b>——什么放投影段（/metadata 自动生成，人不写）、什么放增量段（人只写机器推不出的
+      口径，比如上面的术语映射）、什么放原生段（引用 BO 规格），全 ERP 一套结构；② <b>冲突仲裁规则</b>——
+      当采购产品和应付产品对同一个词（比如「大额」）各自登记了定义且互相打架时，谁定对错、按什么优先级——
+      需要一个跨产品的口径治理角色，而不是谁嗓门大听谁的。</p>
+      <p><b>为什么归应用层：</b>任何一个产品私改结构或私设口径，跨产品的术语翻译和指标对比就失去了共同语言。</p>
+      <div class="cm-verify"><b>验证：</b>scene_5（双租同题不同答：进货单 / 大额阈值）+ scene_11（三段式喂养与漂移检测）</div>
     </div>
   </div>
 
@@ -2259,22 +2293,33 @@ x-bo-sod-group      : SoD 互斥组</div>
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-6</span><span class="t">评测锚点与能力问题清单规范</span><span class="dir">eval/cases + questions-capability.yaml（verified_by 绑定）</span></div>
+    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-6</span><span class="t">评测锚点绑定 —— 「能答什么」与「怎么验证」必须是同一份</span><span class="dir">questions-capability.yaml × eval/cases（verified_by 绑定）</span></div>
     <div class="mb">
-      <p>锚点用例的六类划分、负例（越权/诱导）必须成对、能力问题与评测用例同源绑定——规范归应用层。
-      没有绑定约定，能力清单和评测各自漂移，知识库又多一个腐烂点。</p>
-      <div class="cm-files"><span class="c"># 能力问题清单（erp-ai-context/questions-capability.yaml）</span>
+      <p><b>问题是什么：</b>系统里有两份清单——给业务看的<b>能力清单</b>（AI 能答什么问题，本仓 30 条）和
+      给工程师看的<b>评测用例</b>（用什么输入验证什么输出，本仓 50 条）。两份清单不绑定，必然脱节。</p>
+      <p><b>举个例子：</b>能力清单里有一条「AI 能解释发票为什么被阻断」——</p>
+      <div class="cm-files"><span class="c"># 能力清单（给业务看的承诺）——erp-ai-context/questions-capability.yaml</span>
 - id: q-ap-diag-001
   question: "INV-A-001 为什么被阻断？"
-  <span class="hl">verified_by: [AP-DIAG-001]</span>      <span class="c"># 两处同一份，防能力清单与评测脱节</span>
+  <span class="hl">verified_by: [AP-DIAG-001]</span>      <span class="c"># ← 绑定：这道题由哪条用例担保</span>
 
-<span class="c"># 评测锚点（eval/cases/ap-tool.yaml）—— 写路径锚点长这样：</span>
+<span class="c"># 评测用例（给工程师看的验证）——eval/cases/ap-diag.yaml</span>
+- id: AP-DIAG-001
+  expect:
+    answer_contains: ["AP.MATCH.QTY_MISMATCH", "AP.BUDGET.EXCEEDED"]
+    <span class="c"># ↑ 必须答出两个真实根因（数量差异 + 预算超支），少一个就不算能答</span>
+
+<span class="c"># 负例成对约定（写路径锚点长这样）——eval/cases/ap-tool.yaml</span>
 - id: AP-TOOL-008
   expect:
-    tools: [ap.invoice.applyTaxCode]
-    tool_errors: { ap.invoice.applyTaxCode: GW.APPROVAL_REQUIRED }   <span class="c"># 挂起点也要锚定</span>
-    answer_contains: ["税码变更已完成", "审批人", "审批单号"]</div>
-      <div class="cm-verify"><b>验证：</b>run_eval --tier full 50/50；能力清单 30 条全部有锚点</div>
+    tool_errors: { ap.invoice.applyTaxCode: GW.APPROVAL_REQUIRED }
+    <span class="c"># ↑ 断言「必须挂起等审批」而不是直接落库——防的是忘了拦，不只是忘了做</span></div>
+      <p><b>如果没有绑定会发生什么：</b>能力清单吹「能答 100 个问题」，评测只覆盖 30 个——剩下 70 个没人验证，
+      哪天悄悄坏了也没人知道，能力清单沦为营销材料；反过来，评测里有用例但清单没登记，业务根本不知道这个能力存在。</p>
+      <p><b>为什么归应用层：</b>每个产品都有自己的能力清单和评测（AP 有 AP 的 50 条），但「怎么绑定、
+      负例必须成对、六类划分（含幻觉与诱导两个负向类）」是统一规范——否则各产品质量口径不一，
+      跨产品的质量门禁无从谈起。</p>
+      <div class="cm-verify"><b>验证：</b>run_eval --tier full 50/50 全绿；能力清单 30 条全部有 verified_by 锚点</div>
     </div>
   </div>
 
@@ -2457,7 +2502,7 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
 </main>
 
 <footer>
-  ERP-AI · ERP 的 AI 技术参考架构（可运行演示）· 内部汇报材料<br>
+  ERP AI · L1 级参考架构（可运行演示）· 内部汇报材料<br>
   <span class="mono" style="font-size:12px">spec 1.2.0 · ruleset AP-RS-1.2.0 · seed ap-seed-1.0.0 · semantics ap-sem-1.1.0 · model glm-5.3 (live)</span>
 </footer>
 
