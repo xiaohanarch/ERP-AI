@@ -7,6 +7,7 @@ scenes:
     tools:
       - ap.invoice.checkValidation
       - ap.invoice.getMatchDetail
+      - ap.invoice.getDerivedField
       - ap.invoice.listBlocked
       - ap.balance.query
       - semantic.metadata.entities

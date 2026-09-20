@@ -1,6 +1,6 @@
-# 十幕演示剧本
+# 十一幕演示剧本
 
-> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_10.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
+> 每一幕都有**脚本化断言**（`scripts/demo/scene_1.py` … `scene_11.py`，退出码 0=全过 / 1=失败 / 2=服务不可达），
 > 也有**浏览器人工路径**（URL 见各幕）。讲解词对应总纲第 13 章「工程之外还有五个问题」的叙事落点。
 > 前置：compose 已启动（见 [README](../README.md)），模型模式默认 mock/replay，无需真实模型 key。
 
@@ -18,8 +18,9 @@
 | 8 | 多领域 Agent 协同：AP 委派采购域跨域归因 | `python scripts/demo/scene_8.py` | ch02/ch05 架构与鉴权授权 |
 | 9 | Message 扩展：租户消息订阅与隔离投递 | `python scripts/demo/scene_9.py` | ch04/ch14 租户隔离与扩展 |
 | 10 | 产品化配置界面：配置即数据，改完即生效 | `python scripts/demo/scene_10.py` | ch04/ch13 租户 harness 与产品化 |
+| 11 | 元数据自动喂养 + 本体驱动结构 | `python scripts/demo/scene_11.py` | ch07 知识库怎么建 |
 
-顺序跑：`for i in $(seq 1 10); do python scripts/demo/scene_$i.py || break; done`
+顺序跑：`for i in $(seq 1 11); do python scripts/demo/scene_$i.py || break; done`
 
 ---
 
@@ -230,6 +231,33 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 
 ---
 
+## 第 11 幕：元数据自动喂养 + 本体驱动结构（同一条管道的下行与上行）
+
+**讲解词**：本体（语义层）与存量元数据的关系是一条管道的两个方向。**下行（喂养）**：
+投影段的实体清单、标签、枚举由 `/metadata` 实时生成——语义文件从未手写过
+PurchaseOrderLine / GoodsReceiptLine，但它们出现在投影段里，因为存量元数据里有；
+人工只维护口径层（「进货单」这类元数据推不出的业务术语）。**上行（驱动）**：
+本体增量段的派生字段 `unpaid_cny`（声明式 `compute: amount_cny - paid_cny`）经
+构建期生成器产出 `derived-fields.json`，Java 侧只有通用求值引擎（零字段特定逻辑），
+暴露为 BO 操作 `ap.invoice.getDerivedField`——本体改定义、重建，API 能力随之改变。
+**喂养校验驱动**：漂移检测新增两条不变式——口径层术语指向的实体必须存在于存量
+元数据（TERM_TARGET）；派生字段的基字段必须存在于实体元数据（DERIVED_BASE）。
+预埋的两处漂移仍全部检出，新的检查全部通过。
+
+**断言要点**（scene_11.py）：
+- 投影段实体集合与 `/metadata` 完全一致（projectionSource=generated）；未手写实体自动出现；
+- 口径层术语叠加在生成层之上；live 实体名直查（口径层没写也能查）；
+- 漂移：预埋 2 处仍全检出，且仅此两处；新不变式计数可见（术语目标 ≥6 / 派生基字段 ≥1）；
+- 派生字段：`unpaid_cny` 值正确（INV-A-001：3400 - 0），取证含基字段/公式/语义版本
+  ap-sem-1.1.0/驱动来源；未定义字段 404 AP.DERIVED_FIELD_NOT_FOUND；
+- 治理：调用走 T2/T3 落审计；版本链同步（spec 1.2.0 / 语义 ap-sem-1.1.0）。
+
+**浏览器路径**：无专属页面——语义层喂养在解析查看器与 drift 报告中可见；
+派生字段经无头链路调用：`python scripts/headless_mcp.py call ap.invoice.getDerivedField
+--args '{"invoiceNo":"INV-A-001","fieldName":"unpaid_cny"}'`。
+
+---
+
 ## 附录：三种 Agent 形态的现场入口
 
 - **形态③ 无头 MCP**：`python scripts/headless_mcp.py list` / `call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'`
@@ -239,7 +267,7 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 - **形态⑤ 定时触发**：hub `scheduler.py` 周期代表 ap-batch 全量阻断筛查（钉 mock 确定性
   通道），结果有变化才推送（WorkBuddy Notifications 可见 SCHEDULED_BATCH 类）。
 
-## 讲解节奏建议（约 41 分钟）
+## 讲解节奏建议（约 45 分钟）
 
 1. 幕 1-2 读侧（10 分钟）：先讲事故，再讲机制对齐，最后 completeness；
 2. 幕 3-4 治理（6 分钟）：强调「判定层不在模型」与「吊销即时性」；
@@ -248,4 +276,5 @@ hub 事件线程消费后既做平台内归因（event-diag → 通知），又�
 5. 幕 7 行业包与定时（3 分钟）：解析查看器指认 partner 层，通知中心看定时筛查；
 6. 幕 8 跨域协同（4 分钟）：先展示 AP 域答不出的部分，再看委派后的综合结论与审计链；
 7. 幕 9 消息扩展（3 分钟）：动画「消息扩展」模式讲解，现场跑 scene_9 看隔离投递；
-8. 幕 10 配置界面（3 分钟）：浏览器现场改阈值/行业，保存后立即回对话验证口径变化。
+8. 幕 10 配置界面（3 分钟）：浏览器现场改阈值/行业，保存后立即回对话验证口径变化；
+9. 幕 11 喂养与驱动（4 分钟）：先讲管道两个方向，再跑 scene_11 看「实体自动出现」与「本体生成 API」。

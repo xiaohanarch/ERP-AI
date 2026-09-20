@@ -1,5 +1,5 @@
 {
-  "spec_version": "1.1.0",
+  "spec_version": "1.2.0",
   "ruleset_version": "AP-RS-1.2.0",
   "seed_version": "ap-seed-1.0.0",
   "appid": "erp-ap",
@@ -238,6 +238,79 @@
                 "diff": 20
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "ap.invoice.getDerivedField",
+      "summary": "本体驱动的派生字段查询（构建期从语义层生成，运行期通用求值）",
+      "description": "派生字段全部定义在本体（erp-ai-context 增量段 increment.derived_fields）：\n构建期由 scripts/gen_derived_fields.py 生成 derived-fields.json（含语义\n版本戳），Java 侧只做声明式求值（compute: subtract/add），不含任何字段\n特定逻辑——本体改定义、重建，API 能力随之改变（结构由本体驱动）。\n本操作定义契约（入参/权限/错误码）；字段清单与计算式归本体。",
+      "kind": "read",
+      "irreversible": false,
+      "sod_group": null,
+      "permissions": [
+        "ap.invoice.read"
+      ],
+      "error_codes": [
+        "AP.INVOICE_NOT_FOUND",
+        "AP.DERIVED_FIELD_NOT_FOUND",
+        "AP.VALIDATION_ERROR"
+      ],
+      "http": {
+        "method": "GET",
+        "path": "/boapi/invoices/{invoiceNo}/derived/{fieldName}"
+      },
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "invoiceNo": {
+            "type": "string",
+            "description": "发票号（如 INV-A-001）"
+          },
+          "fieldName": {
+            "type": "string",
+            "description": "派生字段名（本体增量段定义，如 unpaid_cny）"
+          }
+        },
+        "required": [
+          "invoiceNo",
+          "fieldName"
+        ]
+      },
+      "binding": {
+        "invoiceNo": {
+          "in": "path",
+          "name": "invoiceNo"
+        },
+        "fieldName": {
+          "in": "path",
+          "name": "fieldName"
+        }
+      },
+      "examples": [
+        {
+          "name": "正例-INV-A-001 未付金额（本体派生：amount_cny - paid_cny）",
+          "request": {
+            "invoiceNo": "INV-A-001",
+            "fieldName": "unpaid_cny"
+          },
+          "expect": {
+            "value": 3400.0,
+            "baseFields": [
+              "amount_cny",
+              "paid_cny"
+            ]
+          }
+        },
+        {
+          "name": "反例-未在本体定义的派生字段",
+          "request": {
+            "invoiceNo": "INV-A-001",
+            "fieldName": "nope_cny"
+          },
+          "expect": {
+            "error": "AP.DERIVED_FIELD_NOT_FOUND"
           }
         }
       ]

@@ -35,9 +35,9 @@ def fetch_live_metadata(base: str) -> dict:
 
 
 def check(semantics: dict, live: dict) -> dict:
-    """比对增量段引用与元数据现状，返回报告。"""
+    """比对增量段/口径层引用与元数据现状，返回报告。"""
     drifts: list[dict] = []
-    checked = {"fields": 0, "rules": 0}
+    checked = {"fields": 0, "rules": 0, "derivedBases": 0, "termTargets": 0}
 
     live_fields: dict[str, set[str]] = {}
     for entity_name, entity in (live.get("entities") or {}).items():
@@ -46,11 +46,28 @@ def check(semantics: dict, live: dict) -> dict:
 
     increment = semantics.get("increment", {})
 
-    # 1) 派生字段：引用的实体必须存在，且若与存量字段同名冲突/引用字段必须存在
+    # 1) 派生字段：
+    #    - 无 compute：引用式映射（名字应对应存量字段）——与元数据现状比对；
+    #    - 有 compute：本体驱动的计算式派生——改查基字段存在性（喂养校验驱动）。
     for df in increment.get("derived_fields", []):
-        checked["fields"] += 1
         entity_key = str(df.get("entity", "")).lower()
         field_name = df.get("name")
+        compute = df.get("compute") or {}
+        if compute:
+            checked["derivedBases"] += 1
+            for operand in (compute.get("left"), compute.get("right")):
+                if entity_key not in live_fields:
+                    drifts.append({
+                        "kind": "DERIVED_BASE_DRIFT", "severity": "HIGH",
+                        "detail": f"派生字段 {field_name} 的计算实体 {df.get('entity')} 在元数据中不存在",
+                        "semanticRef": f"{df.get('entity')}.{field_name}", "live": None})
+                elif operand not in live_fields[entity_key]:
+                    drifts.append({
+                        "kind": "DERIVED_BASE_DRIFT", "severity": "HIGH",
+                        "detail": f"派生字段 {field_name} 的基字段 {operand} 在 {df.get('entity')} 元数据中不存在",
+                        "semanticRef": f"{df.get('entity')}.{operand}", "live": None})
+            continue
+        checked["fields"] += 1
         if entity_key not in live_fields:
             drifts.append({
                 "kind": "FIELD_DRIFT", "severity": "HIGH",
@@ -75,9 +92,21 @@ def check(semantics: dict, live: dict) -> dict:
                 "detail": f"语义层引用的规则 {rule_id} 在存量规则清单中不存在（规则已删除或改名）",
                 "semanticRef": rule_id, "live": None})
 
+    # 3) 人工口径层（元数据自动喂养的不变式）：术语指向的实体必须存在于存量元数据
+    for e in (semantics.get("projection") or {}).get("entities", []):
+        checked["termTargets"] += 1
+        entity = str(e.get("entity", ""))
+        if entity.lower() not in live_fields:
+            drifts.append({
+                "kind": "TERM_TARGET_DRIFT", "severity": "HIGH",
+                "detail": f"口径层术语 {e.get('terms')} 指向的实体 {entity} 在存量元数据中不存在",
+                "semanticRef": entity, "live": None})
+
     return {
         "drifted": bool(drifts),
         "counts": {"checkedFields": checked["fields"], "checkedRules": checked["rules"],
+                   "checkedDerivedBases": checked["derivedBases"],
+                   "checkedTermTargets": checked["termTargets"],
                    "drifts": len(drifts)},
         "items": drifts,
         "baseline": {"ruleSetVersion": live.get("ruleSetVersion"),

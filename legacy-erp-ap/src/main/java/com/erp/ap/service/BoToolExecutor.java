@@ -21,6 +21,7 @@ public class BoToolExecutor {
     private final ProcurementQueryService procurementQueryService;
     private final TaxCodeService taxCodeService;
     private final PaymentService paymentService;
+    private final DerivedFieldService derivedFieldService;
 
     public Map<String, Object> execute(String toolName, Map<String, Object> args,
                                        String approver, String approvalRef) {
@@ -32,6 +33,8 @@ public class BoToolExecutor {
                     args.get("pageSize") == null ? null : num(args.get("pageSize")).intValue(),
                     args.get("minAmountCny") == null ? null : num(args.get("minAmountCny")));
             case "ap.invoice.getMatchDetail" -> invoiceQueryService.matchDetail(str(args.get("invoiceNo")));
+            case "ap.invoice.getDerivedField" -> derivedFieldService.evaluate(
+                    str(args.get("invoiceNo")), str(args.get("fieldName")));
             case "proc.po.getDetail" -> procurementQueryService.poDetail(str(args.get("poNo")));
             case "proc.gr.listForPo" -> procurementQueryService.grListForPo(str(args.get("poNo")));
             case "ap.balance.query" -> invoiceQueryService.balanceQuery(

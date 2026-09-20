@@ -20,14 +20,14 @@
 openapi: 3.1.0
 info:
   title: ERP 存量应付（AP）模块 BO API
-  version: 1.1.0
+  version: 1.2.0
   x-bo-metadata:
     appid: erp-ap
     domain: AP
     service: legacy-erp-ap
     ruleset_version: AP-RS-1.2.0
     seed_version: ap-seed-1.0.0
-    spec_version: 1.1.0
+    spec_version: 1.2.0
 servers:
   - url: http://legacy-erp-ap:8080
     description: compose 内网
@@ -173,6 +173,52 @@ paths:
         - name: 正例-INV-A-001 数量差异下钻
           request: { invoiceNo: INV-A-001 }
           expect: { line_findings: [{ field: qty, invoice: 120, goods_receipt: 100, diff: 20 }] }
+
+  /boapi/invoices/{invoiceNo}/derived/{fieldName}:
+    get:
+      operationId: ap.invoice.getDerivedField
+      summary: 本体驱动的派生字段查询（构建期从语义层生成，运行期通用求值）
+      description: |
+        派生字段全部定义在本体（erp-ai-context 增量段 increment.derived_fields）：
+        构建期由 scripts/gen_derived_fields.py 生成 derived-fields.json（含语义
+        版本戳），Java 侧只做声明式求值（compute: subtract/add），不含任何字段
+        特定逻辑——本体改定义、重建，API 能力随之改变（结构由本体驱动）。
+        本操作定义契约（入参/权限/错误码）；字段清单与计算式归本体。
+      tags: [ap-invoice]
+      x-bo-operation-kind: read
+      x-bo-irreversible: false
+      x-bo-permissions:
+        required: [ap.invoice.read]
+      x-bo-completeness:
+        discloses: true
+        disclosure_fields: [baseFields, ontologyVersion]
+      x-bo-error-codes:
+        - AP.INVOICE_NOT_FOUND
+        - AP.DERIVED_FIELD_NOT_FOUND
+        - AP.VALIDATION_ERROR
+      parameters:
+        - name: invoiceNo
+          in: path
+          required: true
+          schema: { type: string }
+          description: 发票号（如 INV-A-001）
+        - name: fieldName
+          in: path
+          required: true
+          schema: { type: string }
+          description: 派生字段名（本体增量段定义，如 unpaid_cny）
+      responses:
+        "200":
+          description: 派生字段值（含基字段与本体版本取证）
+        "404": { $ref: "#/components/responses/ErrorEnvelope" }
+        "403": { $ref: "#/components/responses/ErrorEnvelope" }
+      x-bo-examples:
+        - name: 正例-INV-A-001 未付金额（本体派生：amount_cny - paid_cny）
+          request: { invoiceNo: INV-A-001, fieldName: unpaid_cny }
+          expect: { value: 3400.00, baseFields: [amount_cny, paid_cny] }
+        - name: 反例-未在本体定义的派生字段
+          request: { invoiceNo: INV-A-001, fieldName: nope_cny }
+          expect: { error: AP.DERIVED_FIELD_NOT_FOUND }
 
   /boapi/proc/pos/{poNo}:
     get:

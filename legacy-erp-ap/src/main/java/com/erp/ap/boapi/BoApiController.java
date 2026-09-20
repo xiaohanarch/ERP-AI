@@ -60,6 +60,16 @@ public class BoApiController {
         return executor.execute("ap.invoice.getMatchDetail", args, null, null);
     }
 
+    @GetMapping("/invoices/{invoiceNo}/derived/{fieldName}")
+    public Map<String, Object> derivedField(@PathVariable String invoiceNo,
+                                            @PathVariable String fieldName) {
+        requireTool("ap.invoice.getDerivedField");
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("invoiceNo", invoiceNo);
+        args.put("fieldName", fieldName);
+        return executor.execute("ap.invoice.getDerivedField", args, null, null);
+    }
+
     @GetMapping("/proc/pos/{poNo}")
     public Map<String, Object> poDetail(@PathVariable String poNo) {
         requireTool("proc.po.getDetail");

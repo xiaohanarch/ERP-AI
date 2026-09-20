@@ -25,29 +25,20 @@ class ToolError(ValueError):
 # ---------------------------------------------------------------- 工具实现
 
 def tool_metadata_entities(args: dict, tenant: str | None) -> tuple[dict, str]:
-    """实体清单：投影段术语 + 实时元数据（label/字段数）合并。"""
+    """实体清单：投影段（生成基础层 + 人工口径层，元数据自动喂养）。"""
     sem = loader.load_semantics()
     live = loader.live_metadata()
-    proj = sem.get("projection", {})
-    live_entities = (live or {}).get("entities") or {}
+    proj = loader.effective_projection()
 
-    entities = []
-    for e in proj.get("entities", []):
-        name = e.get("entity", "")
-        le = live_entities.get(name)
-        entities.append({
-            "entity": name,
-            "terms": e.get("terms", []),
-            "label": (le or {}).get("label"),
-            "fieldCount": len((le or {}).get("fields", [])) if le else None,
-        })
     result = {
         "domain": sem.get("domain"),
         "description": sem.get("description"),
-        "entities": entities,
+        "entities": proj.get("entities", []),
         "dimensions": proj.get("dimensions", []),
         "enums": proj.get("enums", []),
         "operations": sem.get("native", {}).get("operations", []),
+        "projectionSource": proj.get("source"),
+        "projectionNote": proj.get("note"),
         "liveMetadata": {
             "available": live is not None,
             "ruleSetVersion": (live or {}).get("ruleSetVersion"),
@@ -325,13 +316,20 @@ def _spec_operations(spec: dict) -> dict[str, dict]:
 
 
 def _resolve_entity(raw: str, sem: dict) -> str | None:
-    """实体名（大小写不敏感）或业务术语 -> 投影段实体名。"""
+    """实体名（大小写不敏感）、业务术语或 live 元数据实体名 -> 投影段/存量实体名。
+
+    口径层术语优先；live 实体名兜底（元数据自动喂养：存量新增实体无需改语义文件即可查询）。
+    """
     for e in sem.get("projection", {}).get("entities", []):
         if str(e.get("entity", "")).lower() == raw.lower():
             return e.get("entity")
     for e in sem.get("projection", {}).get("entities", []):
         if raw in (e.get("terms") or []):
             return e.get("entity")
+    live = loader.live_metadata()
+    for name in ((live or {}).get("entities") or {}):
+        if name.lower() == raw.lower():
+            return name
     return None
 
 
