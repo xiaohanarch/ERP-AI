@@ -19,3 +19,7 @@ compose/.env
 .idea/
 .vscode/
 *.iml
+
+# 本地参考文件（仅本地使用，不入库）
+原生ERP.pdf
+claudeforce*.html
