@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>企业应用AI Native演进：Anthropic和Salesforce联合打了个样-Claudeforce</title>
+  <style>
+    :root{
+      --ink:#172033;--ink2:#314158;--muted:#66758a;--paper:#fff;--wash:#f5f7fb;--line:#dde4ee;
+      --navy:#0c2038;--blue:#1769e0;--cyan:#00a1e0;--purple:#7357d9;--green:#147d64;--amber:#a55b12;
+      --soft-blue:#eef5ff;--soft-purple:#f5f1ff;--soft-green:#edf9f5;--soft-amber:#fff7e9;
+      --radius:18px;--shadow:0 18px 60px rgba(21,39,68,.10);
+      --foreground:var(--ink);--muted-foreground:var(--muted);--card:#fff;--border:var(--line);
+      --orange:#c36b12;--popover:#fff;--popover-foreground:var(--ink)
+    }
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#edf1f6;color:var(--ink);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.72}
+    a{color:#075fc8;text-underline-offset:3px}strong{font-weight:750}p{margin:12px 0}.wrap{max-width:1180px;margin:auto;padding:0 30px}
+    .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    .top .wrap{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--navy)}
+    .top nav{display:flex;gap:18px;font-size:12px}.top nav a{text-decoration:none;color:#516174}.hero{background:radial-gradient(circle at 85% 8%,rgba(0,161,224,.22),transparent 34%),linear-gradient(135deg,#071a30 0%,#123b60 62%,#0c5971 100%);color:#fff;padding:72px 0 82px}
+    .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9fdcff;font-weight:800}.hero h1{font-size:clamp(36px,5.3vw,68px);line-height:1.1;letter-spacing:-.045em;max-width:1050px;margin:17px 0 22px}.hero h1 em{font-style:normal;color:#91dcff}
+    .deck{font-size:clamp(18px,2vw,24px);max-width:930px;color:#dceeff;line-height:1.55}.meta{display:flex;flex-wrap:wrap;gap:20px;margin-top:30px;color:#b9d2e6;font-size:13px}
+    main{max-width:1180px;margin:-34px auto 72px;padding:0 30px}.paper{background:var(--paper);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}.intro{padding:48px 58px 42px}
+    .intro-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:38px;align-items:start}.intro h2{font-size:28px;margin:0 0 14px}.lead{font-size:18px;color:#2e4057;line-height:1.8}
+    .thesis{font-size:21px;line-height:1.62;font-weight:720;color:#153b60;border-left:5px solid var(--blue);padding:20px 24px;background:var(--soft-blue);border-radius:0 14px 14px 0;margin-top:24px}
+    .terms{display:grid;gap:10px}.term{padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:#fbfcfe}.term b{display:block;color:var(--blue);font-size:13px;margin-bottom:3px}.term span{font-size:13px;color:var(--muted)}
+    .toc{padding:30px 58px;background:#f8fafc;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.toc h2{font-size:18px;margin:0 0 14px}.toc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px 34px}.toc a{text-decoration:none;padding:8px 0;border-bottom:1px dotted #c9d3df;color:#354b63}.toc b{display:inline-block;width:34px;color:var(--blue)}
+    article{padding:0 58px 58px}.section{padding:62px 0 32px;border-bottom:1px solid var(--line);scroll-margin-top:60px}.section:last-child{border-bottom:0}.kicker{font-size:12px;font-weight:850;letter-spacing:.15em;color:var(--blue)}
+    .section h2{font-size:34px;line-height:1.25;letter-spacing:-.025em;margin:7px 0 17px}.section h3{font-size:21px;color:#173b5e;margin:32px 0 10px}.section>p{max-width:950px}.point{font-size:20px;font-weight:720;color:#173c5e;line-height:1.62;margin:18px 0 28px}
+    .signal{padding:22px 25px;margin:28px 0;border-radius:15px;background:var(--navy);color:#fff;font-size:19px;font-weight:650}.signal small{display:block;color:#abd7f4;font-size:12px;letter-spacing:.08em;margin-bottom:7px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:24px 0}.card{border:1px solid var(--line);border-radius:15px;padding:21px;background:#fff}.card h3{font-size:17px;margin:0 0 8px}.card p{font-size:14px;color:#536276;margin:0}.card.blue{border-top:4px solid var(--blue)}.card.purple{border-top:4px solid var(--purple)}.card.green{border-top:4px solid var(--green)}
+    .beforeafter{display:grid;grid-template-columns:1fr 70px 1fr;align-items:stretch;gap:14px;margin:26px 0}.lane{padding:24px;border-radius:16px;border:1px solid var(--line);background:#fbfcfe}.lane h3{margin:0 0 12px;font-size:18px}.lane ul{margin:0;padding-left:20px;color:#526174}.arrow{display:grid;place-items:center;color:var(--blue);font-size:34px;font-weight:300}
+    table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0}th,td{border-bottom:1px solid var(--line);padding:13px 14px;text-align:left;vertical-align:top}th{background:#f1f5f9;color:#263f59;font-weight:760}tbody tr:hover{background:#fafcff}.compact td,.compact th{padding:10px 12px}
+    .diagram{margin:28px 0;border:1px solid var(--line);border-radius:18px;background:linear-gradient(#fbfdff,#f5f8fc);padding:22px}.diagram-head{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:14px}.diagram-head b{color:#173b5e}.diagram-head span{font-size:12px;color:var(--muted)}
+    .main-visual{width:100%;height:835px;border:0;display:block;background:#fff;border-radius:12px}.flow{display:flex;align-items:stretch;gap:0;margin:26px 0}.flow .box{flex:1;min-width:0;padding:17px 12px;border:1px solid var(--line);background:#fff;text-align:center}.flow .box:first-child{border-radius:13px 0 0 13px}.flow .box:last-child{border-radius:0 13px 13px 0}.flow .box b{display:block;color:#163c62;font-size:14px}.flow .box small{display:block;color:var(--muted);font-size:11px;margin-top:5px}.flow .chev{width:24px;display:grid;place-items:center;color:var(--blue);font-weight:800;background:#f4f8fe;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .stack{display:grid;gap:9px;margin:25px 0}.layer{display:grid;grid-template-columns:190px 1fr;align-items:center;gap:20px;padding:17px 20px;border-radius:13px;border:1px solid var(--line)}.layer b{color:#163b60}.layer span{font-size:14px;color:#526174}.layer.a{background:var(--soft-purple);border-color:#d9ceff}.layer.b{background:var(--soft-blue);border-color:#c9ddff}.layer.c{background:var(--soft-green);border-color:#bee5d7}.layer.d{background:#f6f8fb}
+    .product-anatomy{display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:stretch;margin:26px 0}.plugin{border-radius:18px;padding:25px;background:linear-gradient(145deg,#5d42c4,#775ce2);color:#fff}.plugin small{color:#dcd4ff}.plugin h3{color:#fff;margin:8px 0;font-size:23px}.plugin p{font-size:13px;color:#edeaff}.parts{display:grid;grid-template-columns:1fr 1fr;gap:11px}.part{padding:15px;border:1px solid var(--line);border-radius:12px;background:#fff}.part b{display:block;color:#183e62;font-size:13px}.part span{font-size:12px;color:var(--muted)}
+    .timeline{position:relative;margin:28px 0 28px 18px;padding-left:35px;border-left:2px solid #b9d2ef}.event{position:relative;padding:0 0 22px}.event:before{content:attr(data-n);position:absolute;left:-53px;top:0;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:12px;font-weight:800}.event b{color:#173b5f}.event p{font-size:14px;color:#566579;margin:4px 0}.actor{display:inline-block;font-size:11px;font-weight:800;color:#7251d0;background:var(--soft-purple);padding:3px 7px;border-radius:99px;margin-right:7px}
+    .problem-chain{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:26px 0}.problem{position:relative;padding:18px 15px;border-radius:14px;border:1px solid var(--line);background:#fff}.problem:after{content:'→';position:absolute;right:-17px;top:42%;color:var(--blue);font-weight:800;z-index:2}.problem:last-child:after{display:none}.problem b{display:block;color:#173b5f;font-size:14px}.problem span{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+    .division{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:24px 0}.division>div{padding:22px;border-radius:15px;border:1px solid var(--line)}.division .anthropic{background:var(--soft-purple);border-color:#d9ceff}.division .salesforce{background:var(--soft-blue);border-color:#c9ddff}.division h3{margin:0 0 8px;font-size:18px}.division ul{margin:0;padding-left:20px;color:#526174;font-size:14px}
+    .standard{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}.standard>div{padding:17px;border-radius:13px;background:#f8fafc;border:1px solid var(--line)}.standard b{display:block;color:#173b5f;font-size:13px}.standard span{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+    .context-route{display:grid;grid-template-columns:1fr 58px 1fr 58px 1fr;gap:8px;align-items:center;margin:25px 0}.context-route>div:not(.route-arrow){min-height:155px;padding:18px;border-radius:14px;border:1px solid var(--line)}.context-route b{display:block;color:#173b5f}.context-route span{display:block;color:#5b6a7c;font-size:13px;margin-top:6px}.context-route .visible{background:var(--soft-purple)}.context-route .callable{background:var(--soft-blue)}.context-route .enforced{background:var(--soft-green)}.route-arrow{text-align:center;color:var(--blue);font-size:26px}
+    .term-map{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0}.term-box{padding:16px;border-radius:13px;border:1px solid var(--line);background:#fff}.term-box b{display:block;color:#173b5f;font-size:13px}.term-box em{display:block;font-style:normal;color:var(--blue);font-size:11px;font-weight:750;margin:3px 0}.term-box span{display:block;color:var(--muted);font-size:12px}
+    .seq-wrap{overflow-x:auto;margin:29px 0;border:1px solid var(--line);border-radius:18px;background:#fbfdff;padding:16px}.seq{display:block;min-width:1080px;width:100%;height:auto}.seq text{font-family:Inter,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;fill:var(--ink)}.seq .actorbox{fill:#fff;stroke:#bfcbd9}.seq .actor-title{font-size:13px;font-weight:700}.seq .actor-sub{font-size:10px;fill:#69788b}.seq .life{stroke:#a9b7c7;stroke-width:1;stroke-dasharray:5 5}.seq .call{stroke:var(--blue);stroke-width:1.8;fill:none}.seq .return{stroke:#6f7e90;stroke-width:1.4;stroke-dasharray:5 4;fill:none}.seq .msg{font-size:11px}.seq .note-box{fill:#fff8e8;stroke:#e4c584}.seq .context-box{fill:#f4f0ff;stroke:#c9bcf3}.seq .frame{fill:none;stroke:#9aa9ba;stroke-width:1.2}.seq .frame-label{fill:#eef3f8;stroke:#9aa9ba}.seq .frame-text{font-size:10px;font-weight:700}.seq .self{stroke:var(--purple);stroke-width:1.8;fill:none}
+    .legend-row{display:flex;flex-wrap:wrap;gap:10px;margin:-14px 0 24px}.legend-row span{padding:5px 9px;border-radius:99px;background:#f2f5f9;color:#526174;font-size:11px}.legend-row b{color:#173b5f}
+    .formula{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:26px 0}.factor{padding:16px 10px;text-align:center;border-radius:13px;border:1px solid #cddbef;background:#f6f9fe;color:#173e65;font-weight:720;font-size:13px}.plus{display:none}
+    .matrix td:first-child{font-weight:700;color:#173b5f}.matrix td:last-child{color:#324c66}.badge{display:inline-block;padding:3px 8px;border-radius:99px;background:#eef4ff;color:#175ba8;font-size:11px;font-weight:750}
+    .five{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:25px 0}.ready{padding:18px 12px;border-radius:13px;border:1px solid var(--line);background:#f8fafc;text-align:center}.ready b{display:block;color:#153c61}.ready span{font-size:12px;color:var(--muted)}
+    .insights{counter-reset:ins;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:25px 0}.insight{counter-increment:ins;position:relative;padding:20px 20px 20px 61px;border:1px solid var(--line);border-radius:14px;background:#fff}.insight:before{content:counter(ins);position:absolute;left:19px;top:20px;width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--navy);color:#fff;font-weight:800}.insight b{display:block;color:#173c60}.insight span{font-size:13px;color:#59697c}
+    .note{padding:18px 21px;border:1px solid #edcf9e;background:var(--soft-amber);border-radius:13px;color:#694617;margin:22px 0}.note b{color:#8a4d0b}.boundary{display:grid;grid-template-columns:1fr 1fr;gap:14px}.yes,.no{padding:20px;border-radius:15px}.yes{background:var(--soft-green);border:1px solid #bce0d4}.no{background:#fff5f3;border:1px solid #efc9c1}.yes h3,.no h3{margin:0 0 9px;font-size:17px}.yes ul,.no ul{margin:0;padding-left:20px;font-size:14px}
+    .sources{font-size:13px;color:#58677a}.sources li{margin:8px 0}.back{display:inline-block;margin-top:18px;font-size:12px}.review{margin-top:26px;padding:18px 20px;border-radius:13px;background:#f5f7fa;color:#58677a;font-size:12px}footer{padding:28px 58px;background:var(--navy);color:#bcd0e4;font-size:12px}footer strong{color:#fff}
+    @media(max-width:900px){.top nav{display:none}.problem-chain,.standard,.term-map{grid-template-columns:1fr 1fr}.division{grid-template-columns:1fr}.context-route{grid-template-columns:1fr}.route-arrow{transform:rotate(90deg)}.intro-grid,.grid3{grid-template-columns:1fr}.grid2,.insights{grid-template-columns:1fr}.product-anatomy{grid-template-columns:1fr}.formula,.five{grid-template-columns:1fr 1fr}.beforeafter{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.flow{display:grid;grid-template-columns:1fr}.flow .chev{width:auto;height:22px;border-left:1px solid var(--line);border-right:1px solid var(--line)}.flow .box,.flow .box:first-child,.flow .box:last-child{border-radius:10px}.main-visual{height:930px}.layer{grid-template-columns:1fr}.intro,.toc,article{padding-left:28px;padding-right:28px}}
+    @media(max-width:560px){.problem-chain,.standard,.term-map{grid-template-columns:1fr}.problem:after{content:'↓';right:50%;top:auto;bottom:-20px}.wrap,main{padding-left:14px;padding-right:14px}.hero{padding:52px 0 66px}.hero h1{font-size:36px}.intro,.toc,article{padding-left:20px;padding-right:20px}.toc-grid,.parts,.formula,.five,.boundary{grid-template-columns:1fr}.section{padding-top:46px}.section h2{font-size:28px}.main-visual{height:1030px}.meta{display:block}.meta span{display:block;margin-top:5px}table{font-size:12px}th,td{padding:9px 7px}.diagram{padding:10px}}
+    @media print{body{background:#fff;font-size:10pt}.top{display:none}.hero{background:#fff;color:#111;padding:30px 0;border-bottom:2px solid #111}.hero .deck,.hero .meta,.hero .eyebrow{color:#333}.paper{box-shadow:none;border-radius:0}main{margin:0;max-width:none}.intro,.toc,article,footer{padding-left:0;padding-right:0}.section{break-before:page}.diagram,.card,table,.layer,.insight{break-inside:avoid}.main-visual{height:760px}.back{display:none}a{color:#111;text-decoration:none}footer{background:#fff;color:#444;border-top:1px solid #999}}
+  </style>
+</head>
+<body id="top">
+  <header class="top"><div class="wrap"><div class="brand">CLAUDEFORCE · 技术洞察</div><nav><a href="#why">Why</a><a href="#what">What</a><a href="#architecture">架构</a><a href="#how">How</a><a href="#innovation">联合创新</a><a href="#implications">启示</a></nav></div></header>
+
+  <section class="hero"><div class="wrap">
+    <div class="eyebrow">Enterprise AI Native Evolution · 2026</div>
+    <h1>企业应用AI Native演进：<br>Anthropic和Salesforce联合打了个样—<em>Claudeforce</em></h1>
+    <p class="deck">从“模型能够连接CRM”，到“员工可以把完整销售任务交给AI”：一份关于产品边界、企业上下文、能力发现、原生治理与联合产品化方法的技术洞察。</p>
+    <div class="meta"><span>面向：业务与IT主管、产品负责人、企业架构师</span><span>阅读时间：约30分钟</span><span>基于2026年9月公开资料与产品文档</span></div>
+  </div></section>
+
+  <main><div class="paper">
+    <section class="intro">
+      <div class="intro-grid">
+        <div>
+          <h2>摘要</h2>
+          <p class="lead">企业应用进入AI Native阶段后，难点已经不再是让模型“连上系统”，而是让它理解用户要完成的业务任务，获得实时且可信的企业上下文，找到正确的业务能力，并在现有身份、权限和规则下安全执行。</p>
+          <p class="lead"><strong>Claudeforce</strong>是Salesforce与Anthropic的联合产品体验；首个具体产品是Claude中的专用插件<strong>Salesforce in Claude</strong>。它把Sales Skills、Setup Skill、Salesforce与Slack Connector、Claude/Cowork任务环境、用户确认和Salesforce写回组合在一起。</p>
+          <div class="thesis">核心判断：Claudeforce并非把CRM数据搬进聊天框，而是把Claude的开放式认知能力与Salesforce的确定性企业能力，组织成从目标委派到受治理执行的工作闭环。</div>
+        </div>
+        <aside class="terms" aria-label="三个先记住的名称">
+          <div class="term"><b>Claudeforce</b><span>Salesforce × Anthropic联合产品体系与体验。</span></div>
+          <div class="term"><b>Salesforce in Claude</b><span>用户实际安装和使用的Claude专用插件。</span></div>
+          <div class="term"><b>AIforce</b><span>Salesforce的Live Interface Layer，不是运行时服务器。</span></div>
+          <div class="term"><b>Headless Toolkit</b><span>支撑AIforce的MCP、API、Skills、Plugins和开发工具集合。</span></div>
+          <div class="term"><b>Headless 360 MCP Server</b><span>具体的Salesforce Hosted MCP服务；用四个工具连接持续增长的operations。</span></div>
+          <div class="term"><b>Salesforce operation</b><span>可被Discover、Describe和Dispatch的后端行动单元，不是另一个MCP工具。</span></div>
+        </aside>
+      </div>
+    </section>
+
+    <nav class="toc" aria-label="目录"><h2>目录</h2><div class="toc-grid">
+      <a href="#why"><b>01</b> Why：为什么双方要亲自下场</a>
+      <a href="#what"><b>02</b> What：用户实际获得什么产品</a>
+      <a href="#architecture"><b>03</b> 产品与技术架构总图</a>
+      <a href="#context"><b>04</b> 企业上下文如何获得</a>
+      <a href="#how"><b>05</b> How：一个案例讲清运行时</a>
+      <a href="#innovation"><b>06</b> 从AI Native架构到可用产品</a>
+      <a href="#readiness"><b>07</b> Salesforce客户还要做什么</a>
+      <a href="#implications"><b>08</b> 对企业智能化的启示</a>
+      <a href="#boundary"><b>09</b> 边界、结论与来源</a>
+    </div></nav>
+
+    <article>
+      <section class="section" id="why">
+        <div class="kicker">01 · WHY</div><h2>为什么已有MCP，Salesforce和Anthropic仍要亲自下场</h2>
+        <p class="point">因为“模型可以调用Salesforce”只完成了技术连通。一个可规模部署的企业AI Native产品，还必须同时解决任务方法、企业上下文、能力选择、身份治理和端到端体验；这些问题跨越Claude与Salesforce两侧，单靠客户拼接很难稳定解决。</p>
+
+        <h3>先把出发点说清：MCP解决的是协议，不是完整产品</h3>
+        <p>在Claudeforce之前，客户已经可以让支持MCP的Claude连接Salesforce Hosted MCP Server。连接成功以后，Claude确实能够看到工具、发起调用并获得数据。但这只证明两端“能说话”，并不保证Claude知道应该完成什么销售任务、需要哪些事实、哪个字段代表企业真正使用的指标，也不保证一次查询能够自然推进到交付成果和安全写回。</p>
+        <div class="problem-chain" aria-label="从技术连接到完整产品的五个缺口">
+          <div class="problem"><b>有连接</b><span>MCP建立标准调用通道</span></div>
+          <div class="problem"><b>缺任务方法</b><span>不知道高质量任务应怎样完成</span></div>
+          <div class="problem"><b>缺正确上下文</b><span>不知道当前任务该取哪些事实与语义</span></div>
+          <div class="problem"><b>缺规模化能力选择</b><span>大量API和工具难以被模型稳定使用</span></div>
+          <div class="problem"><b>缺产品闭环</b><span>查询、分析、确认和写回彼此割裂</span></div>
+        </div>
+
+        <h3>客户自己接MCP，真正需要补的是一层“产品工程”</h3>
+        <table><thead><tr><th>表面上已经有</th><th>实际仍要由客户解决</th><th>容易出现的结果</th></tr></thead><tbody>
+          <tr><td>Claude与Salesforce连接</td><td>把销售目标翻译成稳定的任务步骤、检查项与输出标准</td><td>回答看似合理，但遗漏关键销售判断</td></tr>
+          <tr><td>Salesforce对象和记录</td><td>决定当前任务所需对象、字段、关系、时间范围与协作信息</td><td>把“数据很多”误当成“上下文正确”</td></tr>
+          <tr><td>API或MCP工具</td><td>维护工具名称、参数、权限、版本与Prompt之间的映射</td><td>工具选择错误、参数猜测和接口幻觉</td></tr>
+          <tr><td>Salesforce权限体系</td><td>建立客户端准入、用户身份绑定、写操作确认和异常处理</td><td>另造一套权限映射，或把模型确认误当成系统授权</td></tr>
+          <tr><td>聊天界面</td><td>把研究、分析、Artifact、跨系统协作和CRM写回连成一项工作</td><td>只能问答，仍需员工手工完成最后一公里</td></tr>
+          <tr><td>一次可用Demo</td><td>处理安装、初始化、失败恢复、审计、评估和版本回归</td><td>试点有亮点，规模部署后质量漂移且责任不清</td></tr>
+        </tbody></table>
+
+        <h3>为什么双方联合产品化更有结构性优势</h3>
+        <div class="division">
+          <div class="anthropic"><h3>Anthropic掌握“开放式认知与工作环境”</h3><ul><li>理解自然语言目标并处理不完整要求</li><li>把目标分解为多步骤计划并动态调整</li><li>跨Connector综合信息、生成文档与Artifact</li><li>在Claude Chat和Cowork中承载连续的人机协作</li></ul></div>
+          <div class="salesforce"><h3>Salesforce掌握“确定性企业知识与行动”</h3><ul><li>Customer 360中的权威记录、对象关系和应用语义</li><li>Org元数据、流程、API、Flow、Apex与业务规则</li><li>用户身份、CRUD、FLS、Sharing、审批和审计</li><li>销售任务知识，以及平台能力如何被安全调用</li></ul></div>
+        </div>
+        <p>Claude一侧无法凭模型参数知道某个Org里的自定义字段、销售阶段、共享范围和实时活动；Salesforce一侧也不等同于一个能够理解开放目标、跨系统研究并生成成果的通用工作环境。因此，双方的结合点不是简单“模型＋数据库”，而是<strong>开放式判断</strong>与<strong>确定性企业能力</strong>之间的产品契约。</p>
+
+        <h3>本文用于评价企业AI产品的六项标准</h3>
+        <div class="standard">
+          <div><b>1. 任务可委派</b><span>用户表达业务目标，而非逐个指定页面、字段和API。</span></div>
+          <div><b>2. 方法可复用</b><span>系统具备完成专业任务的步骤、检查项和输出结构。</span></div>
+          <div><b>3. 上下文可信且按需</b><span>实时事实、元数据与语义围绕任务披露，不预载整个Org。</span></div>
+          <div><b>4. 能力可发现和理解</b><span>模型能够找到正确行动，并在执行前获得明确技术契约。</span></div>
+          <div><b>5. 行动继承原生治理</b><span>AI代表当前用户行动，权限、规则、确认和审计都可验证。</span></div>
+          <div><b>6. 体验形成闭环</b><span>从目标、分析、成果、预览到系统写回在同一任务中完成。</span></div>
+        </div>
+
+                <div class="signal"><small>WHY的结论</small>Claudeforce要解决的不是“再做一个连接器”，而是把协议、模型、任务知识、实时企业上下文和受治理行动共同封装成一个员工可以直接使用、企业可以持续运营的AI Native产品。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="what">
+        <div class="kicker">02 · WHAT</div><h2>Claudeforce是什么：从合作体系到具体产品</h2>
+        <p class="point">读者真正能够安装、配置和使用的产品载体，是Salesforce in Claude插件；Claudeforce和AIforce不应被画进物理调用链。</p>
+        <div class="product-anatomy">
+          <div class="plugin"><small>CLAUDEFORCE的首个具体产品</small><h3>Salesforce<br>in Claude</h3><p>由Salesforce构建、在Claude中安装的专用插件。当前为Beta。</p></div>
+          <div class="parts">
+            <div class="part"><b>37个Sales Skills</b><span>续约准备、客户研究、Call Prep、Pipeline Review、QBR与CRM更新等推荐任务方法。</span></div>
+            <div class="part"><b>Setup Skill</b><span>首次使用时了解用户角色、book of business与已连接工具。</span></div>
+            <div class="part"><b>Salesforce Connector</b><span>把Claude的MCP Client连接到Salesforce托管的MCP能力。</span></div>
+            <div class="part"><b>Slack Connector</b><span>按任务获取Deal Channel与Account Team等协作上下文。</span></div>
+            <div class="part"><b>Claude / Cowork</b><span>承担理解、规划、跨系统编排、内容生成和任务运行。</span></div>
+            <div class="part"><b>预览、确认与写回</b><span>展示拟变更内容，由用户批准后再写回Salesforce。</span></div>
+          </div>
+        </div>
+        <h3>产品能力一览</h3>
+        <table class="compact"><thead><tr><th>能力类型</th><th>典型任务</th><th>主要结果</th></tr></thead><tbody>
+          <tr><td>客户与会议准备</td><td>Account Research、Call Prep、Renewal Prep</td><td>客户简报、风险与建议议题</td></tr>
+          <tr><td>Pipeline与经营分析</td><td>Pipeline Review、Coverage、Deal Risk</td><td>优先级、差距与下一步建议</td></tr>
+          <tr><td>内容与成果生成</td><td>QBR、跟进邮件、会议摘要</td><td>文档、Artifact、邮件草稿</td></tr>
+          <tr><td>CRM执行</td><td>更新阶段、Close Date、Next Step，创建Task或记录Call</td><td>经用户确认后的Salesforce写回</td></tr>
+        </tbody></table>
+        <div class="note"><b>Skills的边界：</b>它们封装的是Salesforce总结的常见销售任务方法和平台使用知识，不是适用于所有企业的强制“最佳实践”。强制规则仍应放在Salesforce权限、Validation、Flow、Apex和审批中。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="architecture">
+        <div class="kicker">03 · ARCHITECTURE</div><h2>产品与技术架构总图</h2>
+        <p class="point">这张图同时区分三件事：双方的联合产品边界、AIforce与Headless Toolkit的架构关系，以及实际运行时调用路径。</p>
+        <div class="diagram"><div class="diagram-head"><b>Claudeforce总体产品与技术架构</b><span>可切换查看“产品关系”与“运行时路径”</span></div><div id="claudeforce-architecture-v1">
+  <div class="viz-controls" aria-label="图层选择">
+    <button class="btn btn-primary" type="button" data-view="all" aria-pressed="true">完整架构</button>
+    <button class="btn" type="button" data-view="product" aria-pressed="false">产品关系</button>
+    <button class="btn" type="button" data-view="runtime" aria-pressed="false">运行时路径</button>
+  </div>
+
+  <svg class="cf-desktop" viewBox="0 0 1200 790" role="img" aria-labelledby="cf-title cf-desc">
+    <title id="cf-title">Claudeforce 总体产品与技术架构</title>
+    <desc id="cf-desc">Claudeforce 是 Salesforce 与 Anthropic 的联合产品体验。Salesforce in Claude 把 Claude 的推理和任务方法，与由 AIforce、Headless Toolkit 和 Salesforce 平台提供的可信上下文和行动能力结合起来。实线表示运行时调用，虚线表示产品和架构关系。</desc>
+    <defs>
+      <marker id="cf-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--blue)" />
+      </marker>
+      <marker id="cf-arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--purple)" />
+      </marker>
+      <marker id="cf-arrow-neutral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted-foreground)" />
+      </marker>
+    </defs>
+
+    <text x="28" y="32" class="title">Claudeforce：把 Claude 的智能与 Salesforce 的企业能力产品化地组合起来</text>
+    <text x="28" y="55" class="subtitle">同一张图同时区分产品关系与实际调用路径</text>
+
+    <g class="product-layer">
+      <rect x="20" y="75" width="1160" height="640" rx="22" class="joint-boundary" />
+      <text x="44" y="105" class="joint-label">CLAUDEFORCE · Salesforce × Anthropic 联合产品体验</text>
+
+      <rect x="45" y="126" width="350" height="555" rx="18" class="vendor-region" />
+      <text x="68" y="157" class="region-title">Anthropic / Claude</text>
+      <text x="68" y="179" class="region-subtitle">AI 工作界面、推理与任务执行环境</text>
+
+      <rect x="69" y="203" width="302" height="88" rx="13" class="existing-node" />
+      <text x="89" y="231" class="node-title">Claude + Cowork Agent Runtime</text>
+      <text x="89" y="255" class="node-body">理解意图 · 推理规划 · 生成内容</text>
+      <text x="89" y="276" class="node-body">跨系统协同 · 动态工作界面</text>
+
+      <path d="M220 292 L220 315" class="neutral-arrow" />
+
+      <rect x="69" y="316" width="302" height="211" rx="13" class="joint-node" />
+      <text x="89" y="346" class="node-title">Salesforce in Claude</text>
+      <text x="89" y="368" class="node-kicker">Claudeforce 的首个具体产品</text>
+
+      <rect x="89" y="389" width="126" height="45" rx="9" class="small-node" />
+      <text x="103" y="407" class="small-title">37 个 Sales Skills</text>
+      <text x="103" y="424" class="small-body">销售任务方法</text>
+
+      <rect x="225" y="389" width="126" height="45" rx="9" class="small-node" />
+      <text x="239" y="407" class="small-title">Setup Skill</text>
+      <text x="239" y="424" class="small-body">角色与偏好</text>
+
+      <rect x="89" y="444" width="126" height="55" rx="9" class="small-node runtime-emphasis" />
+      <text x="103" y="465" class="small-title">Salesforce</text>
+      <text x="103" y="482" class="small-body">Connector + MCP Client</text>
+
+      <rect x="225" y="444" width="126" height="55" rx="9" class="small-node" />
+      <text x="239" y="465" class="small-title">预览与确认</text>
+      <text x="239" y="482" class="small-body">写操作的人机责任</text>
+
+      <rect x="69" y="555" width="302" height="91" rx="13" class="experience-node" />
+      <text x="89" y="583" class="node-title">用户获得的完整体验</text>
+      <text x="89" y="607" class="node-body">从“提问”推进到“完成销售任务”</text>
+      <text x="89" y="628" class="node-body">减少提示词、接口与权限映射的自建工作</text>
+
+      <rect x="500" y="126" width="635" height="555" rx="18" class="vendor-region" />
+      <text x="523" y="157" class="region-title">Salesforce</text>
+      <text x="523" y="179" class="region-subtitle">可信企业上下文、业务能力与原生治理</text>
+
+      <rect x="524" y="203" width="587" height="82" rx="13" class="aiforce-node" />
+      <text x="548" y="232" class="node-title">AIforce · Live Interface Layer</text>
+      <text x="548" y="255" class="node-body">把 Salesforce 的可信上下文与行动能力带到任何 AI 界面</text>
+      <text x="1066" y="235" text-anchor="end" class="role-note">产品 / 架构角色</text>
+      <text x="1066" y="257" text-anchor="end" class="role-note">不是运行时网关</text>
+
+      <path d="M818 287 L818 308" class="product-arrow" />
+      <text x="835" y="302" class="arrow-label product-text">powered by</text>
+
+      <rect x="524" y="310" width="587" height="235" rx="13" class="toolkit-region" />
+      <text x="548" y="338" class="node-title">Headless Toolkit</text>
+      <text x="548" y="360" class="node-body">AIforce 的底层技术基础 · 一组技术能力，不是单一 SDK</text>
+
+      <rect x="548" y="379" width="310" height="72" rx="10" class="runtime-node runtime-emphasis" />
+      <text x="568" y="405" class="node-title">Headless 360 MCP Server <tspan class="beta">BETA</tspan></text>
+      <text x="568" y="428" class="node-body">具体 Hosted MCP 服务 · 单一连接入口</text>
+
+      <rect x="548" y="466" width="310" height="68" rx="10" class="runtime-node runtime-emphasis" />
+      <text x="568" y="486" class="small-title">4 个 MCP 工具</text>
+      <text x="568" y="504" class="small-body">Discover · Describe · Dispatch RO · Dispatch</text>
+      <text x="568" y="522" class="small-body">后端：持续扩展的 Salesforce operations</text>
+
+      <rect x="879" y="379" width="208" height="142" rx="10" class="existing-node" />
+      <text x="899" y="404" class="small-title">Headless Toolkit 还包括</text>
+      <text x="899" y="429" class="small-body">其他 Hosted MCP Servers</text>
+      <text x="899" y="450" class="small-body">APIs · Skills · Plugins</text>
+      <text x="899" y="471" class="small-body">CLI · Developer Tools</text>
+      <text x="899" y="492" class="small-body">Experience Tools</text>
+
+      <rect x="524" y="574" width="587" height="72" rx="13" class="platform-node" />
+      <text x="548" y="601" class="node-title">Salesforce 可信业务平台</text>
+      <text x="548" y="625" class="node-body">Customer 360 · Org 元数据 · Flow / Apex / API · 身份、权限、共享、校验与审计</text>
+      <text x="1075" y="601" text-anchor="end" class="role-note">Data 360 / Agentforce</text>
+      <text x="1075" y="623" text-anchor="end" class="role-note">按任务需要参与</text>
+    </g>
+
+    <g class="runtime-layer">
+      <path d="M371 471 C440 471 470 415 548 415" class="runtime-arrow" />
+      <rect x="405" y="402" width="113" height="42" rx="8" class="protocol-label" />
+      <text x="461" y="419" text-anchor="middle" class="small-title">MCP + OAuth</text>
+      <text x="461" y="436" text-anchor="middle" class="small-body">以当前用户身份</text>
+
+      <path d="M703 451 L703 465" class="runtime-arrow" />
+      <path d="M703 535 C703 553 735 558 735 573" class="runtime-arrow" />
+      <text x="721" y="558" class="arrow-label runtime-text">Dispatch 路由 → access guard（访问保护）→ 平台执行</text>
+    </g>
+
+    <g class="product-layer product-link">
+      <path d="M524 244 C458 248 425 300 371 346" class="product-arrow" />
+      <text x="408" y="287" class="arrow-label product-text">Claudeforce首批</text>
+      <text x="408" y="306" class="arrow-label product-text">落地体验</text>
+    </g>
+
+    <g class="legend">
+      <line x1="45" y1="749" x2="82" y2="749" class="runtime-arrow" />
+      <text x="93" y="754" class="legend-text">实际运行时调用</text>
+      <line x1="239" y1="749" x2="276" y2="749" class="product-arrow" />
+      <text x="287" y="754" class="legend-text">产品 / 架构关系</text>
+      <rect x="465" y="737" width="22" height="22" rx="5" class="joint-node" />
+      <text x="498" y="754" class="legend-text">双方联合产品化</text>
+      <rect x="680" y="737" width="22" height="22" rx="5" class="runtime-node" />
+      <text x="713" y="754" class="legend-text">Salesforce AI 访问技术</text>
+      <rect x="927" y="737" width="22" height="22" rx="5" class="existing-node" />
+      <text x="960" y="754" class="legend-text">双方既有能力</text>
+    </g>
+  </svg>
+
+  <div class="cf-mobile" role="img" aria-label="Claudeforce 总体产品与技术架构移动版">
+    <div class="mobile-boundary">
+      <div class="mobile-overline">CLAUDEFORCE · 联合产品体验</div>
+      <div class="mobile-block existing-mobile"><strong>Claude + Cowork</strong><span>推理、规划、生成、跨系统协同</span></div>
+      <div class="mobile-down">↓</div>
+      <div class="mobile-block joint-mobile"><strong>Salesforce in Claude</strong><span>37 Sales Skills · Setup Skill · Salesforce Connector · 预览与确认</span></div>
+      <div class="mobile-split"><span>产品关系：AIforce → Salesforce in Claude（Claudeforce首批体验）</span><span>运行路径：Connector → Headless 360（MCP + OAuth）</span></div>
+      <div class="mobile-block aiforce-mobile"><strong>AIforce · Live Interface Layer</strong><span>面向任何 AI 界面交付 Salesforce 可信上下文与行动能力；不是运行时网关</span></div>
+      <div class="mobile-down product-mobile">powered by ↓</div>
+      <div class="mobile-block toolkit-mobile"><strong>Headless Toolkit</strong><span>Headless 360 MCP Server · 其他 MCP Servers · APIs · Skills · Plugins · CLI · Experience Tools</span></div>
+      <div class="mobile-block runtime-mobile"><strong>实际调用核心</strong><span>4 个 MCP 工具 → Salesforce operations → dispatch 路由与 access guard</span></div>
+      <div class="mobile-down">↓</div>
+      <div class="mobile-block platform-mobile"><strong>Salesforce 可信业务平台</strong><span>Customer 360 · Org 元数据 · Flow/Apex/API · 身份、权限、共享、校验与审计</span></div>
+    </div>
+  </div>
+
+  <div class="sr-only" aria-live="polite" id="cf-view-status">当前显示完整架构。</div>
+</div>
+
+<style>
+  #claudeforce-architecture-v1 { width: 100%; color: var(--foreground); }
+  #claudeforce-architecture-v1 .viz-controls { margin-bottom: 8px; }
+  #claudeforce-architecture-v1 svg { width: 100%; height: auto; display: block; }
+  #claudeforce-architecture-v1 text { fill: var(--foreground); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  #claudeforce-architecture-v1 .title { font-size: 20px; font-weight: 500; }
+  #claudeforce-architecture-v1 .subtitle { font-size: 13px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .joint-boundary { fill: color-mix(in srgb, var(--purple) 4%, transparent); stroke: var(--purple); stroke-width: 1.5; stroke-dasharray: 8 7; }
+  #claudeforce-architecture-v1 .joint-label { font-size: 13px; font-weight: 500; fill: var(--purple); letter-spacing: .7px; }
+  #claudeforce-architecture-v1 .vendor-region { fill: color-mix(in srgb, var(--card) 82%, transparent); stroke: var(--border); stroke-width: 1.3; }
+  #claudeforce-architecture-v1 .region-title { font-size: 18px; font-weight: 500; }
+  #claudeforce-architecture-v1 .region-subtitle { font-size: 13px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .existing-node { fill: color-mix(in srgb, var(--muted) 78%, transparent); stroke: var(--border); stroke-width: 1; }
+  #claudeforce-architecture-v1 .joint-node { fill: color-mix(in srgb, var(--purple) 12%, var(--card)); stroke: color-mix(in srgb, var(--purple) 55%, var(--border)); stroke-width: 1.4; }
+  #claudeforce-architecture-v1 .experience-node { fill: color-mix(in srgb, var(--purple) 6%, var(--card)); stroke: color-mix(in srgb, var(--purple) 25%, var(--border)); stroke-width: 1; }
+  #claudeforce-architecture-v1 .small-node { fill: color-mix(in srgb, var(--card) 88%, transparent); stroke: color-mix(in srgb, var(--purple) 24%, var(--border)); stroke-width: 1; }
+  #claudeforce-architecture-v1 .aiforce-node { fill: color-mix(in srgb, var(--purple) 13%, var(--card)); stroke: color-mix(in srgb, var(--purple) 62%, var(--border)); stroke-width: 1.5; }
+  #claudeforce-architecture-v1 .toolkit-region { fill: color-mix(in srgb, var(--blue) 5%, var(--card)); stroke: color-mix(in srgb, var(--blue) 45%, var(--border)); stroke-width: 1.3; }
+  #claudeforce-architecture-v1 .runtime-node { fill: color-mix(in srgb, var(--blue) 11%, var(--card)); stroke: color-mix(in srgb, var(--blue) 58%, var(--border)); stroke-width: 1.3; }
+  #claudeforce-architecture-v1 .platform-node { fill: color-mix(in srgb, var(--green) 8%, var(--card)); stroke: color-mix(in srgb, var(--green) 48%, var(--border)); stroke-width: 1.3; }
+  #claudeforce-architecture-v1 .protocol-label { fill: var(--popover); stroke: color-mix(in srgb, var(--blue) 52%, var(--border)); stroke-width: 1; }
+  #claudeforce-architecture-v1 .node-title { font-size: 15px; font-weight: 500; }
+  #claudeforce-architecture-v1 .node-kicker { font-size: 12px; fill: var(--purple); }
+  #claudeforce-architecture-v1 .node-body { font-size: 12px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .small-title { font-size: 12px; font-weight: 500; }
+  #claudeforce-architecture-v1 .small-body { font-size: 11.5px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .role-note { font-size: 11.5px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .beta { font-size: 9px; fill: var(--orange); }
+  #claudeforce-architecture-v1 .runtime-arrow { fill: none; stroke: var(--blue); stroke-width: 2.5; marker-end: url(#cf-arrow-blue); }
+  #claudeforce-architecture-v1 .product-arrow { fill: none; stroke: var(--purple); stroke-width: 2; stroke-dasharray: 7 6; marker-end: url(#cf-arrow-purple); }
+  #claudeforce-architecture-v1 .neutral-arrow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; marker-end: url(#cf-arrow-neutral); }
+  #claudeforce-architecture-v1 .arrow-label { font-size: 11.5px; font-weight: 500; }
+  #claudeforce-architecture-v1 .runtime-text { fill: var(--blue); }
+  #claudeforce-architecture-v1 .product-text { fill: var(--purple); }
+  #claudeforce-architecture-v1 .legend-text { font-size: 12px; fill: var(--muted-foreground); }
+  #claudeforce-architecture-v1[data-view="product"] .runtime-layer { opacity: .12; }
+  #claudeforce-architecture-v1[data-view="product"] .runtime-emphasis { opacity: .42; }
+  #claudeforce-architecture-v1[data-view="runtime"] .product-link,
+  #claudeforce-architecture-v1[data-view="runtime"] .experience-node { opacity: .16; }
+  #claudeforce-architecture-v1[data-view="runtime"] .joint-node:not(.runtime-emphasis),
+  #claudeforce-architecture-v1[data-view="runtime"] .aiforce-node { opacity: .32; }
+  #claudeforce-architecture-v1 .cf-mobile { display: none; }
+  #claudeforce-architecture-v1 .mobile-boundary { border: 1.5px dashed var(--purple); border-radius: 16px; padding: 14px; background: color-mix(in srgb, var(--purple) 4%, transparent); }
+  #claudeforce-architecture-v1 .mobile-overline { color: var(--purple); font-weight: 500; margin-bottom: 12px; }
+  #claudeforce-architecture-v1 .mobile-block { padding: 12px; border-radius: 10px; border: 1px solid var(--border); display: grid; gap: 4px; }
+  #claudeforce-architecture-v1 .mobile-block span { color: var(--muted-foreground); }
+  #claudeforce-architecture-v1 .existing-mobile { background: var(--muted); }
+  #claudeforce-architecture-v1 .joint-mobile, #claudeforce-architecture-v1 .aiforce-mobile { background: color-mix(in srgb, var(--purple) 12%, var(--card)); border-color: color-mix(in srgb, var(--purple) 55%, var(--border)); }
+  #claudeforce-architecture-v1 .toolkit-mobile, #claudeforce-architecture-v1 .runtime-mobile { background: color-mix(in srgb, var(--blue) 10%, var(--card)); border-color: color-mix(in srgb, var(--blue) 55%, var(--border)); }
+  #claudeforce-architecture-v1 .platform-mobile { background: color-mix(in srgb, var(--green) 8%, var(--card)); border-color: color-mix(in srgb, var(--green) 45%, var(--border)); }
+  #claudeforce-architecture-v1 .mobile-down { text-align: center; padding: 6px; color: var(--blue); font-weight: 500; }
+  #claudeforce-architecture-v1 .product-mobile { color: var(--purple); }
+  #claudeforce-architecture-v1 .mobile-split { display: grid; gap: 4px; padding: 8px 0; color: var(--muted-foreground); }
+  #claudeforce-architecture-v1[data-view="product"] .runtime-mobile { opacity: .25; }
+  #claudeforce-architecture-v1[data-view="runtime"] .aiforce-mobile,
+  #claudeforce-architecture-v1[data-view="runtime"] .product-mobile { opacity: .32; }
+  @media (max-width: 700px) {
+    #claudeforce-architecture-v1 .cf-desktop { display: none; }
+    #claudeforce-architecture-v1 .cf-mobile { display: block; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    #claudeforce-architecture-v1 .runtime-layer,
+    #claudeforce-architecture-v1 .product-link,
+    #claudeforce-architecture-v1 .runtime-emphasis,
+    #claudeforce-architecture-v1 .aiforce-node,
+    #claudeforce-architecture-v1 .experience-node { transition: opacity 180ms ease; }
+  }
+</style>
+
+<script>
+(() => {
+  const root = document.getElementById('claudeforce-architecture-v1');
+  const status = document.getElementById('cf-view-status');
+  const labels = { all: '完整架构', product: '产品关系', runtime: '运行时路径' };
+  root.dataset.view = 'all';
+  root.querySelectorAll('[data-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const view = button.dataset.view;
+      root.dataset.view = view;
+      root.querySelectorAll('[data-view]').forEach((peer) => {
+        const active = peer === button;
+        peer.setAttribute('aria-pressed', active ? 'true' : 'false');
+        peer.classList.toggle('btn-primary', active);
+      });
+      status.textContent = `当前显示${labels[view]}。`;
+    });
+  });
+})();
+</script></div>
+        <h3>Salesforce升级AIforce后的官方架构口径</h3>
+        <p>Salesforce将AIforce定义为<strong>Live Interface Layer</strong>：它把Data 360的可信统一上下文、Customer 360的应用与语义智能，以及Agentforce的数字劳动力带到任何AI工作界面。它不是一个新的协议或运行时网关。</p>
+        <div class="stack" aria-label="依据Salesforce官方公告重绘的Agentic Enterprise结构">
+          <div class="layer a"><b>AIforce · Live Interface Layer</b><span>通过Claudeforce、Slackforce、Agentforce Coworker及伙伴产品，把可信上下文与行动带到具体AI工作界面。</span></div>
+          <div class="layer b"><b>Agentforce</b><span>面向企业的数字劳动力、现成Agent与Agent构建能力；并非每次Claudeforce请求的必经节点。</span></div>
+          <div class="layer c"><b>Customer 360</b><span>数据对象、业务逻辑、流程、权限、操作与应用语义。</span></div>
+          <div class="layer d"><b>Data 360</b><span>统一、联邦化的数据、元数据与记忆；按场景参与，不是每次请求的固定路径。</span></div>
+        </div>
+        <p class="sources"><strong>官方命名：</strong>Salesforce说明Headless 360已于2026年9月更名为AIforce，但具体Beta服务器仍沿用<strong>Headless 360 MCP Server</strong>名称。Headless Toolkit是支撑AIforce的技术集合，包括MCP Servers、APIs、Skills、Plugins和Developer Tools。</p>
+        <h3>Headless Toolkit最终开放成什么</h3>
+        <table><thead><tr><th>技术形态</th><th>开放后的结果</th><th>主要消费者</th></tr></thead><tbody>
+          <tr><td>Hosted MCP Servers</td><td>各类MCP工具与受治理的平台访问；其中Headless 360通过Salesforce operations组织持续扩展的能力</td><td>Claude及其他MCP Client</td></tr>
+          <tr><td>APIs</td><td>结构化数据、业务功能和平台服务</td><td>企业应用、自定义Agent与集成平台</td></tr>
+          <tr><td>Skills与Plugins</td><td>任务方法、工作流和产品组合</td><td>员工、Agent与合作伙伴产品</td></tr>
+          <tr><td>CLI与Developer Tools</td><td>可被开发人员和Coding Agent使用的配置、开发与部署能力</td><td>开发团队与开发Agent</td></tr>
+          <tr><td>Experience Tools</td><td>可嵌入Web、移动、对话和协作界面的动态体验</td><td>产品与体验开发团队</td></tr>
+        </tbody></table>
+        <div class="signal"><small>一句话区分</small>Headless Toolkit解决“Salesforce能力怎样走出固定UI”；AIforce解决“这些能力怎样在不同AI界面中形成实时、可信、可行动的产品体验”。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="context">
+        <div class="kicker">04 · ENTERPRISE CONTEXT</div><h2>企业上下文如何暴露：进入模型、成为工具、留在服务端</h2>
+        <p class="point">企业上下文不是一个一次性传给Claude的“Org知识包”。它由任务方法、实时业务事实、元数据与业务语义、能力契约和治理约束组成，并通过三种不同方式参与一次任务。</p>
+
+        <div class="context-route">
+          <div class="visible"><b>进入Claude工作上下文</b><span>用户目标、Sales Skill、相关业务事实、按需取得的结构信息、operation技术契约，以及Slack等Connector结果。Claude据此规划、推理和生成成果。</span></div>
+          <div class="route-arrow">←</div>
+          <div class="callable"><b>作为运行时可调用能力</b><span>Salesforce Connector、Headless 360 MCP Server、Salesforce operations，以及背后的API、Flow、Apex和其他平台能力。它们不会全部展开在Prompt中。</span></div>
+          <div class="route-arrow">←</div>
+          <div class="enforced"><b>留在Salesforce服务端强制执行</b><span>OAuth身份、CRUD、FLS、Sharing、Profile、Permission Set、Validation、自动化、审批和审计。Claude可以知道结果，但不能取代这些控制。</span></div>
+        </div>
+
+        <h3>五类上下文分别由谁提供、何时暴露</h3>
+        <table><thead><tr><th>上下文层</th><th>具体内容</th><th>暴露方式与时机</th><th>作用</th></tr></thead><tbody>
+          <tr><td><strong>任务上下文</strong></td><td>用户目标、当前对话、交付形式、角色与book of business</td><td>用户输入；首次使用时由Setup Skill建立个性化</td><td>界定“这次要完成什么”</td></tr>
+          <tr><td><strong>任务方法上下文</strong></td><td>步骤、检查项、所需证据、判断维度和输出结构</td><td>匹配相关Sales Skill时进入Claude工作上下文</td><td>界定“应该怎样做”</td></tr>
+          <tr><td><strong>业务事实上下文</strong></td><td>Account、Opportunity、Contact、Activity等当前记录及Slack协作信息</td><td>通过相应Connector及其只读工具或Salesforce operation按任务返回</td><td>回答“企业现在发生了什么”</td></tr>
+          <tr><td><strong>元数据与业务语义</strong></td><td>对象、字段、类型、关系、Picklist，以及阶段、指标和自定义字段在该企业中的含义</td><td>相关Schema或平台能力按需取得；对象/字段描述、管理员指导和Skill补充模型可见语义</td><td>回答“数据怎样解释”</td></tr>
+          <tr><td><strong>能力上下文</strong></td><td>可用operations及其API、参数、依赖和有序步骤</td><td>Discover与Describe在需要时渐进披露</td><td>回答“系统能做什么、怎样正确调用”</td></tr>
+          <tr><td><strong>治理上下文</strong></td><td>身份、权限、共享、校验、自动化、审批和审计</td><td>每次访问与执行时由Salesforce服务端强制实施</td><td>决定“当前用户实际允许看什么、做什么”</td></tr>
+        </tbody></table>
+
+        <h3>Org元数据什么时候给Claude</h3>
+        <div class="grid3">
+          <div class="card purple"><h3>连接时：不传完整Org</h3><p>建立插件、Connector、MCP工具和OAuth会话。公开资料没有表明完整对象模型会在登录时复制给Claude。</p></div>
+          <div class="card blue"><h3>规划和读取时：任务相关部分按需取得</h3><p>Salesforce公开的Operation发现和Schema能力支持按任务渐进取得相关部分；Salesforce in Claude内部如何组合、缓存或预取这些信息尚未公开。</p></div>
+          <div class="card green"><h3>执行时：更多规则留在平台内部</h3><p>Salesforce可使用未进入模型上下文的元数据、共享规则、校验、Flow和Apex来判断和执行。</p></div>
+        </div>
+        <div class="note"><b>结构不等于语义：</b>Schema可以告诉Claude字段名称、类型和关系，却不会自动告诉它“本企业Pipeline Coverage使用Amount还是ACV”“红色风险怎样定义”。完整业务语义还依赖对象/字段描述、管理员指导、指标口径和任务方法。Flow、Validation、Apex与审批主要在服务端强制执行企业规则，除非其说明通过专门能力明确暴露。</div>
+
+        <h3>权限映射的准确说法</h3>
+        <p>Claudeforce没有把Salesforce权限复制成Claude中的另一套角色表。管理员先用External Client App与<code>mcp_api</code> Scope控制客户端和用户准入；每个用户再用自己的Salesforce账号完成OAuth。此后每次Hosted MCP调用都以该用户身份运行，继续应用CRUD、FLS、Sharing、Profile和Permission Set。Claude侧的“Allow once / Always allow / Deny”是对本次工具行动的产品确认，不能赋予用户原本没有的Salesforce权限。标准Hosted MCP工具由平台实施这些控制；自定义Apex、Flow和REST工具仍需验证运行上下文、sharing、CRUD/FLS检查与错误处理，不能仅因经过MCP就假定天然安全。</p>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="how">
+        <div class="kicker">05 · HOW</div><h2>从意图到执行：Operation如何把企业上下文和行动连接起来</h2>
+        <p class="point">用“准备Acme客户会前简报，确认后更新Next Step”这个小案例，可以同时看清Sales Skill怎样提供任务方法、企业上下文怎样进入Claude、Operation怎样被发现和定义，以及读写操作如何继承Salesforce治理。</p>
+
+        <h3>先用六步读懂业务主链</h3>
+        <div class="flow" aria-label="案例主阅读路径">
+          <div class="box"><b>用户目标</b><small>委派完整任务</small></div><div class="chev">›</div>
+          <div class="box"><b>Sales Skill</b><small>提供任务方法</small></div><div class="chev">›</div>
+          <div class="box"><b>Claude规划</b><small>确定事实与行动</small></div><div class="chev">›</div>
+          <div class="box"><b>Operation</b><small>发现、核实与读取</small></div><div class="chev">›</div>
+          <div class="box"><b>生成成果</b><small>事实与判断分开</small></div><div class="chev">›</div>
+          <div class="box"><b>批准写回</b><small>平台治理执行</small></div>
+        </div>
+        <p>下面的正式时序图只是把这六步展开：Discover和Describe属于按需能力发现，紫色框表示进入Claude的上下文，黄色框表示留在Salesforce服务端的治理。</p>
+
+        <h3>先理解Operation：它位于MCP工具与Salesforce执行层之间</h3>
+        <p>Headless 360没有把Salesforce的成千上万项能力逐个暴露成MCP工具，而是固定提供四个工具，并在后端维护持续增长的<strong>Salesforce operations</strong>。Operation是一个可被发现、描述和执行的Salesforce行动单元；它把模型的业务意图连接到具体API、参数、依赖和有序步骤。它不是第五个MCP工具，也不是对单个REST API的简单改名。</p>
+        <div class="term-map" aria-label="关键运行时术语">
+          <div class="term-box"><b>MCP Server</b><em>连接入口</em><span>Headless 360是Salesforce托管的具体Beta服务，提供单一连接。</span></div>
+          <div class="term-box"><b>MCP Tool</b><em>稳定工具面</em><span>Discover、Describe、Dispatch和Dispatch Read-Only四个通用工具。</span></div>
+          <div class="term-box"><b>Salesforce operation</b><em>可扩展行动单元</em><span>后端持续增长的业务与平台能力，由Discover在运行时检索。</span></div>
+          <div class="term-box"><b>Operation技术契约</b><em>Describe返回</em><span>选定行动的API、参数、依赖和有序步骤，供Claude执行前核实。</span></div>
+          <div class="term-box"><b>Access Guard</b><em>Dispatch执行前</em><span>Dispatch路由到正确端点，并在任何行动运行前实施访问保护。</span></div>
+          <div class="term-box"><b>Sales Skill</b><em>任务方法</em><span>告诉Claude销售任务应检查什么、怎样组织输出，不是服务器Operation。</span></div>
+          <div class="term-box"><b>Connector / MCP Client</b><em>Claude侧通道</em><span>管理连接和OAuth会话，把Claude的工具请求发送到Hosted MCP Server。</span></div>
+          <div class="term-box"><b>原生平台治理</b><em>System of Record</em><span>Salesforce继续执行权限、共享、校验、自动化、事务和审计。</span></div>
+        </div>
+        <table class="compact"><thead><tr><th>四个工具</th><th>输入/返回的关键含义</th><th>在案例中的用途</th></tr></thead><tbody>
+          <tr><td><strong>Discover</strong></td><td>根据Agent对任务的解释，对可用operations做语义检索并返回排序候选</td><td>找到读取客户近期活动和商机记录的相关行动；风险由Claude根据返回事实和Skill方法判断</td></tr>
+          <tr><td><strong>Describe</strong></td><td>返回选定operation的完整技术契约：API、参数、依赖和有序步骤</td><td>核实候选是否适用，并知道Account标识、时间范围等参数</td></tr>
+          <tr><td><strong>Dispatch Read-Only</strong></td><td>调用选定operation，但保证不改变数据或配置</td><td>读取权限范围内的Account、Opportunity与Activity结果</td></tr>
+          <tr><td><strong>Dispatch</strong></td><td>路由到正确端点，在运行前执行Access Guard，再调用选定operation</td><td>用户批准后，使用已确定并核实契约的写Operation更新Next Step；若尚未确定，应先Discover/Describe</td></tr>
+        </tbody></table>
+
+        <h3>先区分案例中的三类输出</h3>
+        <div class="grid3">
+          <div class="card blue"><h3>Salesforce业务事实</h3><p>近期Activity、开放Opportunity、阶段、金额与Next Step等权限范围内的结构化记录。</p></div>
+          <div class="card purple"><h3>Claude分析判断</h3><p>风险信号、优先级、会议议题和建议；它们是基于事实与Skill方法形成的推断。</p></div>
+          <div class="card green"><h3>待批准的执行动作</h3><p>拟更新的Next Step等变更。只有用户确认后才通过写Operation提交给Salesforce。</p></div>
+        </div>
+
+        <h3>案例时序图：每一步暴露了什么、由谁负责</h3>
+        <div class="seq-wrap"><svg class="seq" viewBox="0 0 1120 1460" role="img" aria-labelledby="seqTitle2 seqDesc2"><title id="seqTitle2">Salesforce in Claude企业上下文与Operation调用时序</title><desc id="seqDesc2">销售人员要求准备客户会前简报。Claude加载Sales Skill，通过Connector和Headless 360按需发现Operation、取得技术契约、读取实时事实，生成成果；用户批准后再执行写入并返回真实结果。</desc><defs><marker id="seqBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1769e0"/></marker><marker id="seqGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6f7e90"/></marker><marker id="seqPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7357d9"/></marker></defs>
+          <g><rect class="actorbox" x="20" y="18" width="140" height="54" rx="9"/><text class="actor-title" x="90" y="41" text-anchor="middle">销售人员</text><text class="actor-sub" x="90" y="59" text-anchor="middle">目标与最终责任</text><rect class="actorbox" x="205" y="18" width="150" height="54" rx="9"/><text class="actor-title" x="280" y="41" text-anchor="middle">Claude / Cowork</text><text class="actor-sub" x="280" y="59" text-anchor="middle">理解、规划与生成</text><rect class="actorbox" x="400" y="18" width="140" height="54" rx="9"/><text class="actor-title" x="470" y="41" text-anchor="middle">Sales Skill</text><text class="actor-sub" x="470" y="59" text-anchor="middle">销售任务方法</text><rect class="actorbox" x="585" y="18" width="150" height="54" rx="9"/><text class="actor-title" x="660" y="41" text-anchor="middle">Connector / MCP Client</text><text class="actor-sub" x="660" y="59" text-anchor="middle">连接与OAuth会话</text><rect class="actorbox" x="780" y="18" width="150" height="54" rx="9"/><text class="actor-title" x="855" y="41" text-anchor="middle">Headless 360 MCP</text><text class="actor-sub" x="855" y="59" text-anchor="middle">发现、描述与分派</text><rect class="actorbox" x="970" y="18" width="130" height="54" rx="9"/><text class="actor-title" x="1035" y="41" text-anchor="middle">Salesforce平台</text><text class="actor-sub" x="1035" y="59" text-anchor="middle">事实、规则与执行</text></g>
+          <g><line class="life" x1="90" y1="72" x2="90" y2="1435"/><line class="life" x1="280" y1="72" x2="280" y2="1435"/><line class="life" x1="470" y1="72" x2="470" y2="1435"/><line class="life" x1="660" y1="72" x2="660" y2="1435"/><line class="life" x1="855" y1="72" x2="855" y2="1435"/><line class="life" x1="1035" y1="72" x2="1035" y2="1435"/></g>
+          <g><line class="call" x1="90" y1="118" x2="280" y2="118" marker-end="url(#seqBlue)"/><text class="msg" x="185" y="108" text-anchor="middle">1. 准备Acme会前简报；确认后更新Next Step</text><line class="call" x1="280" y1="166" x2="470" y2="166" marker-end="url(#seqBlue)"/><text class="msg" x="375" y="156" text-anchor="middle">2. 匹配Call Prep / Account Research Skill</text><line class="return" x1="470" y1="212" x2="280" y2="212" marker-end="url(#seqGray)"/><text class="msg" x="375" y="202" text-anchor="middle">步骤、检查项、所需事实与输出结构</text><rect class="context-box" x="322" y="226" width="286" height="50" rx="7"/><text class="msg" x="465" y="246" text-anchor="middle">进入Claude：任务方法上下文</text><text class="msg" x="465" y="264" text-anchor="middle">告诉模型“应该怎样完成”</text><path class="self" d="M280 296h58v38h-58" marker-end="url(#seqPurple)"/><text class="msg" x="348" y="318">3. 分解任务，列出所需事实与行动</text><line class="call" x1="280" y1="364" x2="660" y2="364" marker-end="url(#seqBlue)"/><text class="msg" x="470" y="354" text-anchor="middle">4. 请求Salesforce上下文与能力；当前用户OAuth</text></g>
+          <g><rect class="frame" x="568" y="394" width="385" height="218" rx="7"/><rect class="frame-label" x="568" y="394" width="225" height="24"/><text class="frame-text" x="578" y="410">opt｜Skill未预先确定能力或需要运行时核实</text><line class="call" x1="660" y1="451" x2="855" y2="451" marker-end="url(#seqBlue)"/><text class="msg" x="758" y="441" text-anchor="middle">5. discover（自然语言任务意图）</text><line class="return" x1="855" y1="493" x2="660" y2="493" marker-end="url(#seqGray)"/><text class="msg" x="758" y="483" text-anchor="middle">排序后的候选Salesforce operations</text><line class="call" x1="660" y1="535" x2="855" y2="535" marker-end="url(#seqBlue)"/><text class="msg" x="758" y="525" text-anchor="middle">6. describe（选定operation）</text><line class="return" x1="855" y1="577" x2="660" y2="577" marker-end="url(#seqGray)"/><text class="msg" x="758" y="567" text-anchor="middle">API、参数、依赖与有序步骤</text></g>
+          <g><rect class="context-box" x="370" y="630" width="438" height="50" rx="7"/><text class="msg" x="589" y="650" text-anchor="middle">进入Claude：能力上下文（候选Operation＋技术契约）</text><text class="msg" x="589" y="668" text-anchor="middle">告诉模型“可以做什么、怎样正确调用”</text><line class="call" x1="660" y1="718" x2="855" y2="718" marker-end="url(#seqBlue)"/><text class="msg" x="758" y="708" text-anchor="middle">7. dispatch_readonly（读取任务相关事实）</text><line class="call" x1="855" y1="760" x2="1035" y2="760" marker-end="url(#seqBlue)"/><text class="msg" x="945" y="750" text-anchor="middle">路由Operation，调用只读平台能力</text><rect class="note-box" x="930" y="778" width="170" height="65" rx="7"/><text class="msg" x="1015" y="799" text-anchor="middle">留在服务端：OAuth身份</text><text class="msg" x="1015" y="817" text-anchor="middle">CRUD / FLS / Sharing</text><text class="msg" x="1015" y="835" text-anchor="middle">只读逻辑与审计</text><line class="return" x1="1035" y1="868" x2="855" y2="868" marker-end="url(#seqGray)"/><text class="msg" x="945" y="858" text-anchor="middle">权限范围内的结构化业务结果</text><line class="return" x1="855" y1="910" x2="280" y2="910" marker-end="url(#seqGray)"/><text class="msg" x="568" y="900" text-anchor="middle">8. 返回Account、Opportunity、Activity等相关事实</text><rect class="context-box" x="322" y="926" width="345" height="50" rx="7"/><text class="msg" x="494" y="946" text-anchor="middle">进入Claude：实时业务事实上下文</text><text class="msg" x="494" y="964" text-anchor="middle">对象结构或字段语义仅在任务需要时补充</text><path class="self" d="M280 998h66v42h-66" marker-end="url(#seqPurple)"/><text class="msg" x="357" y="1018">9. 组装上下文、分析并生成简报</text><line class="call" x1="280" y1="1070" x2="90" y2="1070" marker-end="url(#seqBlue)"/><text class="msg" x="185" y="1060" text-anchor="middle">10. 简报、风险判断与拟更新Next Step</text></g>
+          <g><rect class="frame" x="42" y="1094" width="1050" height="338" rx="7"/><rect class="frame-label" x="42" y="1094" width="230" height="24"/><text class="frame-text" x="52" y="1110">alt｜用户批准写入 / 拒绝或修改</text><line class="call" x1="90" y1="1143" x2="280" y2="1143" marker-end="url(#seqBlue)"/><text class="msg" x="185" y="1133" text-anchor="middle">11. Allow once / Always allow / Deny</text><text class="msg" x="300" y="1164">拒绝：不写入；修改：重新生成预览</text><line class="call" x1="280" y1="1194" x2="660" y2="1194" marker-end="url(#seqBlue)"/><text class="msg" x="470" y="1184" text-anchor="middle">批准：提交确定的写操作</text><line class="call" x1="660" y1="1230" x2="855" y2="1230" marker-end="url(#seqBlue)"/><text class="msg" x="758" y="1220" text-anchor="middle">12. dispatch（已核实写Operation）</text><line class="call" x1="855" y1="1264" x2="1035" y2="1264" marker-end="url(#seqBlue)"/><text class="msg" x="945" y="1254" text-anchor="middle">Access Guard后执行</text><rect class="note-box" x="920" y="1274" width="180" height="61" rx="7"/><text class="msg" x="1010" y="1295" text-anchor="middle">权限、Validation、Flow/Apex</text><text class="msg" x="1010" y="1313" text-anchor="middle">审批、事务与审计</text><line class="return" x1="1035" y1="1355" x2="855" y2="1355" marker-end="url(#seqGray)"/><text class="msg" x="945" y="1345" text-anchor="middle">成功结果或受控错误</text><line class="return" x1="855" y1="1392" x2="280" y2="1392" marker-end="url(#seqGray)"/><text class="msg" x="568" y="1382" text-anchor="middle">13. 返回实际写入结果</text><line class="return" x1="280" y1="1428" x2="90" y2="1428" marker-end="url(#seqGray)"/><text class="msg" x="185" y="1418" text-anchor="middle">14. 成功字段 / 失败原因 / 未执行</text></g>
+        </svg></div>
+        <div class="legend-row"><span><b>蓝色实线</b> 请求或执行</span><span><b>灰色虚线</b> 返回结果</span><span><b>紫色框</b> 进入Claude的上下文</span><span><b>黄色框</b> 留在Salesforce服务端的治理</span></div>
+
+        <h3>从这条时序可以得到四个关键判断</h3>
+        <table><thead><tr><th>判断</th><th>案例中的证据</th><th>边界</th></tr></thead><tbody>
+          <tr><td><strong>企业上下文是运行时组装的</strong></td><td>任务方法、Operation契约和业务事实分阶段进入Claude</td><td>不存在登录时把完整Org一次性灌入模型的公开证据</td></tr>
+          <tr><td><strong>Discover与Describe是渐进披露</strong></td><td>只有需要查找或核实能力时才进入opt分支</td><td>预置Skill可能已缩小范围，不能断言每次都严格执行同一序列</td></tr>
+          <tr><td><strong>Operation契约与Org Schema不同</strong></td><td>Describe解释行动所需API、参数、依赖和步骤</td><td>对象字段结构仍需相关Schema或平台能力按需取得</td></tr>
+          <tr><td><strong>用户确认与平台授权是两道控制</strong></td><td>Claude先展示拟写入内容；Salesforce仍按当前用户权限和规则执行</td><td>Allow once不会扩大Salesforce权限，平台失败必须原样返回</td></tr>
+        </tbody></table>
+
+        <div class="note"><b>术语统一：</b>本文用<strong>Sales Skills</strong>表示插件中的任务方法，用<strong>Salesforce operations</strong>表示Headless 360后端可发现和执行的行动单元，用<strong>Operation技术契约</strong>表示Describe返回的规格。“Operation Library”可以作为普通描述理解为持续增长的operations集合，但不是另一个独立产品或运行时组件。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="innovation">
+        <div class="kicker">06 · PRODUCTIZATION</div><h2>从AI Native技术架构到可用产品：双方联合做了什么</h2>
+        <p class="point">Claudeforce没有创造另一套AI Native基础架构。它展示的是一套企业AI Native产品化参考架构：把已有技术组件围绕用户任务组织成可部署、可使用、可治理的产品。</p>
+        <h3>先分清：哪些是复用，哪些是Salesforce升级，哪些是联合产品化</h3>
+        <table class="matrix"><thead><tr><th>层次</th><th>复用的既有基础</th><th>Salesforce侧新增或升级</th><th>联合产品化增量</th></tr></thead><tbody>
+          <tr><td>智能运行时</td><td>Claude推理、生成、Connector与Cowork</td><td>—</td><td>在Claude中形成面向Salesforce销售任务的专用入口和连续体验</td></tr>
+          <tr><td>任务方法</td><td>Salesforce生态的销售领域经验</td><td>Salesforce构建37个Sales Skills与Setup Skill</td><td>方法、数据需求和输出结构可被Claude直接调用并按用户个性化</td></tr>
+          <tr><td>连接基础</td><td>MCP开放协议、OAuth、Salesforce API与Hosted MCP基础</td><td>Salesforce与Slack Connector及托管连接能力</td><td>插件预打包连接，减少手工认证和自定义Skill映射</td></tr>
+          <tr><td>能力规模化</td><td>Salesforce API、Flow、Apex和平台功能</td><td>Headless 360四工具入口、可增长operations、Discover、Describe与Dispatch Access Guard</td><td>Claude可以在稳定工具面上动态理解并使用持续扩展的Salesforce能力</td></tr>
+          <tr><td>治理</td><td>Salesforce身份、权限、共享、规则与审计</td><td>Hosted MCP的每用户OAuth和受治理访问</td><td>写前预览确认与Salesforce原生治理串成双重控制</td></tr>
+          <tr><td>产品架构</td><td>Headless Toolkit对MCP、API和开发工具的开放</td><td>AIforce升级为Live Interface Layer</td><td>Claudeforce及Salesforce in Claude成为首批可安装、可使用的落地体验</td></tr>
+        </tbody></table>
+        <div class="formula">
+          <div class="factor">通用智能<br>运行时</div><div class="factor">领域任务<br>方法</div><div class="factor">运行时企业<br>上下文</div><div class="factor">受治理的<br>行动能力</div><div class="factor">连续的人机<br>协作体验</div>
+        </div>
+        <table class="matrix"><thead><tr><th>从架构到产品的缺口</th><th>联合产品化设计</th><th>用户得到的体验</th></tr></thead><tbody>
+          <tr><td>通用模型不知道专业销售任务怎样完成</td><td>37个Sales Skills + Setup Skill</td><td>按常见销售方法完成任务，并适配角色与业务范围</td></tr>
+          <tr><td>连接CRM不等于获得正确企业上下文</td><td>Salesforce Connector + 实时数据、元数据与业务逻辑</td><td>结果基于当前Org中的权威事实</td></tr>
+          <tr><td>平台能力太多，工具列表难以扩展</td><td>四个MCP工具 + 动态Salesforce operations</td><td>工具面稳定，后端能力可以持续增长</td></tr>
+          <tr><td>模型可能猜错接口和参数</td><td>Discover语义发现 + Describe技术契约</td><td>减少盲选工具与接口幻觉</td></tr>
+          <tr><td>AI写入存在身份和责任风险</td><td>每用户OAuth + 原生权限 + 预览与确认</td><td>AI可以行动，但不能绕过用户和平台治理</td></tr>
+          <tr><td>一次调用无法完成跨系统任务</td><td>插件打包Connector，Cowork跨系统编排并生成成果</td><td>从目标、分析、交付到写回连续完成</td></tr>
+        </tbody></table>
+        <div class="grid3">
+          <div class="card purple"><h3>架构创新</h3><p>模型智能与企业智能分工；任务方法与执行能力分层；企业上下文在运行时按需组装。</p></div>
+          <div class="card blue"><h3>工程创新</h3><p>稳定的小工具面、语义发现、技术契约、托管MCP、每用户OAuth与服务端原生治理。</p></div>
+          <div class="card green"><h3>体验创新</h3><p>一个可安装插件完成初始化、任务运行、成果生成、变更预览、用户确认和系统写回。</p></div>
+        </div>
+        <div class="signal"><small>更高层的提炼</small>Anthropic负责Claude、Cowork与交互运行环境；Salesforce负责专用插件、Sales Skills、连接能力和平台治理；双方共同把这些能力集成为端到端的Claudeforce体验。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="readiness">
+        <div class="kicker">07 · ADOPTION</div><h2>Salesforce客户还需要做什么</h2>
+        <p class="point">产品消除了大量通用组装工作，但企业特有的数据、语义、流程和责任边界仍然属于客户。</p>
+        <div class="five">
+          <div class="ready"><b>数据准备</b><span>保证客户、商机和活动记录完整、及时、正确关联</span></div>
+          <div class="ready"><b>语义准备</b><span>完善对象与字段描述，明确阶段、指标和权威口径</span></div>
+          <div class="ready"><b>能力准备</b><span>将复杂确定性流程封装为Flow、Apex或Custom MCP Tool</span></div>
+          <div class="ready"><b>权限准备</b><span>检查External Client App、OAuth、CRUD、FLS、Sharing与确认策略</span></div>
+          <div class="ready"><b>运营准备</b><span>用典型任务持续验证质量、采用率与业务结果</span></div>
+        </div>
+        <div class="note"><b>一个例子：</b>要让Claude分析Pipeline Coverage，企业必须明确使用Amount还是自定义ACV字段、哪些阶段计入Pipeline、用户能查看哪些区域，以及分析后是否允许更新Stage或Close Date。模型无法用推理替企业创造尚未定义的业务口径。</div>
+        <p><strong>自定义能力边界：</strong>任意自定义API不能被假定为会自动进入标准Headless 360的Salesforce operations。公开支持的扩展方式是建立Custom MCP Server，将Flow、Apex、REST API、Named Query或API Catalog端点发布为具有明确描述、输入输出Schema和权限要求的Custom MCP Tool。</p>
+        <h3>三类团队必须持续负责</h3>
+        <table class="compact"><thead><tr><th>责任方</th><th>持续运营的资产</th><th>核心评价</th></tr></thead><tbody>
+          <tr><td>业务产品负责人</td><td>任务方法、Skill、输出标准、人工责任与成功指标</td><td>任务是否真正完成并改善业务结果</td></tr>
+          <tr><td>Salesforce平台团队</td><td>数据与元数据质量、业务语义、能力契约、权限和执行可靠性</td><td>事实是否可信、行动是否符合平台治理</td></tr>
+          <tr><td>AI平台团队</td><td>模型与运行环境、评估集、监控、失败分析和版本回归</td><td>模型或产品升级后质量是否稳定</td></tr>
+        </tbody></table>
+        <h3>CIO决定是否规模化的三道门槛</h3>
+        <div class="grid3">
+          <div class="card blue"><h3>任务成立</h3><p>存在高频、完整、结果可衡量的业务任务，而不只是偶发查询。</p></div>
+          <div class="card purple"><h3>基础可靠</h3><p>Salesforce数据、业务语义、权限与确定性流程足以支撑可信结果。</p></div>
+          <div class="card green"><h3>组织可运营</h3><p>能够持续维护Skills、能力契约、评估、监控和责任分工。</p></div>
+        </div>
+        <div class="note"><b>还要算完整任务成本：</b>经济性不能只比较模型或API单价，还应纳入Token与延迟、Connector和能力契约维护、评估运营、人工复核、异常处理及组织变更成本，再与节省工时和业务结果改善比较。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="implications">
+        <div class="kicker">08 · IMPLICATIONS</div><h2>Salesforce给企业智能化带来的启示</h2>
+        <p class="point">最大的变化不是增加一个Claude入口，而是把企业应用从“固定UI中的功能”升级为“可以被AI发现、理解、组合和安全执行的企业能力”，再将这些能力产品化。</p>
+        <div class="beforeafter">
+          <div class="lane"><h3>传统企业应用</h3><p>数据、流程和操作封装在页面、菜单与按钮中，主要服务于人的逐步操作。</p></div><div class="arrow">→</div>
+          <div class="lane"><h3>AI Native企业能力</h3><p>同一套数据、语义、流程和治理可以通过MCP、API、Skills与体验工具进入不同Agent和AI界面。</p></div>
+        </div>
+        <div class="insights">
+          <div class="insight"><b>不要把“增加聊天入口”当作智能化终点</b><span>要进一步将页面背后的业务能力从固定UI中释放出来，供不同AI界面复用。</span></div>
+          <div class="insight"><b>MCP是基础设施，任务完成才是产品标准</b><span>连接成功不能替代任务方法、企业上下文、确认机制和连续体验。</span></div>
+          <div class="insight"><b>同时建设任务方法与企业能力两类资产</b><span>Skill回答“应该怎样做”，Tool或operation回答“系统能够执行什么”。</span></div>
+          <div class="insight"><b>把企业上下文当作正式产品能力</b><span>明确权威事实、元数据、业务语义、模型可见信息与服务端规则的边界。</span></div>
+          <div class="insight"><b>大规模能力需要渐进式披露</b><span>能力较多时应设计发现、描述和执行机制，而不是把所有API平铺成工具列表。</span></div>
+          <div class="insight"><b>让AI进入既有治理体系</b><span>身份、权限、核心规则和审计应尽量由系统记录强制执行，Prompt不能代替权限。</span></div>
+          <div class="insight"><b>产品化覆盖安装到持续运营</b><span>管理员部署、用户初始化、审批、失败恢复、版本回归和效果评价都属于产品。</span></div>
+          <div class="insight"><b>用完整任务结果衡量价值</b><span>除调用成功率外，还要观察任务完成、口径正确、人工返工和业务指标改善。</span></div>
+        </div>
+        <h3>一套可以复用的工程方法</h3>
+        <div class="flow">
+          <div class="box"><b>选择业务任务</b><small>从目标而非API开始</small></div><div class="chev">›</div>
+          <div class="box"><b>沉淀任务方法</b><small>步骤、判断与输出</small></div><div class="chev">›</div>
+          <div class="box"><b>治理上下文</b><small>数据、元数据与语义</small></div><div class="chev">›</div>
+          <div class="box"><b>开放能力</b><small>发现、契约与执行</small></div><div class="chev">›</div>
+          <div class="box"><b>继承治理</b><small>身份、权限与规则</small></div><div class="chev">›</div>
+          <div class="box"><b>产品化运营</b><small>体验、评估与演进</small></div>
+        </div>
+        <div class="signal"><small>对当前产品团队的建议</small>企业需要把数据、语义、流程、能力和治理改造成AI可以安全消费的长期资产，再通过Skills、Connector、Agent Runtime和人机交互，把这些资产组合成可部署的产品。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="boundary">
+        <div class="kicker">09 · BOUNDARIES</div><h2>边界、最终结论与主要来源</h2>
+        <div class="boundary">
+          <div class="yes"><h3>公开资料可以确认</h3><ul><li>Salesforce in Claude是专用插件，包含37个Sales Skills及Salesforce、Slack Connector</li><li>Salesforce Connector公开端点指向Headless 360 MCP Server</li><li>Headless 360 MCP Server提供四个MCP工具并使用Salesforce operations</li><li>每用户OAuth调用继承Salesforce原生权限</li><li>默认在写入前向用户展示并请求批准</li></ul></div>
+          <div class="no"><h3>不能过度推断</h3><ul><li>不能把AIforce画成每次请求经过的独立网关</li><li>不能断言每次任务都严格执行Discover→Describe→Dispatch</li><li>不能假定完整Org元数据会一次性发送给Claude</li><li>不能把所有Salesforce Hosted MCP Servers都说成只有四个工具</li><li>不能把自定义API写成自动进入标准operations集合</li></ul></div>
+        </div>
+        <div class="signal"><small>最终结论</small>Claudeforce不是新的Agent基础范式，而是一套值得借鉴的企业AI Native产品化样板：让业务方法可以被复用，让企业上下文可以按任务获得，让企业能力拥有明确契约，让模型判断、人的责任和系统执行处于同一条可验证工作链中。</div>
+        <h3>主要官方来源</h3>
+        <ol class="sources">
+          <li><a href="https://www.salesforce.com/news/stories/aiforce-announcement/">Salesforce：AIforce announcement</a> — AIforce、Agentic Enterprise与Claudeforce的官方定位。</li>
+          <li><a href="https://www.salesforce.com/partners/agentexchange-ecosystem-explained/">Salesforce：AIforce与Headless Toolkit FAQ</a> — Live Interface Layer与底层技术集合的关系。</li>
+          <li><a href="https://developer.salesforce.com/docs/platform/hosted-mcp-servers/guide/headless-360-mcp.html">Salesforce Developers：Headless 360 MCP Server</a> — 四个工具、operations、OAuth与权限机制。</li>
+          <li><a href="https://support.claude.com/en/articles/16952184-set-up-salesforce-in-claude-for-your-organization">Claude Help：Salesforce in Claude管理员设置</a> — 插件组成、Connector、安装与身份。</li>
+          <li><a href="https://support.claude.com/en/articles/16952186-use-salesforce-in-claude">Claude Help：使用Salesforce in Claude</a> — 37个Skills、用户体验与写操作确认。</li>
+          <li><a href="https://claude.com/connectors/salesforce-headless-360">Claude：Salesforce Connector</a> — MCP端点与公开工具列表。</li>
+          <li><a href="https://developer.salesforce.com/docs/platform/hosted-mcp-servers/guide/hosted-mcp-servers-overview.html">Salesforce Developers：Hosted MCP Servers Overview</a> — 标准与自定义MCP能力边界。</li>
+        </ol>
+        <div class="review"><strong>独立审视：</strong>本文结构和关键技术边界分别从Salesforce架构、AI产品与CIO/企业架构三个视角进行了独立复核；最终文本以Salesforce和Anthropic公开资料为证据基础。专家审视用于发现表述与结构问题，不替代官方产品文档。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+    </article>
+    <footer><strong>Claudeforce技术洞察</strong> · HTML交付版 · 2026年9月<br>产品仍处于快速演进阶段；Beta能力、定价、区域可用性与具体实施方式以最新官方文档和客户协议为准。</footer>
+  </div></main>
+</body>
+</html>
