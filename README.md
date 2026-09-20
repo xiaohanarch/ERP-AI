@@ -4,8 +4,9 @@
 
 | 文档 | 在线地址 | 说明 |
 |------|---------|------|
-| **ERP AI · L1 级参考架构（汇报版）** | https://xiaohanarch.github.io/ERP-AI/docs/intro_v2.html | 三档场景分级 · 20 条架构判断 · 四个树形链路动画 · 逐幕验证手册 |
-| L1 级参考架构（初版） | https://xiaohanarch.github.io/ERP-AI/docs/intro.html | 同一文档的前一版本，保留对照 |
+| **ERP AI · L1 级参考架构 v3（当前版）** | https://xiaohanarch.github.io/ERP-AI/docs/intro_v3.html | 判断先行 + 4+1 视图结构 · 副标题金句 · 外部参照附录 · 能力发现（GAP-A）落地 |
+| v2（结构重排前，冻结） | https://xiaohanarch.github.io/ERP-AI/docs/intro_v2.html | 保留对照 |
+| v1（初版） | https://xiaohanarch.github.io/ERP-AI/docs/intro.html | 保留对照 |
 
 > GitHub 仓库页直接点开 `.html` 文件看到的是源代码；用上表链接打开才是渲染后的完整版（含动画与排版）。
 > 汇报幻灯片 [docs/ERP-AI-L1参考架构-汇报版.pptx](docs/ERP-AI-L1参考架构-汇报版.pptx) 请下载后用 PowerPoint/WPS 打开。
