@@ -483,65 +483,150 @@
 
 <main>
 
-<!-- ============ 00 开场：真实业务场景动画 ============ -->
+<!-- ============ 00 开场：四个真实场景，四个动画 ============ -->
 <section id="flow">
-  <h2><span class="no">00</span>先看一个真实业务场景<span class="en">See It Running First</span></h2>
-  <div class="story" style="margin-top:2px">
-    <span class="who">华东制造，周三上午 10 点。</span>
-    财务李四发现发票 <b>INV-A-001</b> 被系统阻断了，他在助手平台问 AI：
-    「这张发票校验失败的原因是什么？」——下面的动画，就是这个请求在系统里的<b>完整旅程</b>：
-    身份怎么证明、令牌怎么换、谁在判定、哪一步可能被拦。
-    <b>每一步都是真实系统的实际行为（不是概念示意）</b>；动画下方还有三个 ▶ 按钮，
-    点一下会在真实运行的系统里发起同样的请求。
-  </div>
+  <h2><span class="no">00</span>先看四个真实业务场景<span class="en">Four Scenarios, Four Animations</span></h2>
+  <p class="lead">
+    每个场景一个独立动画：先看这件事在系统里怎么发生，后面的章节再解释为什么这样设计。
+    每一步都是真实系统的实际行为（不是概念示意），每个动画下方都有 ▶ 按钮——
+    点一下会在真实运行的系统里发起同样的请求。滚动到哪个动画，哪个就开始播放。
+  </p>
 
-  <div class="flow-panel">
+  <h3>场景① 读 · 财务李四问：「INV-A-001 这张发票为什么被拦？」<span class="hint">最常走的链路：从提问到带证据的答案</span></h3>
+  <div class="flow-panel" id="fp-read">
     <div class="flow-top">
-      <div class="flow-title">李四的问题怎么被回答<span class="dot">四条链路 · 令牌逐跳收窄（T1→T2→T3→OT）· 判定在网关与存量系统，不在模型</span></div>
-      <div class="flow-ctl">
-        <button type="button" id="modeRead" class="on">① 读：问发票为什么被拦</button>
-        <button type="button" id="modeWrite">② 写：改税码（要审批）</button>
-        <button type="button" id="modeXdom">③ 跨域：委派采购查根因</button>
-        <button type="button" id="modeMsg">④ 消息：事件推给租户系统</button>
-        <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
-      </div>
+      <div class="flow-title">读路径 · 7 步<span class="dot">令牌逐跳收窄 T1 → T2 → T3 · 判定在网关与存量系统，不在模型</span></div>
+      <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="chain-wrap">
-      <div class="chain" id="chain">
+      <div class="chain">
         <div class="track"></div>
-        <div class="packet" id="packet"></div>
-        <div class="fnode" data-i="0"><b>李四 · WorkBuddy</b><span>T1 · 只有聊天权限</span></div>
-        <div class="fnode" data-i="1"><b>ai-gateway</b><span>注册 · 令牌 · 审批 · 模型</span></div>
-        <div class="fnode" data-i="2"><b>hub · AP 场景图</b><span>LangGraph · 意图分类</span></div>
-        <div class="fnode proc" data-i="3"><b>hub · 采购域图</b><span>proc-copilot · 被委派</span></div>
-        <div class="fnode" data-i="4"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
-        <div class="fnode" data-i="5"><b>Java 存量域</b><span>权限判定 · 规则引擎</span></div>
-        <div class="fnode appr" data-i="6"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
-        <div class="fnode ten" data-i="7"><b>租户系统 · webhook</b><span>订阅 · HMAC 验签</span></div>
+        <div class="packet"></div>
+        <div class="fnode"><b>李四 · WorkBuddy</b><span>T1 · 只有聊天权限</span></div>
+        <div class="fnode"><b>ai-gateway</b><span>注册 · 令牌 · 拦截</span></div>
+        <div class="fnode"><b>hub · AP 场景图</b><span>意图分类 · 填参数</span></div>
+        <div class="fnode"><b>网关 MCP 代理</b><span>拦截链 · 铸 T3</span></div>
+        <div class="fnode"><b>Java 存量域</b><span>权限判定 · 规则引擎</span></div>
       </div>
     </div>
-    <div class="tokens" id="tokens">
+    <div class="tokens">
       <span class="tk" data-t="t1">T1 [聊天]</span>
       <span class="tk" data-t="t2">T2 [场景 ∩ Agent 工具清单]</span>
-      <span class="tk" data-t="t2p">T2′ [采购域 ∩ 清单 · 委托链增长]</span>
       <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
-      <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性]<small>（写路径）</small></span>
-      <span class="tk" data-t="msg">MSG [租户订阅 · HMAC 签名]<small>（消息路径）</small></span>
     </div>
-    <div class="capt" id="capt"></div>
+    <div class="capt"></div>
     <div class="flow-links">
-      <span class="lbl">点一下就在真实系统里跑（登录后自动发起对话）：</span>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起读路径</a>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%9E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起写路径（出审批卡）</a>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起跨域协同（委派采购域）</a>
+      <span class="lbl">在真实系统里跑：</span>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起同样的提问（lisi 登录）</a>
     </div>
   </div>
+  <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
+    看点：AI 看到的数据和页面一模一样（同一个权限组件），答案带规则码与证据，没查到的步骤会明说。
+  </p>
+
+  <h3>场景② 写 · 李四要把 INV-A-052 的税码补全<span class="hint">改数据的链路：不可逆操作必须人批</span></h3>
+  <div class="flow-panel" id="fp-write">
+    <div class="flow-top">
+      <div class="flow-title">写路径 · 8 步<span class="dot">挂起期间零常驻凭据 · 批准后铸一次性令牌 OT（参数指纹 · 120 秒）</span></div>
+      <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
+    </div>
+    <div class="chain-wrap">
+      <div class="chain">
+        <div class="track"></div>
+        <div class="packet"></div>
+        <div class="fnode"><b>李四 · WorkBuddy</b><span>T1 · 发起变更</span></div>
+        <div class="fnode"><b>ai-gateway</b><span>发现「不可逆」</span></div>
+        <div class="fnode"><b>hub · 税码图</b><span>建议 · 挂起</span></div>
+        <div class="fnode"><b>网关 MCP 代理</b><span>验 OT · 铸 T3</span></div>
+        <div class="fnode"><b>Java 存量域</b><span>事务落库 · 幂等</span></div>
+        <div class="fnode appr"><b>王五 · 审批台</b><span>三要素 · 快照</span></div>
+      </div>
+    </div>
+    <div class="tokens">
+      <span class="tk" data-t="t1">T1 [聊天]</span>
+      <span class="tk" data-t="t2">T2 [场景 ∩ 清单]</span>
+      <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
+      <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性]</span>
+    </div>
+    <div class="capt"></div>
+    <div class="flow-links">
+      <span class="lbl">在真实系统里跑：</span>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%9E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起变更（lisi）</a>
+      <a class="chip-demo" href="http://localhost:8088/approvals" target="_blank" rel="noopener">&#9654; 审批台（wangwu）</a>
+    </div>
+  </div>
+  <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
+    看点：批准的不是「可以改」，而是一张绑定参数指纹、只能用一次的授权书；重复发起命中幂等，永远重放首次结果。
+  </p>
+
+  <h3>场景③ 跨域 · 「发票为什么被拦？采购那边什么情况？」<span class="hint">AP 委派采购域取证的链路：委派有清单、权限最小、责任可追</span></h3>
+  <div class="flow-panel" id="fp-xdom">
+    <div class="flow-top">
+      <div class="flow-title">跨域协同 · 8 步<span class="dot">协作清单 + 委托链单调增长 [proc → ap → hub] · 清单外委派一律 403</span></div>
+      <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
+    </div>
+    <div class="chain-wrap">
+      <div class="chain">
+        <div class="track"></div>
+        <div class="packet"></div>
+        <div class="fnode"><b>李四 · WorkBuddy</b><span>跨域问题</span></div>
+        <div class="fnode"><b>ai-gateway</b><span>第七道校验</span></div>
+        <div class="fnode"><b>hub · AP 图</b><span>AP 侧归因</span></div>
+        <div class="fnode proc"><b>hub · 采购图</b><span>proc-copilot · 被委派</span></div>
+        <div class="fnode"><b>网关 MCP 代理</b><span>子代理 T2′ → T3</span></div>
+        <div class="fnode"><b>Java 存量域</b><span>委托链落审计</span></div>
+      </div>
+    </div>
+    <div class="tokens">
+      <span class="tk" data-t="t1">T1 [聊天]</span>
+      <span class="tk" data-t="t2">T2 [ap-copilot ∩ 清单]</span>
+      <span class="tk" data-t="t2p">T2′ [proc-copilot 最小权限]</span>
+      <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
+    </div>
+    <div class="capt"></div>
+    <div class="flow-links">
+      <span class="lbl">在真实系统里跑：</span>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起跨域诊断（lisi）</a>
+    </div>
+  </div>
+  <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
+    看点：综合结论「供应商超开 20 件」来自两个 Agent 的分工，审计里能看到完整委派链——谁授权了谁、各自用了什么权限。
+  </p>
+
+  <h3>场景④ 消息 · 「发票被阻断」这件事推给租户自己的系统<span class="hint">事件出平台的链路：租户订阅 webhook，隔离投递</span></h3>
+  <div class="flow-panel" id="fp-msg">
+    <div class="flow-top">
+      <div class="flow-title">消息扩展 · 6 步<span class="dot">同一 outbox 事件：平台内进 Agent、出平台进租户系统——不是两套事件</span></div>
+      <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
+    </div>
+    <div class="chain-wrap">
+      <div class="chain">
+        <div class="track"></div>
+        <div class="packet"></div>
+        <div class="fnode"><b>Java 存量域</b><span>发票被阻断 → outbox</span></div>
+        <div class="fnode"><b>hub · 事件线程</b><span>无头诊断 → 通知</span></div>
+        <div class="fnode"><b>ai-gateway · 分发</b><span>订阅匹配（租户×主题）</span></div>
+        <div class="fnode ten"><b>租户系统 · webhook</b><span>HMAC 验签</span></div>
+      </div>
+    </div>
+    <div class="tokens">
+      <span class="tk" data-t="msg">MSG [租户订阅 · HMAC 签名投递]</span>
+    </div>
+    <div class="capt"></div>
+    <div class="flow-links">
+      <span class="lbl">在真实系统里跑：</span>
+      <a class="chip-demo" href="demo-script.md">&#9654; scene_9（本机起租户 webhook 现场看隔离投递）</a>
+    </div>
+  </div>
+  <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
+    看点：华东制造的订阅收到投递、星联科技收不到（租户隔离）；每次投递带防伪造签名、逐次审计，吊销即停。
+  </p>
 
   <div class="explain">
-    <b>令牌为什么逐跳换：</b>T1 像工牌（只能进门聊天）→ T2 像「本会议室门禁卡」（这个场景这几个工具，15 分钟）
-    → T3 像「操作票」（单个工具，60 秒）→ OT 像「一次性的盖章授权书」（绑定参数指纹，120 秒，用一次作废）。
-    每一跳的权限都是上一跳的子集，全部记录在案——出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。
-    <b>看完动画，接下来两章解释为什么这样设计（01 为什么需要五道关 / 02 五道关的全景图）。</b>
+    <b>四个场景共用的一个设计：</b>所有「该不该」的判定都在网关和存量系统里，不在模型里——模型只负责理解意图和填参数。
+    令牌逐跳收窄：T1 像工牌（只能聊天）→ T2 像「本会议室门禁卡」（场景∩清单，15 分钟）→
+    T3 像「操作票」（单工具，60 秒）→ OT 像「一次性的盖章授权书」（绑定参数指纹，用一次作废）。
+    出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。<b>接下来两章解释为什么这样设计（01 / 02）。</b>
   </div>
 </section>
 
@@ -1061,7 +1146,7 @@
         出错不可复现</b>。今天能答对的问题，明天模型换个思路就可能答错，而且你无法定位是哪一步变了。
       </div></div>
       <div class="seg"><div class="ic w">为什么</div><div class="tx">
-        ERP 场景要求可预测、可测试、可审计。模型真正擅长且稳定的是两件事：
+        <b>执行面</b>（改数据、跑流程）要求可预测、可测试、可审计。模型真正擅长且稳定的是两件事：
         <b>理解意图</b>（用户想干什么）和<b>填充参数</b>（从自然语言里抽出单号、税码）。
         流程编排这种确定性工作，交给确定性代码。
       </div></div>
@@ -1069,6 +1154,9 @@
         LangGraph 图<b>静态装配</b>（每个场景一张图：分类 → 业务节点 → 完成）；模型只按「动作契约」
         （<span class="mono">CONTRACTS</span>）输出意图枚举与参数，不产出路径。这样 50 条评测用例才能
         确定性回归——同样的输入永远走同样的路。
+        <b>适用边界（重要）：</b>本条约束的是执行面。数据探索类场景（如高风险供应商发现）是另一种
+        AI 业务形态——模型在分析侧关系数据上自主决定查询路径，靠只读沙箱、证据强制、人在环裁决来约束
+        而不是靠预定义流程；发散探索的结论经人确认后沉淀回确定性资产。详见第 06 章「决策三 · 探索面」。
         <div class="dep">落点：<span class="mono">hub/graphs/</span>（五张场景图）+ <span class="mono">hub/sdk/graph.py</span>（装配薄封装）</div>
       </div></div>
       <div class="proof"><b>验证：</b>评测 50/50（工具正确性 1.0、步数 ≤4）建立在流程确定性之上<span class="pill ok">eval</span></div>
@@ -1317,11 +1405,11 @@
 
   <!-- L2 -->
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--indigo)">L2</span><span class="t">业务 Hub —— 流程画在图里，模型只填空</span><span class="dir">erp-ai-hub/hub/graphs/</span></div>
+    <div class="mh"><span class="lv" style="background:var(--indigo)">L2</span><span class="t">业务 Hub —— 执行面流程画在图里，模型只填空</span><span class="dir">erp-ai-hub/hub/graphs/</span></div>
     <div class="mb">
       <h5>设计要点</h5>
       <p>每个业务场景一张<b>静态装配</b>的 LangGraph 图，节点是确定性函数，模型只在分类节点里
-      按「动作契约」输出意图枚举和参数。图与 Agent 的映射在 <span class="mono">graphs/agents.py</span>
+      按「动作契约」输出意图枚举和参数（<b>适用执行面</b>；数据探索形态见 06 章决策三）。图与 Agent 的映射在 <span class="mono">graphs/agents.py</span>
       （Agent 清单→场景图→可用工具）。写路径的图在审批门处 <span class="mono">interrupt</span> 挂起，
       等审批后唤醒继续——挂起状态存 Postgres 检查点，期间不持有任何写凭据。
       护栏不写在图里，由三层 Harness（Standard→Partner→Tenant）在运行时叠加解析（见 L1 的
@@ -1480,11 +1568,13 @@
 
 <!-- ============ 06 知识库专题 ============ -->
 <section id="kb">
-  <h2><span class="no">06</span>知识库专题：存哪、建多深<span class="en">Semantic KB: Two Key Decisions</span></h2>
+  <h2><span class="no">06</span>知识库专题：存哪、建多深、探索面<span class="en">Semantic KB: Storage · Depth · Exploration</span></h2>
   <p class="lead">
     语义知识库（L3a，代码落点 <span class="mono">erp-ai-context/</span>）是「让 AI 看得懂 ERP」的那一层。
-    它有两个最容易吵翻天的决策点：<b>存储用什么</b>（YAML 文件还是图数据库）、<b>建到什么深度</b>
-    （把存量业务逻辑搬进来描述一遍，还是只画一张地图）。本章把两场争论摆开，给出本仓的判断与依据。
+    本章讨论三个最容易吵翻天的问题：<b>存储用什么</b>（YAML 文件还是图数据库——含业界判据与硬指标）、
+    <b>建到什么深度</b>（把存量业务逻辑搬进来描述一遍，还是只画一张地图）、以及
+    <b>探索场景怎么办</b>（数据探索是否还该走 API——一种不同的 AI 业务形态）。
+    每场争论都摆开双方立场，给出本仓的判断、依据与边界。
   </p>
 
   <h3>决策一 · 存储选型：YAML 文件，还是图数据库（Neo4j 一类）？<span class="hint">先摆立场，再给判断标准</span></h3>
@@ -1501,22 +1591,58 @@
       在 YAML 里根本没法表达；多域多租户的叠加解析需要索引而不是遍历。</p></div>
   </div>
 
-  <p class="body">本仓的判断：<b>这不是信仰之争，是规模与查询模式的函数</b>。给出四条可操作的判断标准：</p>
+  <p class="body">本仓的判断：<b>这不是信仰之争，是规模与查询模式的函数</b>。先回答「业界有没有硬性指标」，再给可测的判断标准。</p>
+
+  <h4 style="margin-top:18px">业界有没有硬性数字门槛？——没有硬门槛，但有可量化的技术判据</h4>
+  <p class="body">
+    诚实的回答：<b>业界不存在「超过多少个实体必须上图」这样的硬性标准</b>——厂商和论文给的是<b>判据方向</b>，
+    不是数字门槛，而且判据本身存在争论。但有一条技术锚点是硬的，可以拿来做工程决策：
+  </p>
+  <div class="explain">
+    <b>技术锚点 · 遍历成本模型（index-free adjacency）：</b>
+    原生图数据库（Neo4j 一类）的每个节点直接持有指向相邻关系的指针——<b>每跳一跳是一次 O(1) 的指针追访，
+    成本只和「实际走过的子图大小」有关，与全图大小无关</b>；关系型数据库每次 JOIN 是一次约 O(log n) 的
+    索引查找 + 连接开销，<b>成本随表规模和 JOIN 深度累积</b>（出处：Robinson / Webber / Eifrem
+    《Graph Databases》第二版，O'Reilly；Neo4j 官网提供免费电子版）。
+    实证区间：Neo4j 公开的「朋友的朋友」基准中，<b>1~2 跳两种引擎性能相当；3~4 跳时关系型急剧劣化、
+    图数据库近乎平坦</b>——这是「什么时候该上图」最有参考价值的经验分界。
+    <br><b>反方意见（诚实引用）：</b>Morales《Index-Free Adjacency? Hybrid Indexes/Adjacency for Graph
+    Databases》（arXiv, 2021）指出 O(1) 宣称有营销成分——B 树索引常数极小、图库定位起点节点仍需索引，
+    2~3 跳内关系库完全可比。<b>本仓据此取保守读法：不到 3 跳交互级查询，不构成上图的性能理由。</b>
+  </div>
+  <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
+    规模端点的参考：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系，内含权限规则（SAP Sapphire 2026，
+    见总纲第 01 章引注）；本演示 8 个实体、约百个字段——两端相差六个数量级，中间地带靠下面的判据表定位。
+  </p>
+
+  <p class="body"><b>把判据转成可测量的代理指标</b>（数字门槛为本仓整理的可操作读法，业界依据见上）：</p>
   <table>
-    <tr><th style="width:170px">判断维度</th><th>YAML 文件够用（本仓现状）</th><th>该上图数据库了</th></tr>
+    <tr><th style="width:170px">判断维度</th><th style="width:36%">YAML 文件够用（本仓现状）</th><th>该上图数据库了</th></tr>
     <tr><td><b>实体/关系量级</b></td>
-      <td>单域、百级实体字段（本仓 8 个实体、约百个字段）</td>
-      <td>多域、万级以上实体、千万级关系（对 SAP 是 730 万项——与演示差 6 个数量级）</td></tr>
-    <tr><td><b>查询模式</b></td>
-      <td>「按名取」：术语翻译、口径查读、规则解释（本仓七个语义工具全是这类）</td>
-      <td>「多跳遍历」：跨域关系链、影响力分析、血缘追溯——需要图遍历引擎</td></tr>
+      <td>实体 &lt; 10³，字段 &lt; 10⁴（本仓 8 实体、约百字段）</td>
+      <td>实体 &gt; 10⁵、关系边 &gt; 节点数 × 10（SAP 端点：730 万项）</td></tr>
+    <tr><td><b>查询遍历深度</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">最硬的一条判据</span></td>
+      <td>≤ 2 跳，或批量延迟可接受（按名取：术语翻译、口径查读、规则解释）</td>
+      <td><b>≥ 3 跳且要求交互级延迟（&lt; 1s）</b>：跨域关系链、影响力分析、血缘追溯——关系型引擎在 3~4 跳急剧劣化，图引擎近乎平坦</td></tr>
+    <tr><td><b>平均连通度</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">边数 ÷ 节点数</span></td>
+      <td>&lt; 3（稀疏）：三单匹配这类固定关系，手写增量段即可</td>
+      <td><b>≥ 10（密集连接）</b>：每个对象平均挂着十条以上语义边——关系本身就是主要信息量</td></tr>
+    <tr><td><b>边的语义种类</b></td>
+      <td>≤ 3 种边类型（本仓：对象关系/术语引用/规则引用）</td>
+      <td><b>≥ 5 种</b>且需要按边类型过滤/推理（跨域引用、流程编排、事件因果、权限继承）</td></tr>
     <tr><td><b>维护主体</b></td>
       <td>语义资产需要<b>人工评审 + 版本管理</b>（口径是业务约定，改错要能回滚追责）</td>
-      <td>元数据管道<b>高频自动写入</b>（实时同步数十个子产品），文件无法承载写放大</td></tr>
-    <tr><td><b>关系复杂度</b></td>
-      <td>关系少而稳（发票-订单-收货三单匹配这类固定关系，手写增量段即可）</td>
-      <td>关系多且变（跨域引用、流程编排、事件因果——需要结构化的边</td></tr>
+      <td>元数据管道<b>高频自动写入</b>（分钟级同步数十个子产品），文件工作流无法承载写放大</td></tr>
   </table>
+
+  <div class="explain">
+    <b>「具体多复杂才算复杂」的可测口径（本仓整理）：</b>同时满足以下三条中的两条，就到了该评估上图的临界——
+    ① 最长业务查询要<b>走 3 跳以上关系且要求交互延迟</b>（例：「这张发票的供应商，近一年还关联哪些被拦的单据，
+    它们的共同收货组织是哪个」——发票→供应商→被拦发票→收货组织，4 跳）；
+    ② 平均连通度 ≥ 10（对象间关系比对象本身还多）；
+    ③ 语义边类型 ≥ 5 种且查询要按边类型区分（「只沿『供应商承运』边走，不走『同集团』边」）。
+    本仓现状：最长 2 跳（三单匹配）、连通度 &lt; 3、边类型 3 种——三条全不满足，YAML 是正确选择。
+  </div>
 
   <div class="explain">
     <b>本仓的结论（三层）：①演示层用 YAML 是刻意选择</b>——透明可审计，汇报现场能打开看；
@@ -1526,6 +1652,38 @@
     <span class="mono">loader.py</span> 的实现，不是工具接口。
     <b>无论存哪，三件事不变：</b>零拷贝（存地图不存数据，取数走带权限的通道）、
     元数据自动喂养（来源仍是 /metadata，只是投射目标从 YAML 段变成图节点）、漂移检测（比对基准永远是存量）。
+  </div>
+
+  <h3>图谱里到底存什么：节点是什么、边是什么<span class="hint">先澄清一个最常见的误解</span></h3>
+
+  <p class="body">
+    最常见的误解：「上图 = 把业务数据搬进图里」。错。<b>图里存的是「类型层」和「语义资产」，
+    不存交易数据本身</b>——一张张具体的发票行留在 ERP 数据库里（零拷贝），图里只有「发票是什么、
+    和谁有关系、谁能看、怎么查」。SAP 的 730 万项也是这个口径：字段、实体、流程、关系的<b>定义</b>，
+    不是 730 万行交易记录。
+  </p>
+
+  <table>
+    <tr><th style="width:150px">节点（五类）</th><th>代表什么</th><th style="width:34%">本仓对应（若上图的样子）</th></tr>
+    <tr><td><b>业务对象类型</b></td><td>「发票」「采购订单」「收货单」「供应商」这些<b>类</b>——不是某一张发票</td><td>Invoice / PurchaseOrder / GoodsReceipt / Supplier 等 8 个实体节点</td></tr>
+    <tr><td><b>字段</b></td><td>对象下的字段定义（名、类型、口径），挂在所属对象节点上</td><td>amount_cny、status 等约百个字段节点</td></tr>
+    <tr><td><b>业务术语</b></td><td>人工口径层的术语锚点（同一术语在不同租户指向不同对象）</td><td>「进货单」「大额风险」等术语节点，按租户分区</td></tr>
+    <tr><td><b>规则</b></td><td>业务规则的登记项（供解释与引用，<b>不存执行逻辑</b>）</td><td>AP.MATCH.QTY_MISMATCH 等 6 条规则节点</td></tr>
+    <tr><td><b>能力/操作</b></td><td>BO 工具（AI「动得了」的入口）及其参数与正反例</td><td>ap.invoice.checkValidation 等 33 个操作节点</td></tr>
+  </table>
+  <table style="margin-top:10px">
+    <tr><th style="width:150px">边（四类语义）</th><th>代表什么关系</th><th style="width:34%">本仓示例</th></tr>
+    <tr><td><b>对象 ↔ 对象</b></td><td>业务关系：三单匹配、归属、承运</td><td>Invoice —匹配→ PurchaseOrder —收货→ GoodsReceipt；Invoice —归属→ Supplier</td></tr>
+    <tr><td><b>术语 → 对象/字段</b></td><td>口径翻译：术语在<b>某租户语境下</b>指什么</td><td>「进货单」—T-EAST 语境→ PurchaseOrder；—T-UNI 语境→ GoodsReceipt</td></tr>
+    <tr><td><b>规则 → 对象/字段</b></td><td>规则引用了哪些对象字段（解释与血缘）</td><td>QTY_MISMATCH —比较→ Invoice.qty 与 GoodsReceipt.qty</td></tr>
+    <tr><td><b>操作 → 对象</b></td><td>访问路径：这个工具读写哪个对象、什么口径</td><td>checkValidation —读取→ Invoice（阻断子集，同页面权限）</td></tr>
+  </table>
+
+  <div class="explain">
+    <b>按这个映射算一下本仓的图谱规模：</b>节点 ≈ 8 实体 + ~100 字段 + ~20 术语 + 6 规则 + 33 操作 ≈ <b>170 个</b>，
+    边 ≈ 几百条，平均连通度 &lt; 3——一张<b>袖珍图谱</b>。这正是 6.1 判据表里「YAML 够用」的定量注脚：
+    这个规模上图是杀鸡用牛刀；而 SAP 的 730 万项是另一端。两个端点之间，用判据表定位自己。
+    另外注意「术语 → 对象」边天然带<b>租户属性</b>——同一术语两个租户两条边，多租语义在图里就是边上的分区标签。
   </div>
 
   <h3>决策二 · 构建深度：把业务逻辑搬进来，还是只画地图？<span class="hint">这是知识库最容易做错的一个决定</span></h3>
@@ -1605,6 +1763,70 @@
     （存权限模型的<b>映射</b>可以，判定<b>逻辑</b>不行）、以及任何「让模型自行推断业务结果」的规则全集。
     这条边界与判断 4（本体=语义核心而非逻辑核心）是同一件事的两种说法。
   </p>
+
+  <h3>决策三 · 探索面：不是所有场景都该走 API<span class="hint">「流程画在图里」的适用边界，与另一种 AI 业务形态</span></h3>
+
+  <div class="story">
+    <span class="who">一个会打破前面结论的问题。</span>
+    「探索 P2P 流程里的高风险供应商」——这不是「INV-A-001 为什么被拦」（<b>单点、有明确答案、路径已知</b>），
+    而是「沿着数据找异常」（<b>开放、发散、路径未知</b>）。前者是<b>执行</b>，后者是<b>探索</b>。
+    对探索类问题，预定义流程图 + BO API 这套打法会遇到三个真实困难：
+  </div>
+
+  <div class="grid c3" style="margin-top:10px">
+    <div class="card"><h4>困难一 · BO API 不够用</h4>
+      <p>执行面 API 是按「已知高频操作」设计的（查校验、查差异、改税码）。
+      「高风险供应商」要先聚合发票-订单-收货-付款多维数据、再按多种风险模式扫描——
+      没有为这种开放查询预建 API，逐个建也不现实。</p></div>
+    <div class="card"><h4>困难二 · 路径没法预先画</h4>
+      <p>探索的价值恰恰在<b>不知道该问什么</b>：先看供应商集中度，发现异常再下钻对账差异，
+      再追关联收货组织——每一步取决于上一步发现了什么。预定义图表达不了「走着瞧」。</p></div>
+    <div class="card"><h4>困难三 · 确定性不是目标</h4>
+      <p>执行面要的是每一步可预测、可回归；探索面要的是<b>发散与创造力</b>——
+      多查几条路径、多提几个假设，本来就是这类工作的价值所在。用执行面的纪律约束探索，探索就死了。</p></div>
+  </div>
+
+  <p class="body">
+    所以答案是：<b>是的，这是一种不同的 AI 业务场景，需要一套不同的策略</b>。本仓把它表述为
+    <b>「双面架构」</b>——AI 在两个面上扮演不同角色、用不同打法、受不同约束：
+  </p>
+  <table>
+    <tr><th style="width:120px"></th><th style="width:46%">执行面（本仓已建）</th><th>探索面（本仓未建，本节给出设计）</th></tr>
+    <tr><td><b>AI 的角色</b></td><td>操作员：替人执行已知操作</td><td>分析师：替人发现未知模式</td></tr>
+    <tr><td><b>数据访问</b></td><td>只经 BO API（带人的权限、幂等、审计）</td><td><b>分析侧数据湖/湖仓直查</b>（绝不直连交易库），行列级权限在湖上强制</td></tr>
+    <tr><td><b>流程</b></td><td>预定义场景图，模型只填空（判断 8）</td><td><b>关系图 + AI 引导遍历</b>：模型决定下一步查什么，在关系上走</td></tr>
+    <tr><td><b>确定性要求</b></td><td>每步可预测、可回归、可幂等</td><td>允许发散与假设——<b>幻觉只允许出现在假设阶段</b>，不允许出现在结论阶段</td></tr>
+    <tr><td><b>人的位置</b></td><td>不可逆动作的审批人</td><td><b>发现的最终裁判</b>：AI 的输出在确认前只是假设</td></tr>
+    <tr><td><b>结果形态</b></td><td>落库的变更 + 审计</td><td>证据包（查询语句 + 数据快照 + 推理路径），人确认后沉淀</td></tr>
+  </table>
+
+  <p class="body"><b>探索面的四条设计纪律</b>（发散不等于失控，约束换了个地方）：</p>
+  <div class="grid c2" style="margin-top:10px">
+    <div class="card"><h4>① 只读 + 分析侧基础设施</h4>
+      <p>探索面在数据湖/湖仓上运行（ELT 从交易侧单向同步，延迟分钟级可接受），
+      <b>物理上不碰交易库</b>——探索再重的查询也影响不到付款入账。这和分析侧做数据报表是同一套基础设施与同一套原则，
+      只是消费方从人换成了 AI + 人。</p></div>
+    <div class="card"><h4>② AI 不拿裸表权限：语义层中转</h4>
+      <p>AI 不直接写 SQL 扫湖，而是经语义层/图谱生成受约束的查询（查询计划白名单：只读、资源上限、行数上限）；
+      术语口径沿用同一套知识库（「高风险」在这个租户怎么定义，探索与执行必须是同一个答案）。
+      6.1 节的图数据库判据在探索场景下全面倒向图——多跳关系遍历正是图的用武之地。</p></div>
+    <div class="card"><h4>③ 证据优先于结论</h4>
+      <p>每条探索发现必须携带可复现的证据链：查询语句、数据快照、推理路径。这一条是对冲探索面更高幻觉风险的关键——
+      结论可以错，但证据必须真、可重放。拿不出证据的「发现」直接丢弃，不进入确认环节。</p></div>
+    <div class="card"><h4>④ 人确认后固化闭环</h4>
+      <p>AI 发现「某供应商高风险」→ 证据包给人 → 人确认成立 → <b>沉淀为确定性资产</b>：
+      定期筛查指标、一条护栏、甚至一个新的 BO 能力。探索面成为执行面的雷达——
+      发散的探索负责发现，确定性的系统负责固化，探索的创造力最终回流到可治理的轨道上。</p></div>
+  </div>
+
+  <div class="explain">
+    <b>对判断 8 的修正（重要）：</b>「流程以预定义为主」的完整表述应该是——<b>执行面</b>流程以预定义为主，
+    模型只填空；<b>探索面</b>允许模型自主决定查询路径，代价是：只读沙箱、证据强制、人在环裁决、结论沉淀闭环。
+    两个面共用同一套语义层与同一套身份/审计，差异只在访问通道（API vs 湖查询）与确定性纪律的松紧。
+    这与第 01 章 L0 分层完全兼容：探索面 = L3a 语义（图谱）+ L4 能力组件（数据湖/检索）的组合应用，
+    业界「Agentic Analytics」正是这个方向。本仓未建探索面，它是路线图上的下一块——
+    但它的治理要素（语义同源、证据链、人在环、审计）本仓全部已有，缺的只是数据湖一侧的接入。
+  </div>
 </section>
 
 
@@ -1778,25 +2000,25 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
 <script>
 (function () {
   "use strict";
-  // ---------- 数据：四条链路的分步脚本（节点 data-i：0李四 1网关 2AP图 3采购图 4MCP 5Java 6审批台 7租户webhook） ----------
+  // ---------- 四个场景各自的分步脚本（节点下标按各自链路从 0 计） ----------
   var READ = [
     { n: [0], tk: ["t1"], c: "<b>① 用户发起</b>　李四在 WorkBuddy 提问：「INV-A-001 校验失败的原因是什么？」——带着 T1（只有聊天权限）" },
     { n: [0, 1], tk: ["t1", "t2"], c: "<b>② 网关验身份、换门禁卡</b>　查注册中心（ap-copilot 在册且未吊销）→ 铸 T2：还是李四，但范围收窄为「这个场景 ∩ 这个 Agent 的工具清单」" },
     { n: [1, 2], tk: ["t2"], c: "<b>③ 场景图理解意图</b>　LangGraph 分类：这是诊断类问题 → 决定调「校验 + 差异下钻」两个工具（模型只填空，不自由发挥）" },
-    { n: [2, 4], tk: ["t3"], c: "<b>④ 网关铸操作票 T3</b>　只能调这一个工具 · 60 秒过期 —— 工具级最小授权" },
-    { n: [4, 5], tk: ["t3"], c: "<b>⑤ 存量系统最终判定</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维）—— AI 没有第二套权限" },
-    { n: [2, 5], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回；没跑的步骤会明说（completeness 披露），绝不静默" },
+    { n: [2, 3], tk: ["t3"], c: "<b>④ 网关铸操作票 T3</b>　只能调这一个工具 · 60 秒过期 —— 工具级最小授权" },
+    { n: [3, 4], tk: ["t3"], c: "<b>⑤ 存量系统最终判定</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维）—— AI 没有第二套权限" },
+    { n: [2, 4], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回；没跑的步骤会明说（completeness 披露），绝不静默" },
     { n: [0, 2], tk: [], c: "<b>⑦ 流式应答 + 全程留痕</b>　场景图组装结论 → SSE 流式回 WorkBuddy；调用树入 Jaeger，审计五要素入库" }
   ];
   var WRITE = [
     { n: [0], tk: ["t1"], c: "<b>① 写路径开始</b>　李四请求：「把 INV-A-052 的税码补全为 CN-VAT-13」" },
     { n: [1, 2], tk: ["t2"], c: "<b>② 网关铸 T2 → 场景图给建议</b>　结合税码规则给出建议（发票 / 税码 / 理由）" },
-    { n: [4, 5], tk: ["t3"], c: "<b>③ 网关发现「不可逆」</b>　税码变更在规格里标记为不可逆 → 网关创建审批任务，返回「需要审批」，<b>此时不落库</b>" },
-    { n: [6], tk: [], c: "<b>④ 挂起等审批（期间零凭据）</b>　场景图在审批门挂起（状态存库）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响（三要素）" },
-    { n: [6, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 记录批准人与快照 → 铸<b>一次性令牌 OT</b>：只对这组参数有效 · 120 秒 · 用一次即作废" },
-    { n: [2, 4], tk: ["ot"], c: "<b>⑥ 唤醒重发</b>　场景图从审批门继续 → 携 OT 重发（业务幂等键不变，重复投递命中网关短窗）" },
-    { n: [4, 5], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效+未用+参数指纹匹配）→ 存量域与变更同事务落库：变更记录 + 幂等表（重放返回首次结果）" },
-    { n: [0, 5], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；五要素 + 快照留痕，租户证据包可导出" }
+    { n: [3, 4], tk: ["t3"], c: "<b>③ 网关发现「不可逆」</b>　税码变更在规格里标记为不可逆 → 网关创建审批任务，返回「需要审批」，<b>此时不落库</b>" },
+    { n: [5], tk: [], c: "<b>④ 挂起等审批（期间零凭据）</b>　场景图在审批门挂起（状态存库）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响（三要素）" },
+    { n: [5, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 记录批准人与快照 → 铸<b>一次性令牌 OT</b>：只对这组参数有效 · 120 秒 · 用一次即作废" },
+    { n: [2, 3], tk: ["ot"], c: "<b>⑥ 唤醒重发</b>　场景图从审批门继续 → 携 OT 重发（业务幂等键不变，重复投递命中网关短窗）" },
+    { n: [3, 4], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效+未用+参数指纹匹配）→ 存量域与变更同事务落库：变更记录 + 幂等表（重放返回首次结果）" },
+    { n: [0, 4], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；五要素 + 快照留痕，租户证据包可导出" }
   ];
   var XDOM = [
     { n: [0], tk: ["t1"], c: "<b>① 跨域问题</b>　李四：「INV-A-001 为什么被阻断？采购和收货那边什么情况？」——AP 域只能看到数量差异，根因需要采购域上下文" },
@@ -1809,110 +2031,107 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
     { n: [0, 2], tk: [], c: "<b>⑧ 完成与留痕</b>　双 Agent 审计（含委派链）；负向保证：清单外 / 反向 / 跨租委派一律 403" }
   ];
   var MSG = [
-    { n: [5], tk: [], c: "<b>① 业务事实发生</b>　Java 存量域判定发票被阻断 → 幂等写入事件表（outbox：租户/组织/金额/阻断发现）" },
-    { n: [5, 2], tk: [], c: "<b>② 平台内先消费（事件进 Agent）</b>　hub 事件线程拉取 → 无头诊断（event-diag 代理代表执行）→ 通知李四" },
-    { n: [2, 1], tk: ["msg"], c: "<b>③ 同一事件扇出（事件出平台）</b>　hub 调网关分发——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
-    { n: [1], tk: ["msg"], c: "<b>④ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
-    { n: [1, 7], tk: ["msg"], c: "<b>⑤ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
-    { n: [7, 1], tk: [], c: "<b>⑥ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
+    { n: [0], tk: [], c: "<b>① 业务事实发生</b>　Java 存量域判定发票被阻断 → 幂等写入事件表（outbox：租户/组织/金额/阻断发现）" },
+    { n: [0, 1], tk: [], c: "<b>② 平台内先消费（事件进 Agent）</b>　hub 事件线程拉取 → 无头诊断（event-diag 代理代表执行）→ 通知李四" },
+    { n: [1, 2], tk: ["msg"], c: "<b>③ 同一事件扇出（事件出平台）</b>　hub 调网关分发——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
+    { n: [2], tk: ["msg"], c: "<b>④ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
+    { n: [2, 3], tk: ["msg"], c: "<b>⑤ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
+    { n: [3, 2], tk: [], c: "<b>⑥ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
   ];
-  var STEPS = { read: READ, write: WRITE, xdom: XDOM, msg: MSG };
-  var mode = "read", idx = 0, timer = null, restartTimer = null;
-  var chain = document.getElementById("chain");
-  var packet = document.getElementById("packet");
-  var capt = document.getElementById("capt");
-  var nodes = [].slice.call(chain.querySelectorAll(".fnode"));
-  var chips = [].slice.call(document.querySelectorAll(".tk"));
-  var btnRead = document.getElementById("modeRead");
-  var btnWrite = document.getElementById("modeWrite");
-  var btnXdom = document.getElementById("modeXdom");
-  var btnMsg = document.getElementById("modeMsg");
-  var btnReplay = document.getElementById("replay");
+
+  var FLOWS = [
+    { id: "fp-read", steps: READ },
+    { id: "fp-write", steps: WRITE },
+    { id: "fp-xdom", steps: XDOM },
+    { id: "fp-msg", steps: MSG }
+  ];
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function apprNode() { return nodes[6]; }
-  function procNode() { return nodes[3]; }
-  function tenNode() { return nodes[7]; }
-  function centers() {
-    // 可见节点 data-i -> 中心坐标。三个可隐藏节点（3采购图 / 6审批台 / 7租户webhook）夹在链路中间，
-    // 必须按 data-i 映射（不能按可见序号），否则包的落点会错位。
-    var base = chain.getBoundingClientRect();
-    var map = {};
-    nodes.forEach(function (nd) {
-      if (nd.style.display === "none") return;
-      var r = nd.getBoundingClientRect();
-      map[nd.getAttribute("data-i")] = r.left - base.left + r.width / 2;
-    });
-    return map;
-  }
-  function render() {
-    var step = STEPS[mode][idx];
-    apprNode().style.display = (mode === "write") ? "" : "none";
-    procNode().style.display = (mode === "xdom") ? "" : "none";
-    tenNode().style.display = (mode === "msg") ? "" : "none";
-    var cs = centers();
-    nodes.forEach(function (nd) {
-      var di = nd.getAttribute("data-i");
-      var on = step.n.indexOf(Number(di)) >= 0;
-      var cur = String(step.n[step.n.length - 1]) === di;
-      nd.className = "fnode" + (di === "6" ? " appr" : "") + (di === "3" ? " proc" : "")
-        + (di === "7" ? " ten" : "") + (on ? " on" : "") + (cur ? " cur" : "");
-    });
-    chips.forEach(function (ch) {
-      ch.className = "tk" + (step.tk.indexOf(ch.getAttribute("data-t")) >= 0 ? " on" : "");
-    });
-    var to = String(step.n[step.n.length - 1]);
-    if (!reduceMotion && cs[to] !== undefined) {
-      packet.style.opacity = "1";
-      packet.style.left = (cs[to] - 6.5) + "px";
-    } else {
-      packet.style.opacity = "0";
+  function makeFlow(cfg) {
+    var panel = document.getElementById(cfg.id);
+    if (!panel) return;
+    var chain = panel.querySelector(".chain");
+    var packet = panel.querySelector(".packet");
+    var capt = panel.querySelector(".capt");
+    var nodes = [].slice.call(panel.querySelectorAll(".fnode"));
+    var chips = [].slice.call(panel.querySelectorAll(".tk"));
+    var baseCls = nodes.map(function (nd) { return nd.className; });
+    var idx = 0, timer = null, restartTimer = null, running = false;
+
+    function centers() {
+      var base = chain.getBoundingClientRect();
+      var map = {};
+      nodes.forEach(function (nd, i) {
+        var r = nd.getBoundingClientRect();
+        map[i] = r.left - base.left + r.width / 2;
+      });
+      return map;
     }
-    capt.innerHTML = step.c + '　<span style="color:#6b7599;font-family:var(--mono);font-size:11.5px">' +
-      (idx + 1) + " / " + STEPS[mode].length + "</span>";
-  }
-  function schedule() {
-    if (reduceMotion) { render(); return; }
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(function () {
-      if (idx < STEPS[mode].length - 1) {
-        idx += 1; render(); schedule();
+    function render() {
+      var step = cfg.steps[idx];
+      nodes.forEach(function (nd, i) {
+        var on = step.n.indexOf(i) >= 0;
+        var cur = step.n[step.n.length - 1] === i;
+        nd.className = baseCls[i] + (on ? " on" : "") + (cur ? " cur" : "");
+      });
+      chips.forEach(function (ch) {
+        ch.className = "tk" + (step.tk.indexOf(ch.getAttribute("data-t")) >= 0 ? " on" : "");
+      });
+      var to = step.n[step.n.length - 1];
+      var cs = centers();
+      if (!reduceMotion && cs[to] !== undefined) {
+        packet.style.opacity = "1";
+        packet.style.left = (cs[to] - 6.5) + "px";
       } else {
-        // 仅在最后一步挂循环重启（挂前必清）；步进 tick 内不挂——否则每个 tick
-        // 泄漏一个重启定时器，动画会莫名跳回第①步
-        if (restartTimer) clearTimeout(restartTimer);
-        restartTimer = setTimeout(function () { idx = 0; render(); schedule(); }, 3600);
+        packet.style.opacity = "0";
       }
-    }, 2500);
+      capt.innerHTML = step.c + '　<span style="color:#6b7599;font-family:var(--mono);font-size:11.5px">' +
+        (idx + 1) + " / " + cfg.steps.length + "</span>";
+    }
+    function stopTimers() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
+    }
+    function schedule() {
+      if (reduceMotion) { render(); return; }
+      stopTimers();
+      timer = setTimeout(function () {
+        if (idx < cfg.steps.length - 1) {
+          idx += 1; render(); schedule();
+        } else {
+          restartTimer = setTimeout(function () { idx = 0; render(); schedule(); }, 3600);
+        }
+      }, 2500);
+    }
+    function start() {
+      idx = 0; running = true;
+      stopTimers();
+      render();
+      schedule();
+    }
+    panel.querySelector(".replay-btn").addEventListener("click", start);
+    window.addEventListener("resize", function () { if (running || reduceMotion) render(); });
+
+    if (reduceMotion) {
+      running = true;
+      nodes.forEach(function (nd, i) { nd.className = baseCls[i] + " on"; });
+      packet.style.opacity = "0";
+      idx = cfg.steps.length - 1;
+      render();
+      capt.innerHTML = "已按系统设置减少动效：静态展示末步。点重播可逐步查看（" + cfg.steps.length + " 步）。";
+    } else if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && !running) { start(); }
+        });
+      }, { threshold: 0.4 });
+      io.observe(panel);
+    } else {
+      start();
+    }
   }
-  function start() {
-    idx = 0;
-    // 两个定时器都要清：切模式/重播时若留有上一轮的循环重启定时器，
-    // 它会把 idx 反复归零，表现为动画卡在第①步
-    if (timer) clearTimeout(timer);
-    if (restartTimer) clearTimeout(restartTimer);
-    render();
-    schedule();
-  }
-  function setMode(m) {
-    mode = m;
-    [btnRead, btnWrite, btnXdom, btnMsg].forEach(function (b) { b.classList.remove("on"); });
-    ({ read: btnRead, write: btnWrite, xdom: btnXdom, msg: btnMsg })[m].classList.add("on");
-    start();
-  }
-  btnRead.addEventListener("click", function () { setMode("read"); });
-  btnWrite.addEventListener("click", function () { setMode("write"); });
-  btnXdom.addEventListener("click", function () { setMode("xdom"); });
-  btnMsg.addEventListener("click", function () { setMode("msg"); });
-  btnReplay.addEventListener("click", start);
-  window.addEventListener("resize", function () { render(); });
-  if (reduceMotion) {
-    capt.innerHTML = "已按系统设置减少动效：静态展示完整链路。可切换「读 / 写 / 跨域 / 消息」路径查看分步说明（自动播放已关闭）。";
-    nodes.forEach(function (nd) { nd.className = nd.className + " on"; });
-    apprNode().style.display = "none";
-    procNode().style.display = "none";
-    tenNode().style.display = "none";
-  } else { start(); }
+
+  FLOWS.forEach(makeFlow);
 })();
 </script>
 
