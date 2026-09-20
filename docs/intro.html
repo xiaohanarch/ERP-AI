@@ -272,6 +272,12 @@
     margin-left: auto; font-family: var(--mono); font-size: 12px; white-space: nowrap;
   }
   .belief .st.done { color: var(--ok); } .belief .st.part { color: var(--warn); }
+  .src-tag {
+    font-family: var(--mono); font-size: 11px; padding: 1px 8px; border-radius: 4px;
+    white-space: nowrap; flex: none;
+  }
+  .src-tag.core { color: var(--indigo-deep); background: rgba(46,70,200,.1); }
+  .src-tag.add { color: var(--warn); background: rgba(154,107,0,.14); }
   .belief .bb { padding: 14px 20px 16px; }
   .belief .seg { display: flex; gap: 12px; margin: 10px 0; align-items: flex-start; }
   .belief .seg .ic {
@@ -465,7 +471,7 @@
     <a href="#logic">02 逻辑架构</a>
     <a href="#deploy">03 部署架构</a>
     <a href="#devview">04 开发视图</a>
-    <a href="#beliefs">05 14 条判断</a>
+    <a href="#beliefs">05 架构判断</a>
     <a href="#codemap">06 代码导览</a>
     <a href="#kb">07 知识库专题</a>
     <a href="#resp">08 落地职责</a>
@@ -487,7 +493,7 @@
       可重复执行的验证和真实运行的页面。
     </p>
     <div class="hero-nums">
-      <div class="hn"><div class="n">14 条</div><div class="t">架构判断，逐条讲清「问题 / 为什么 / 怎么做」（第 05 章）</div></div>
+      <div class="hn"><div class="n">14+5</div><div class="t">架构判断：14 条总纲讲透「问题 / 为什么 / 怎么做」+ 本仓增补 15–19（第 05 章）</div></div>
       <div class="hn"><div class="n">7 层</div><div class="t">L0 参考分层，每层对应到仓库里的具体代码（第 06 章）</div></div>
       <div class="hn"><div class="n">50/50</div><div class="t">评测用例全过，含幻觉与诱导两类负向用例</div></div>
       <div class="hn"><div class="n">×100</div><div class="t">复现的真实事故：同一个查询，页面 50 条 vs 接口 5000 条</div></div>
@@ -1087,18 +1093,19 @@
 
 <!-- ============ 05 十四条架构判断 ============ -->
 <section id="beliefs">
-  <h2><span class="no">05</span>十四条架构判断：逐条讲透<span class="en">14 Architectural Beliefs</span></h2>
+  <h2><span class="no">05</span>架构判断：14 条总纲逐条讲透 + 本仓增补<span class="en">14 + 5 Beliefs</span></h2>
   <p class="lead">
-    这 14 条判断回答「ERP 的 AI 到底该怎么建」。每一条都按同样三段展开：
+    <b>14 条总纲判断</b>（标「总纲」）回答「ERP 的 AI 到底该怎么建」。每一条都按同样三段展开：
     <b style="color:var(--bad)">问题</b>（这条判断针对什么现实坑）、
     <b style="color:var(--indigo-deep)">为什么</b>（背后的道理和业界依据）、
     <b style="color:var(--ok)">怎么做</b>（本演示的落地机制 + 代码落点 + 怎么验证）。
     13 条已实现并验证；第 4 条分阶段推进（阶段二第一切片已落地）。
+    与现行架构逐条对照后，本仓增补五条（标「增补」，15–19）与一条总前提，见本章末节。
   </p>
 
   <!-- 1 -->
   <div class="belief">
-    <div class="bh"><span class="n">1</span><span class="t">AI 要长在 ERP 里，不是挂在旁边</span>
+    <div class="bh"><span class="n">1</span><span class="src-tag core">总纲</span><span class="t">AI 要长在 ERP 里，不是挂在旁边</span>
       <span class="orig">AI-Native，不是 ERP + AI</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1125,7 +1132,7 @@
 
   <!-- 2 -->
   <div class="belief">
-    <div class="bh"><span class="n">2</span><span class="t">传统 ERP 继续做确定性执行，这是它的本分</span>
+    <div class="bh"><span class="n">2</span><span class="src-tag core">总纲</span><span class="t">传统 ERP 继续做确定性执行，这是它的本分</span>
       <span class="orig">传统 ERP = SoR + 确定性执行</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1150,7 +1157,7 @@
 
   <!-- 3 -->
   <div class="belief">
-    <div class="bh"><span class="n">3</span><span class="t">AI 是 ERP 的内生组件，共享同一套「器官」</span>
+    <div class="bh"><span class="n">3</span><span class="src-tag core">总纲</span><span class="t">AI 是 ERP 的内生组件，共享同一套「器官」</span>
       <span class="orig">AI 是 ERP 内生组成部分</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1174,7 +1181,7 @@
 
   <!-- 4 -->
   <div class="belief">
-    <div class="bh"><span class="n">4</span><span class="t">本体：先做语义唯一真相源，再做结构引擎（分三步）</span>
+    <div class="bh"><span class="n">4</span><span class="src-tag core">总纲</span><span class="t">本体：先做语义唯一真相源，再做结构引擎（分三步）</span>
       <span class="orig">Ontology = 统一语义模型 + 逻辑核心</span><span class="st part">⚠️ 分阶段（阶段二第一切片已落地）</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1205,7 +1212,7 @@
 
   <!-- 5 -->
   <div class="belief">
-    <div class="bh"><span class="n">5</span><span class="t">元数据自动喂养本体，而不是人工抄写</span>
+    <div class="bh"><span class="n">5</span><span class="src-tag core">总纲</span><span class="t">元数据自动喂养本体，而不是人工抄写</span>
       <span class="orig">Metadata 是 Ontology 的输入与来源</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1231,7 +1238,7 @@
 
   <!-- 6 -->
   <div class="belief">
-    <div class="bh"><span class="n">6</span><span class="t">多领域 Agent 协同，但必须显式委派、可追责</span>
+    <div class="bh"><span class="n">6</span><span class="src-tag core">总纲</span><span class="t">多领域 Agent 协同，但必须显式委派、可追责</span>
       <span class="orig">多领域 Agent + 协同组合</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1256,7 +1263,7 @@
 
   <!-- 7 -->
   <div class="belief">
-    <div class="bh"><span class="n">7</span><span class="t">Agent 干活走完整链路，绝不直连数据库</span>
+    <div class="bh"><span class="n">7</span><span class="src-tag core">总纲</span><span class="t">Agent 干活走完整链路，绝不直连数据库</span>
       <span class="orig">业务执行：Agent → API → 微服务 → 事务</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1272,6 +1279,8 @@
         hub 场景图 → 网关 MCP 代理（拦截链）→ Java BO API → 事务。全链路在 Jaeger 里是一棵
         GenAI 风格的 span 树（<span class="mono">invoke_agent → chat → execute_tool</span>），
         六组扩展字段（身份/版本/场景/完整性/动作性质/内容摘要）挂在 span 上。
+        <b>适用边界：</b>本条链路是<b>执行面</b>的——数据探索场景不走 BO API，走分析侧湖仓直查
+        （只读沙箱 + 证据链 + 人在环），见原则 17 与第 07 章决策三。
         <div class="dep">落点：<span class="mono">hub/graphs/*</span> → <span class="mono">erp-ai-action/app/mcp/gateway.py</span> → <span class="mono">legacy-erp-ap/.../boapi/</span>；追踪 <span class="mono">erp-ai-action/app/otel_setup.py</span></div>
       </div></div>
       <div class="proof"><b>验证：</b>开场动画即此链的分步演示；Jaeger <a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">现场看真实 trace</a><span class="pill ok">链路</span></div>
@@ -1280,7 +1289,7 @@
 
   <!-- 8 -->
   <div class="belief">
-    <div class="bh"><span class="n">8</span><span class="t">流程预先画好，模型只填空，不自由发挥</span>
+    <div class="bh"><span class="n">8</span><span class="src-tag core">总纲</span><span class="t">流程预先画好，模型只填空，不自由发挥</span>
       <span class="orig">流程以预定义为主，不要求自适应</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1298,7 +1307,7 @@
         确定性回归——同样的输入永远走同样的路。
         <b>适用边界（重要）：</b>本条约束的是执行面。数据探索类场景（如高风险供应商发现）是另一种
         AI 业务形态——模型在分析侧关系数据上自主决定查询路径，靠只读沙箱、证据强制、人在环裁决来约束
-        而不是靠预定义流程；发散探索的结论经人确认后沉淀回确定性资产。详见第 07 章「决策三 · 探索面」。
+        而不是靠预定义流程；发散探索的结论经人确认后沉淀回确定性资产。见<b>原则 17（双面架构，增补）</b>与第 07 章决策三。
         <div class="dep">落点：<span class="mono">hub/graphs/</span>（五张场景图）+ <span class="mono">hub/sdk/graph.py</span>（装配薄封装）</div>
       </div></div>
       <div class="proof"><b>验证：</b>评测 50/50（工具正确性 1.0、步数 ≤4）建立在流程确定性之上<span class="pill ok">eval</span></div>
@@ -1307,7 +1316,7 @@
 
   <!-- 9 -->
   <div class="belief">
-    <div class="bh"><span class="n">9</span><span class="t">业务规则：AI 可以理解、必须遵守、绝对不能改</span>
+    <div class="bh"><span class="n">9</span><span class="src-tag core">总纲</span><span class="t">业务规则：AI 可以理解、必须遵守、绝对不能改</span>
       <span class="orig">AI 可理解使用规则、不可修改</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1332,7 +1341,7 @@
 
   <!-- 10 -->
   <div class="belief">
-    <div class="bh"><span class="n">10</span><span class="t">触发有三条路：人问、事件推、定时跑</span>
+    <div class="bh"><span class="n">10</span><span class="src-tag core">总纲</span><span class="t">触发有三条路：人问、事件推、定时跑</span>
       <span class="orig">Open API / Event / Scheduler</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1357,7 +1366,7 @@
 
   <!-- 11 -->
   <div class="belief">
-    <div class="bh"><span class="n">11</span><span class="t">人的角色重构：从执行者到确认者、例外处理者、监督者</span>
+    <div class="bh"><span class="n">11</span><span class="src-tag core">总纲</span><span class="t">人的角色重构：从执行者到确认者、例外处理者、监督者</span>
       <span class="orig">人：执行者 → 确认者 / 例外处理者 / 监督者</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1381,7 +1390,7 @@
 
   <!-- 12 -->
   <div class="belief">
-    <div class="bh"><span class="n">12</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋对冲</span>
+    <div class="bh"><span class="n">12</span><span class="src-tag core">总纲</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋对冲</span>
       <span class="orig">Agent 演进：先协同传统，终局替换部分执行</span><span class="st done">✅ 当前协同阶段</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1405,7 +1414,7 @@
 
   <!-- 13 -->
   <div class="belief">
-    <div class="bh"><span class="n">13</span><span class="t">产品化：标品内核 + 配置适配，改配置不改代码</span>
+    <div class="bh"><span class="n">13</span><span class="src-tag core">总纲</span><span class="t">产品化：标品内核 + 配置适配，改配置不改代码</span>
       <span class="orig">标品 core + Metadata/Ontology/配置适配</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1429,7 +1438,7 @@
 
   <!-- 14 -->
   <div class="belief">
-    <div class="bh"><span class="n">14</span><span class="t">SaaS：租户隔离层层成立，扩展走 API 和消息两条道</span>
+    <div class="bh"><span class="n">14</span><span class="src-tag core">总纲</span><span class="t">SaaS：租户隔离层层成立，扩展走 API 和消息两条道</span>
       <span class="orig">标品层/租户层隔离，API / Message 扩展</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1466,14 +1475,39 @@
       同一 BO 合同（同幂等语义/同错误码/同审计），管控面零改动。这是替换的对冲。</p></div>
   </div>
 
-  <h3>本仓多出的两条（建议补充进总纲）</h3>
-  <div class="grid c2" style="margin-top:10px">
-    <div class="card"><h4>15 · 可验证性是一等公民</h4>
+  <h3>本仓增补的五条（15–19）<span class="hint">与 14 条总纲逐一对照后补充——建议一并写入总纲</span></h3>
+
+  <div class="explain">
+    <b>一条总前提（不是原则，是输入条件）：</b>「AI+ERP 的瓶颈，从来不是大模型本身的参数与能力，
+    而是企业自身的数据治理与业务流程标准化」（老丁《AI 原生重构 ERP 选型逻辑》，2026-08，
+    即原则 1 的参照原文）。以下所有判断——包括 14 条总纲——都以主数据干净、流程标准为前提；
+    数据混乱、流程割裂的企业，架构再对也发挥不出价值。
+  </div>
+
+  <div class="grid c2" style="margin-top:12px">
+    <div class="card"><h4><span class="src-tag add">增补</span>15 · 可验证性是一等公民</h4>
       <p>50 条锚点评测分六类，<b>幻觉与诱导是两个专门的负向类</b>；能力问题清单与评测用例同源绑定；
-      mock/replay/live 三态可按请求钉定。<b>连护栏本身都在被评测</b>——这超出了业界选型五条的高度。</p></div>
-    <div class="card"><h4>16 · 口径互证是治理基础设施</h4>
-      <p>三口径权限对照、成本台账 vs 审计对账、四问自检——「监督者」角色不是靠责任心，
+      mock/replay/live 三态可按请求钉定。<b>连护栏本身都在被评测</b>——这是参照文选型五条没到的高度，
+      也超出 Gartner AI-TRiSM 的治理要求。</p></div>
+    <div class="card"><h4><span class="src-tag add">增补</span>16 · 口径互证是治理基础设施</h4>
+      <p>三口径权限对照、成本台账 vs 审计五要素对账、四问自检——「监督者」角色不是靠责任心，
       是靠这些自动化、可复跑的数据设施支撑的。</p></div>
+    <div class="card"><h4><span class="src-tag add">增补</span>17 · 双面架构：执行面与探索面</h4>
+      <p>14 条总纲描述的都是<b>执行面</b>（替人办事：预定义流程 + BO API + 确定性优先）。
+      <b>数据探索是另一种 AI 业务形态</b>（替人发现）：湖仓直查（绝不碰交易库）+ 关系图谱 +
+      AI 引导遍历 + 证据链 + 人在环裁决 + 确认后沉淀回执行面。两个面共用语义层与治理，
+      差异只在数据通道与确定性纪律——原则 7/8 的边界由此划定。
+      详见第 07 章决策三、第 02 章两张逻辑图。</p></div>
+    <div class="card"><h4><span class="src-tag add">增补</span>18 · 异构系统对接（MCP 多系统）<span class="tag">本仓未做</span></h4>
+      <p>底座优先路线的三大工程挑战之首（参照文原文点名）：AI 底座要能对接<b>多套异构业务系统</b>
+      （ERP / OA / CRM），不绑定单一产品——参照文选型第四条明确要求。
+      本仓现状：MCP 代理只指向一套 Java，<b>诚实标注为路线图项</b>——再挂一个只读 OA/CRM
+      工具即可演示「底座不绑定单一 ERP」。</p></div>
+    <div class="card"><h4><span class="src-tag add">增补</span>19 · 知识库建设节奏：场景驱动生长</h4>
+      <p>骨架一次建好（三段式 / 自动喂养 / 漂移检测 / 评测同源绑定），血肉按场景生长
+      （每寸口径层资产都带评测锚）。「一次建全、一劳永逸」没有消费验证、漂移面积线性增长、
+      组织上永远差 30% 上不了线——参照文选型第五条「单点切入、拒绝一步到位」正是此意。
+      详见第 07 章决策四。</p></div>
   </div>
 </section>
 
