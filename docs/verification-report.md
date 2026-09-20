@@ -1,14 +1,14 @@
 # 验证报告（verification report）
 
-- 生成时间：2026-09-19 09:58:02
-- 版本戳：spec `1.1.0` / ruleset `AP-RS-1.2.0` / seed `ap-seed-1.0.0` / 语义 `ap-sem-1.0.0` / 模型 `glm-5.3`（live）
+- 生成时间：2026-09-19 21:10:33
+- 版本戳：spec `1.2.0` / ruleset `AP-RS-1.2.0` / seed `ap-seed-1.0.0` / 语义 `ap-sem-1.1.0` / 模型 `glm-5.3`（live）
 - 结论：**全部体系绿**
 
 ## 一、总览
 
 | 检验体系 | 结果 | 判定 |
 |---|---|---|
-| 全量评测（50 锚点用例） | 50/50 通过，耗时 35.1s | ✅ |
+| 全量评测（50 锚点用例） | 50/50 通过，耗时 14.1s | ✅ |
 | 多租六项检验 | 37/37 通过 | ✅ |
 | 漂移检测 | 检出 2 处预埋漂移（全部检出） | ✅ |
 | 五分钟自检（四问） | 全部可答（docs/selfcheck-latest.md） | ✅ |
@@ -49,7 +49,7 @@
 - [FIELD_DRIFT/HIGH] 派生字段 Invoice.accrual_flag 与元数据现状不符（疑似对应 is_accrual）
 - [RULE_DRIFT/MEDIUM] 语义层引用的规则 AP.TAX.RATE_CHECK 在存量规则清单中不存在（规则已删除或改名）
 
-- 基线：ruleset `AP-RS-1.2.0` / seed `ap-seed-1.0.0` / 语义 `ap-sem-1.0.0`；检查字段 1 个、规则 6 条
+- 基线：ruleset `AP-RS-1.2.0` / seed `ap-seed-1.0.0` / 语义 `ap-sem-1.1.0`；检查字段 1 个、规则 6 条、术语目标 6 个、派生基字段 1 个
 
 ## 六、事故三口径对照（张三，T-EAST）
 
