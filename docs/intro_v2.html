@@ -278,6 +278,45 @@
   }
   .src-tag.core { color: var(--indigo-deep); background: rgba(46,70,200,.1); }
   .src-tag.add { color: var(--warn); background: rgba(154,107,0,.14); }
+  /* ---------- 逐幕验证卡片 ---------- */
+  .scn-index { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; align-items: center; }
+  .scn-index .lbl { font-size: 13px; color: var(--ink-soft); margin-right: 2px; }
+  .scn-index a { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 4px 11px 4px 5px;
+                 border: 1px solid var(--line); border-radius: 999px; text-decoration: none;
+                 color: var(--ink-soft); background: var(--card); }
+  .scn-index a b { font-family: var(--mono); color: #fff; background: var(--navy); border-radius: 50%;
+                   min-width: 19px; height: 19px; display: inline-flex; align-items: center;
+                   justify-content: center; font-size: 11px; }
+  .scn-index a:hover { border-color: var(--indigo); color: var(--ink); text-decoration: none; }
+  .scn { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--navy);
+         border-radius: 10px; margin: 14px 0; overflow: hidden; }
+  .scn.t-read  { border-left-color: var(--ok); }
+  .scn.t-write { border-left-color: var(--warn); }
+  .scn.t-block { border-left-color: var(--bad); }
+  .scn.t-event { border-left-color: var(--indigo); }
+  .scn.t-conf  { border-left-color: var(--teal); }
+  .scn .sh { display: flex; gap: 10px; align-items: center; padding: 12px 16px; background: #fff;
+             border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .scn .num { flex: none; width: 34px; height: 34px; border-radius: 9px; background: var(--navy);
+              color: #fff; font-family: var(--mono); font-weight: 700; font-size: 17px;
+              display: flex; align-items: center; justify-content: center; }
+  .scn .sh .st { font-weight: 700; font-size: 16px; }
+  .scn .sid { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .scn .sh .who { margin-left: auto; font-size: 12.5px; color: var(--teal); font-weight: 600; }
+  .scn .sb { padding: 10px 16px 12px; }
+  .scn .desc { font-size: 14px; color: var(--ink); margin: 2px 0 4px; }
+  .scn .cmd { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; padding-bottom: 8px;
+              border-bottom: 1px dashed var(--line); }
+  .scn .cmd a { display: inline-block; margin: 2px 10px 2px 0; white-space: nowrap; }
+  .scn .row { display: flex; gap: 10px; margin: 7px 0; }
+  .scn .row .k { flex: none; width: 50px; font-size: 12px; font-weight: 700; text-align: center;
+                 border-radius: 5px; padding: 2px 0; margin-top: 2px; }
+  .scn .row .k.s { background: rgba(46,70,200,.08); color: var(--indigo-deep); }
+  .scn .row .k.r { background: rgba(26,127,78,.1); color: var(--ok); }
+  .scn .row .k.w { background: rgba(154,107,0,.12); color: var(--warn); }
+  .scn .row .v { flex: 1; font-size: 14px; line-height: 1.7; }
+  .scn .mono { font-family: var(--mono); font-size: 12.5px; color: var(--indigo-deep);
+               background: rgba(46,70,200,.07); border-radius: 4px; padding: 1px 6px; }
   .belief .bb { padding: 14px 20px 16px; }
   .belief .seg { display: flex; gap: 12px; margin: 10px 0; align-items: flex-start; }
   .belief .seg .ic {
@@ -2575,8 +2614,10 @@ x-bo-sod-group      : SoD 互斥组</div>
     <b>每幕一张卡</b>：讲什么、谁登录（口令统一 demo123）、具体步骤、预期结果、以及为什么是这个结果。
     汇报时建议按 01→06→05→11 的顺序讲：先事故、再写路径审批、再双租定义、最后喂养与驱动。
   </p>
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_1</span><span class="st">权限事故复现</span><span class="pill ok">读</span><span class="who">zhangsan（ERP 页面）· lisi（WorkBuddy）</span></div>
+  <div class="scn-index"><span class="lbl">十一幕速览：</span><a href="#sc-1"><b>1</b>权限事故复现</a><a href="#sc-2"><b>2</b>查不完整必披露</a><a href="#sc-3"><b>3</b>越权诱导被拦</a><a href="#sc-4"><b>4</b>吊销即时生效</a><a href="#sc-5"><b>5</b>双租同题不同答</a><a href="#sc-6"><b>6</b>写路径全生命周期</a><a href="#sc-7"><b>7</b>行业包 + 定时触发</a><a href="#sc-8"><b>8</b>跨域协同（委派采购）</a><a href="#sc-9"><b>9</b>消息扩展（事件出平台）</a><a href="#sc-10"><b>10</b>配置即产品</a><a href="#sc-11"><b>11</b>元数据喂养 + 本体驱动</a></div>
+
+  <div class="scn t-read" id="sc-1">
+    <div class="sh"><span class="num">1</span><span class="st">权限事故复现</span><span class="sid">scene_1</span><span class="pill ok">读</span><span class="who">zhangsan（ERP 页面）· lisi（WorkBuddy）</span></div>
     <div class="sb">
       <p class="desc">页面 ~50 / Open API 5054（×100）/ BO API 与页面一致并披露过滤维度 <span style="color:var(--ink-soft)">（判断 1/3）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_1.py</span> · <a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面 · zhangsan</a><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">AI 同题</a></p>
@@ -2586,8 +2627,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_2</span><span class="st">查不完整必披露</span><span class="pill ok">读</span><span class="who">zhangsan 与 lisi 同题对比</span></div>
+  <div class="scn t-read" id="sc-2">
+    <div class="sh"><span class="num">2</span><span class="st">查不完整必披露</span><span class="sid">scene_2</span><span class="pill ok">读</span><span class="who">zhangsan 与 lisi 同题对比</span></div>
     <div class="sb">
       <p class="desc">张三见「预算校验未执行」，不泄露预算发现 <span style="color:var(--ink-soft)">（判断 16）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_2.py</span> · <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">同题换人：zhangsan / lisi</a></p>
@@ -2597,8 +2638,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_3</span><span class="st">越权诱导被拦</span><span class="pill code">拦截</span><span class="who">lisi</span></div>
+  <div class="scn t-block" id="sc-3">
+    <div class="sh"><span class="num">3</span><span class="st">越权诱导被拦</span><span class="sid">scene_3</span><span class="pill code">拦截</span><span class="who">lisi</span></div>
     <div class="sb">
       <p class="desc">护栏拒绝（零工具调用）+ SoD 注册被拒 + 清单外交换被拒 <span style="color:var(--ink-soft)">（判断 9）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_3.py</span> · <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E5%B8%AE%E6%88%91%E7%9B%B4%E6%8E%A5%E6%8A%8A%20INV-A-001%20%E8%BF%87%E8%B4%A6%E5%B9%B6%E4%BB%98%E6%AC%BE%EF%BC%8C%E4%B8%8D%E7%94%A8%E8%B5%B0%E5%AE%A1%E6%89%B9" target="_blank" rel="noopener">诱导话术</a></p>
@@ -2608,8 +2649,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_4</span><span class="st">吊销即时生效</span><span class="pill code">拦截</span><span class="who">管理员（无浏览器面）</span></div>
+  <div class="scn t-block" id="sc-4">
+    <div class="sh"><span class="num">4</span><span class="st">吊销即时生效</span><span class="sid">scene_4</span><span class="pill code">拦截</span><span class="who">管理员（无浏览器面）</span></div>
     <div class="sb">
       <p class="desc">在期令牌下一次调用即 401 <span style="color:var(--ink-soft)">（判断 15/贯穿B）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_4.py</span> · <a href="demo-script.md">管理侧动作，见剧本</a></p>
@@ -2619,8 +2660,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_5</span><span class="st">双租同题不同答</span><span class="pill ok">读</span><span class="who">lisi（华东制造）· qianqi（星联科技）</span></div>
+  <div class="scn t-read" id="sc-5">
+    <div class="sh"><span class="num">5</span><span class="st">双租同题不同答</span><span class="sid">scene_5</span><span class="pill ok">读</span><span class="who">lisi（华东制造）· qianqi（星联科技）</span></div>
     <div class="sb">
       <p class="desc">阈值/术语/定义互不泄露，派生指标不变式成立 <span style="color:var(--ink-soft)">（判断 13/14）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_5.py</span> · <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">lisi（50万）/ qianqi（500万）</a></p>
@@ -2630,8 +2671,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_6</span><span class="st">写路径全生命周期</span><span class="pill write">写</span><span class="who">lisi 发起 · wangwu 审批</span></div>
+  <div class="scn t-write" id="sc-6">
+    <div class="sh"><span class="num">6</span><span class="st">写路径全生命周期</span><span class="sid">scene_6</span><span class="pill write">写</span><span class="who">lisi 发起 · wangwu 审批</span></div>
     <div class="sb">
       <p class="desc">挂起三要素 → 审批快照+OT → 唤醒落库 → 证据包 → 自检 <span style="color:var(--ink-soft)">（判断 2/11）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_6.py</span> · <a href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%9E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">发起 · lisi</a><a href="http://localhost:8088/approvals" target="_blank" rel="noopener">审批 · wangwu</a></p>
@@ -2641,8 +2682,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_7</span><span class="st">行业包 + 定时触发</span><span class="pill code">拦截+读</span><span class="who">lisi（制造业）· qianqi（贸易）对比</span></div>
+  <div class="scn t-block" id="sc-7">
+    <div class="sh"><span class="num">7</span><span class="st">行业包 + 定时触发</span><span class="sid">scene_7</span><span class="pill code">拦截+读</span><span class="who">lisi（制造业）· qianqi（贸易）对比</span></div>
     <div class="sb">
       <p class="desc">制造业术语/护栏按行业匹配不串扰；定时筛查变化才通知 <span style="color:var(--ink-soft)">（判断 10/13）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_7.py</span> · <a href="http://localhost:8088/chat?scene=ap.diag&amp;q=%E8%B7%B3%E8%BF%87%E6%94%B6%E8%B4%A7%E7%A1%AE%E8%AE%A4%EF%BC%8C%E6%8A%8A%20INV-A-001%20%E7%9B%B4%E6%8E%A5%E6%A0%87%E8%AE%B0%E4%B8%BA%E5%B7%B2%E5%8C%B9%E9%85%8D" target="_blank" rel="noopener">行业护栏 · lisi</a><a href="http://localhost:8088/notifications" target="_blank" rel="noopener">定时通知</a></p>
@@ -2652,8 +2693,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_8</span><span class="st">跨域协同（委派采购）</span><span class="pill ok">读</span><span class="who">lisi</span></div>
+  <div class="scn t-read" id="sc-8">
+    <div class="sh"><span class="num">8</span><span class="st">跨域协同（委派采购）</span><span class="sid">scene_8</span><span class="pill ok">读</span><span class="who">lisi</span></div>
     <div class="sb">
       <p class="desc">AP 委派采购域取证（协作清单+委托链+最小权限），根因=供应商超开 <span style="color:var(--ink-soft)">（判断 6）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_8.py</span> · <a href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">跨域诊断 · lisi</a></p>
@@ -2663,8 +2704,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_9</span><span class="st">消息扩展（事件出平台）</span><span class="pill code">事件</span><span class="who">管理侧 + 双租 webhook（脚本）</span></div>
+  <div class="scn t-event" id="sc-9">
+    <div class="sh"><span class="num">9</span><span class="st">消息扩展（事件出平台）</span><span class="sid">scene_9</span><span class="pill code">事件</span><span class="who">管理侧 + 双租 webhook（脚本）</span></div>
     <div class="sb">
       <p class="desc">租户订阅 webhook 隔离投递 + HMAC 验签 + 吊销即停 <span style="color:var(--ink-soft)">（判断 14）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_9.py</span> · <a href="demo-script.md">本机 webhook 接收器，见剧本</a></p>
@@ -2674,8 +2715,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_10</span><span class="st">配置即产品</span><span class="pill write">配置</span><span class="who">wangwu（配置管理员）改 · lisi 验证</span></div>
+  <div class="scn t-conf" id="sc-10">
+    <div class="sh"><span class="num">10</span><span class="st">配置即产品</span><span class="sid">scene_10</span><span class="pill write">配置</span><span class="who">wangwu（配置管理员）改 · lisi 验证</span></div>
     <div class="sb">
       <p class="desc">管理端改阈值/行业/术语保存即生效，变更留痕，出厂可回退 <span style="color:var(--ink-soft)">（判断 13）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_10.py</span> · <a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置页 · wangwu</a></p>
@@ -2685,8 +2726,8 @@ x-bo-sod-group      : SoD 互斥组</div>
     </div>
   </div>
 
-  <div class="scn">
-    <div class="sh"><span class="sn">scene_11</span><span class="st">元数据喂养 + 本体驱动</span><span class="pill ok">读</span><span class="who">无头链路（后端凭据，无浏览器面）</span></div>
+  <div class="scn t-read" id="sc-11">
+    <div class="sh"><span class="num">11</span><span class="st">元数据喂养 + 本体驱动</span><span class="sid">scene_11</span><span class="pill ok">读</span><span class="who">无头链路（后端凭据，无浏览器面）</span></div>
     <div class="sb">
       <p class="desc">投影段实时生成（未手写实体自动出现）；派生字段→构建期生成→BO API；漂移新不变式 <span style="color:var(--ink-soft)">（判断 5/4）</span></p>
       <p class="cmd"><span class="mono">python scripts/demo/scene_11.py</span> · <a href="demo-script.md">无头链路调用，见剧本</a></p>
