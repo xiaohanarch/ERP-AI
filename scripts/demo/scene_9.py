@@ -57,7 +57,9 @@ def _make_receiver() -> tuple[ThreadingHTTPServer, list]:
         def log_message(self, fmt, *args):  # 精简日志
             pass
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Hook)
+    # 0.0.0.0：host.docker.internal 从容器网段到达宿主，不走 loopback——
+    # 绑 127.0.0.1 会被拒绝连接（Docker Desktop 的 host 映射行为）
+    server = ThreadingHTTPServer(("0.0.0.0", 0), Hook)
     threading.Thread(target=server.serve_forever, daemon=True, name="webhook-receiver").start()
     return server, records
 
@@ -92,7 +94,9 @@ def _republish() -> None:
     resp.raise_for_status()
 
 
-def _wait_records(records: list, want: int, timeout: float = 30.0) -> int:
+def _wait_records(records: list, want: int, timeout: float = 90.0) -> int:
+    # 90s：事件诊断含 live 模型归因摘要（GLM-5.3 真实调用，约 15-40s）；
+    # mock 模式瞬时返回，不受影响
     deadline = time.time() + timeout
     while time.time() < deadline and len(records) < want:
         time.sleep(0.5)
