@@ -92,7 +92,9 @@ def _republish() -> None:
     resp.raise_for_status()
 
 
-def _wait_records(records: list, want: int, timeout: float = 30.0) -> int:
+def _wait_records(records: list, want: int, timeout: float = 90.0) -> int:
+    # 90s：事件诊断含 live 模型归因摘要（GLM-5.3 真实调用，约 15-40s）；
+    # mock 模式瞬时返回，不受影响
     deadline = time.time() + timeout
     while time.time() < deadline and len(records) < want:
         time.sleep(0.5)

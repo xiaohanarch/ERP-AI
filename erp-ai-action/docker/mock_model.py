@@ -11,7 +11,7 @@
   ap.diag    -> {"intent":"diagnose","invoiceNo":"INV-A-001","reply":"..."}
   ap.batch   -> {"intent":"batch_screen","reply":"..."}
   ap.taxcode -> {"intent":"suggest_tax_code","invoiceNo":"...","taxCode":"...","reason":"..."}
-  ap.event   -> {"intent":"event_diag","invoiceNo":"...","reply":"..."}
+  ap.event   -> {"intent":"event_summary","summary":"..."}（无头诊断归因摘要，输入为校验取证结果）
   proc.diag  -> {"intent":"po_lookup","poNo":"PO-A-0001","reply":"..."}
   xdom.diag  -> {"intent":"diagnose_cross","invoiceNo":"...","reply":"..."}
   无单号     -> {"intent":"clarify","reply":"请提供发票号/采购订单号..."}
@@ -103,6 +103,15 @@ def scripted_content(scene: str, messages: list[dict]) -> str:
         }, ensure_ascii=False)
 
     if scene == "ap.event":
+        if "已阻断" in text:  # 归因摘要请求：用户消息为确定性校验取证结果
+            return json.dumps({
+                "intent": "event_summary",
+                "summary": (f"发票 {inv} 的阻断主因是数量差异与预算校验（依据校验发现，"
+                            f"规则集 {RULESET_VERSION}）；建议先核对收货数量，"
+                            "再确认预算余额后重新提交。" if inv else
+                            "阻断主因是数量差异与预算校验（依据校验发现）；"
+                            "建议先核对收货数量，再确认预算余额后重新提交。"),
+            }, ensure_ascii=False)
         if inv:
             return json.dumps({
                 "intent": "event_diag",
