@@ -442,12 +442,13 @@
 <nav class="toc">
   <div class="in">
     <span class="brand">ERP-AI</span>
+    <a href="#flow">00 场景动画</a>
     <a href="#why">01 这是什么</a>
     <a href="#logic">02 逻辑架构</a>
     <a href="#deploy">03 部署架构</a>
     <a href="#beliefs">04 14 条判断</a>
     <a href="#codemap">05 代码导览</a>
-    <a href="#flow">06 请求的一生</a>
+    <a href="#kb">06 知识库专题</a>
     <a href="#scenes">07 演示验证</a>
     <a href="#quickstart">08 怎么跑</a>
     <a href="#docs">09 仓库导航</a>
@@ -482,9 +483,76 @@
 
 <main>
 
+<!-- ============ 00 开场：真实业务场景动画 ============ -->
+<section id="flow">
+  <h2><span class="no">00</span>先看一个真实业务场景<span class="en">See It Running First</span></h2>
+  <div class="story" style="margin-top:2px">
+    <span class="who">华东制造，周三上午 10 点。</span>
+    财务李四发现发票 <b>INV-A-001</b> 被系统阻断了，他在助手平台问 AI：
+    「这张发票校验失败的原因是什么？」——下面的动画，就是这个请求在系统里的<b>完整旅程</b>：
+    身份怎么证明、令牌怎么换、谁在判定、哪一步可能被拦。
+    <b>每一步都是真实系统的实际行为（不是概念示意）</b>；动画下方还有三个 ▶ 按钮，
+    点一下会在真实运行的系统里发起同样的请求。
+  </div>
+
+  <div class="flow-panel">
+    <div class="flow-top">
+      <div class="flow-title">李四的问题怎么被回答<span class="dot">四条链路 · 令牌逐跳收窄（T1→T2→T3→OT）· 判定在网关与存量系统，不在模型</span></div>
+      <div class="flow-ctl">
+        <button type="button" id="modeRead" class="on">① 读：问发票为什么被拦</button>
+        <button type="button" id="modeWrite">② 写：改税码（要审批）</button>
+        <button type="button" id="modeXdom">③ 跨域：委派采购查根因</button>
+        <button type="button" id="modeMsg">④ 消息：事件推给租户系统</button>
+        <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
+      </div>
+    </div>
+    <div class="chain-wrap">
+      <div class="chain" id="chain">
+        <div class="track"></div>
+        <div class="packet" id="packet"></div>
+        <div class="fnode" data-i="0"><b>李四 · WorkBuddy</b><span>T1 · 只有聊天权限</span></div>
+        <div class="fnode" data-i="1"><b>ai-gateway</b><span>注册 · 令牌 · 审批 · 模型</span></div>
+        <div class="fnode" data-i="2"><b>hub · AP 场景图</b><span>LangGraph · 意图分类</span></div>
+        <div class="fnode proc" data-i="3"><b>hub · 采购域图</b><span>proc-copilot · 被委派</span></div>
+        <div class="fnode" data-i="4"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
+        <div class="fnode" data-i="5"><b>Java 存量域</b><span>权限判定 · 规则引擎</span></div>
+        <div class="fnode appr" data-i="6"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
+        <div class="fnode ten" data-i="7"><b>租户系统 · webhook</b><span>订阅 · HMAC 验签</span></div>
+      </div>
+    </div>
+    <div class="tokens" id="tokens">
+      <span class="tk" data-t="t1">T1 [聊天]</span>
+      <span class="tk" data-t="t2">T2 [场景 ∩ Agent 工具清单]</span>
+      <span class="tk" data-t="t2p">T2′ [采购域 ∩ 清单 · 委托链增长]</span>
+      <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
+      <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性]<small>（写路径）</small></span>
+      <span class="tk" data-t="msg">MSG [租户订阅 · HMAC 签名]<small>（消息路径）</small></span>
+    </div>
+    <div class="capt" id="capt"></div>
+    <div class="flow-links">
+      <span class="lbl">点一下就在真实系统里跑（登录后自动发起对话）：</span>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起读路径</a>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%9E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起写路径（出审批卡）</a>
+      <a class="chip-demo" href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起跨域协同（委派采购域）</a>
+    </div>
+  </div>
+
+  <div class="explain">
+    <b>令牌为什么逐跳换：</b>T1 像工牌（只能进门聊天）→ T2 像「本会议室门禁卡」（这个场景这几个工具，15 分钟）
+    → T3 像「操作票」（单个工具，60 秒）→ OT 像「一次性的盖章授权书」（绑定参数指纹，120 秒，用一次作废）。
+    每一跳的权限都是上一跳的子集，全部记录在案——出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。
+    <b>看完动画，接下来两章解释为什么这样设计（01 为什么需要五道关 / 02 五道关的全景图）。</b>
+  </div>
+</section>
+
 <!-- ============ 01 这是什么 ============ -->
 <section id="why">
   <h2><span class="no">01</span>这是什么：从一个真实事故讲起<span class="en">Why &amp; What</span></h2>
+
+  <p class="body">
+    刚才的动画里，李四的一个提问过了五道关。现在退一步讲：<b>为什么需要这五道关</b>——
+    从一个我们真实吃过的亏说起。
+  </p>
 
   <div class="story">
     <span class="who">先讲一个吃过的亏。</span>
@@ -583,7 +651,7 @@
 <section id="logic">
   <h2><span class="no">02</span>逻辑架构：一个请求要过五道关<span class="en">Logical View</span></h2>
   <p class="lead">
-    看懂这张图就看懂了整个系统。从上往下是<b>一次提问的完整旅程</b>，虚线框是贯穿始终的治理。
+    第 00 章动画里的五个节点，展开就是这张图。从上往下是<b>一次提问的完整旅程</b>，虚线框是贯穿始终的治理。
     请注意一个关键设计：<b>所有「该不该」的判定都发生在网关和存量系统里，不在模型里</b>——
     模型只负责理解意图和填参数，不负责决定权限。
   </p>
@@ -656,7 +724,7 @@
         <div class="lb"><b>派生字段引擎</b><span>本体定义驱动</span></div>
       </div>
     </div>
-    <div class="lm-judge">↓ 判定通过 → 数据库事务落库；不可逆动作 → 先出审批卡（见 06 章动画）</div>
+    <div class="lm-judge">↓ 判定通过 → 数据库事务落库；不可逆动作 → 先出审批卡（见第 00 章动画②）</div>
 
     <!-- 模型侧带 -->
     <div class="lm-band">
@@ -979,7 +1047,7 @@
         六组扩展字段（身份/版本/场景/完整性/动作性质/内容摘要）挂在 span 上。
         <div class="dep">落点：<span class="mono">hub/graphs/*</span> → <span class="mono">erp-ai-action/app/mcp/gateway.py</span> → <span class="mono">legacy-erp-ap/.../boapi/</span>；追踪 <span class="mono">erp-ai-action/app/otel_setup.py</span></div>
       </div></div>
-      <div class="proof"><b>验证：</b>顶部「请求的一生」动画即此链；Jaeger <a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">现场看真实 trace</a><span class="pill ok">链路</span></div>
+      <div class="proof"><b>验证：</b>开场动画即此链的分步演示；Jaeger <a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">现场看真实 trace</a><span class="pill ok">链路</span></div>
     </div>
   </div>
 
@@ -1410,63 +1478,135 @@
   </div>
 </section>
 
-<!-- ============ 06 请求的一生 ============ -->
-<section id="flow">
-  <h2><span class="no">06</span>请求的一生：四条链路分步动画<span class="en">Request Lifecycle</span></h2>
+<!-- ============ 06 知识库专题 ============ -->
+<section id="kb">
+  <h2><span class="no">06</span>知识库专题：存哪、建多深<span class="en">Semantic KB: Two Key Decisions</span></h2>
   <p class="lead">
-    下面动画在页面上模拟真实链路的每一步（文案与真实系统行为一一对应）。
-    四条链路：<b>读路径</b>（问个问题）、<b>写路径</b>（改数据，要审批）、<b>跨域协同</b>（AP 委派采购）、
-    <b>消息扩展</b>（事件出平台）。动画下方的 ▶ 链接会直接在真实系统里发起对应请求（登录后自动开聊）。
+    语义知识库（L3a，代码落点 <span class="mono">erp-ai-context/</span>）是「让 AI 看得懂 ERP」的那一层。
+    它有两个最容易吵翻天的决策点：<b>存储用什么</b>（YAML 文件还是图数据库）、<b>建到什么深度</b>
+    （把存量业务逻辑搬进来描述一遍，还是只画一张地图）。本章把两场争论摆开，给出本仓的判断与依据。
   </p>
 
-  <div class="flow-panel">
-    <div class="flow-top">
-      <div class="flow-title">实际运行时的请求链路<span class="dot">四条链 · 令牌逐跳收窄（T1→T2→T3→OT）· 跨域委托链增长 · 判定在网关与存量域，不在模型</span></div>
-      <div class="flow-ctl">
-        <button type="button" id="modeRead" class="on">读路径 ap.diag</button>
-        <button type="button" id="modeWrite">写路径 ap.taxcode（审批）</button>
-        <button type="button" id="modeXdom">跨域协同 xdom.diag（委派）</button>
-        <button type="button" id="modeMsg">消息扩展（事件出平台）</button>
-        <button type="button" id="replay" title="从头播放">&#8635; 重播</button>
-      </div>
-    </div>
-    <div class="chain-wrap">
-      <div class="chain" id="chain">
-        <div class="track"></div>
-        <div class="packet" id="packet"></div>
-        <div class="fnode" data-i="0"><b>李四 · WorkBuddy</b><span>T1 · 只有聊天权限</span></div>
-        <div class="fnode" data-i="1"><b>ai-gateway</b><span>注册 · 令牌 · 审批 · 模型</span></div>
-        <div class="fnode" data-i="2"><b>hub · AP 场景图</b><span>LangGraph · 意图分类</span></div>
-        <div class="fnode proc" data-i="3"><b>hub · 采购域图</b><span>proc-copilot · 被委派</span></div>
-        <div class="fnode" data-i="4"><b>网关 MCP 代理</b><span>拦截链 · 幂等短窗</span></div>
-        <div class="fnode" data-i="5"><b>Java 存量域</b><span>权限判定 · 规则引擎</span></div>
-        <div class="fnode appr" data-i="6"><b>王五 · 审批台</b><span>OT · 120s · 参数指纹</span></div>
-        <div class="fnode ten" data-i="7"><b>租户系统 · webhook</b><span>订阅 · HMAC 验签</span></div>
-      </div>
-    </div>
-    <div class="tokens" id="tokens">
-      <span class="tk" data-t="t1">T1 [聊天]</span>
-      <span class="tk" data-t="t2">T2 [场景 ∩ Agent 工具清单]</span>
-      <span class="tk" data-t="t2p">T2′ [采购域 ∩ 清单 · 委托链增长]</span>
-      <span class="tk" data-t="t3">T3 [单工具 · 60s]</span>
-      <span class="tk" data-t="ot">OT [单工具+参数指纹 · 120s · 一次性]<small>（写路径）</small></span>
-      <span class="tk" data-t="msg">MSG [租户订阅 · HMAC 签名]<small>（消息路径）</small></span>
-    </div>
-    <div class="capt" id="capt"></div>
-    <div class="flow-links">
-      <span class="lbl">点一下就在真实系统里跑（登录后自动发起对话）：</span>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.diag&amp;q=INV-A-001%20%E6%A0%A1%E9%AA%8C%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%8E%9F%E5%9B%A0%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起读路径</a>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=ap.taxcode&amp;q=%E6%8A%8A%20INV-A-052%20%E7%9A%84%E7%A8%9E%E7%A0%81%E8%A1%A5%E5%85%A8%E4%B8%BA%20CN-VAT-13" target="_blank" rel="noopener">&#9654; 发起写路径（出审批卡）</a>
-      <a class="chip-demo" href="http://localhost:8088/chat?scene=xdom.diag&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%87%87%E8%B4%AD%E5%92%8C%E6%94%B6%E8%B4%A7%E9%82%A3%E8%BE%B9%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%EF%BC%9F" target="_blank" rel="noopener">&#9654; 发起跨域协同（委派采购域）</a>
-    </div>
+  <h3>决策一 · 存储选型：YAML 文件，还是图数据库（Neo4j 一类）？<span class="hint">先摆立场，再给判断标准</span></h3>
+
+  <p class="body">先把两种立场的最强论证都摆出来：</p>
+  <div class="grid c2" style="margin-top:10px">
+    <div class="card"><h4>立场 A ·「YAML 够用」</h4>
+      <p>领域小、实体少时，语义文件<b>可读、可评审、可 git 版本化、零运维</b>。
+      汇报时能当场打开文件给评审看全部语义资产；变更走 code review，谁改的、为什么改，
+      一目了然。图数据库在这个规模是「用生产级复杂度换不存在的能力」。</p></div>
+    <div class="card"><h4>立场 B ·「必须上图」</h4>
+      <p>真实 ERP 的语义规模远超文件能承载：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系，
+      且内含权限规则。<b>多跳关系查询</b>（「这张发票的供应商，还关联着哪些被拦的单？」）
+      在 YAML 里根本没法表达；多域多租户的叠加解析需要索引而不是遍历。</p></div>
   </div>
 
+  <p class="body">本仓的判断：<b>这不是信仰之争，是规模与查询模式的函数</b>。给出四条可操作的判断标准：</p>
+  <table>
+    <tr><th style="width:170px">判断维度</th><th>YAML 文件够用（本仓现状）</th><th>该上图数据库了</th></tr>
+    <tr><td><b>实体/关系量级</b></td>
+      <td>单域、百级实体字段（本仓 8 个实体、约百个字段）</td>
+      <td>多域、万级以上实体、千万级关系（对 SAP 是 730 万项——与演示差 6 个数量级）</td></tr>
+    <tr><td><b>查询模式</b></td>
+      <td>「按名取」：术语翻译、口径查读、规则解释（本仓七个语义工具全是这类）</td>
+      <td>「多跳遍历」：跨域关系链、影响力分析、血缘追溯——需要图遍历引擎</td></tr>
+    <tr><td><b>维护主体</b></td>
+      <td>语义资产需要<b>人工评审 + 版本管理</b>（口径是业务约定，改错要能回滚追责）</td>
+      <td>元数据管道<b>高频自动写入</b>（实时同步数十个子产品），文件无法承载写放大</td></tr>
+    <tr><td><b>关系复杂度</b></td>
+      <td>关系少而稳（发票-订单-收货三单匹配这类固定关系，手写增量段即可）</td>
+      <td>关系多且变（跨域引用、流程编排、事件因果——需要结构化的边</td></tr>
+  </table>
+
   <div class="explain">
-    <b>令牌为什么逐跳换：</b>T1 像工牌（只能进门聊天）→ T2 像「本会议室门禁卡」（这个场景这几个工具，15 分钟）
-    → T3 像「操作票」（单个工具，60 秒）→ OT 像「一次性的盖章授权书」（绑定参数指纹，120 秒，用一次作废）。
-    每一跳的权限都是上一跳的子集，全部记录在案——出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。
+    <b>本仓的结论（三层）：①演示层用 YAML 是刻意选择</b>——透明可审计，汇报现场能打开看；
+    <b>②接口层是关键防火墙</b>——语义服务对外只暴露七个查询工具，签名与后端存储无关，
+    换后端不动任何调用方（hub / 评测 / 交互面）；<b>③生产层按阈值迁移</b>——域数量 ×
+    实体规模超过「3+ 域、万级实体、需要跨域关系查询」时迁图数据库，迁移的是
+    <span class="mono">loader.py</span> 的实现，不是工具接口。
+    <b>无论存哪，三件事不变：</b>零拷贝（存地图不存数据，取数走带权限的通道）、
+    元数据自动喂养（来源仍是 /metadata，只是投射目标从 YAML 段变成图节点）、漂移检测（比对基准永远是存量）。
   </div>
+
+  <h3>决策二 · 构建深度：把业务逻辑搬进来，还是只画地图？<span class="hint">这是知识库最容易做错的一个决定</span></h3>
+
+  <p class="body">
+    深度问题有两种极端主张。<b>深度 A（搬逻辑）</b>：把存量 ERP 服务的业务逻辑在知识库里描述一遍——
+    每条校验规则怎么算、每个流程怎么流转、每个金额怎么记，让 AI「完全理解」业务。
+    <b>深度 B（画地图）</b>：只描述有哪些业务对象、对象之间什么关系、怎么访问，业务逻辑留在存量系统执行。
+  </p>
+
+  <p class="body"><b>本仓的判断：深度 B，且这是四个硬理由支撑的强判断，不是折中：</b></p>
+  <div class="grid c2" style="margin-top:10px">
+    <div class="card"><h4>理由一 · 第二真相源必然腐烂</h4>
+      <p>逻辑写两遍（Java 一遍、知识库一遍）必然漂移。判断 5 的教训已经证明：连<b>实体清单</b>这种
+      机器可读的东西手工维护都会腐烂，何况<b>业务逻辑</b>——它散在代码里，没有机器可读的接口可喂
+      （实体能从 /metadata 自动拉，逻辑拉不出来）。搬逻辑 = 纯手工逆向工程 + 永久的双写负担。</p></div>
+    <div class="card"><h4>理由二 · 执行权不能让渡</h4>
+      <p>规则必须在确定性系统里执行（判断 2/9）。知识库里的规则描述越「可执行」，
+      越给模型留下自行解释的空间——模型读着知识库说「按规则这张发票应该能过」，
+      就是幻觉的温床。正确分工：模型<b>引用</b>规则（explain 返回语义），Java<b>执行</b>规则
+      （RuleEngine 真跑）。</p></div>
+    <div class="card"><h4>理由三 · 维护成本不可行</h4>
+      <p>一个 AP 模块的规则就够逆向工程几个月，十几个子产品不可行。而对象/关系/字段的元数据
+      存量系统<b>本来就有</b>（/metadata 免费提供）——地图可以自动画，逻辑只能人抄。</p></div>
+    <div class="card"><h4>理由四 · 审计要求唯一事实</h4>
+      <p>如果 AI 的结论可以来自知识库里的逻辑描述而非真系统的执行结果，「依据是什么」就有了两个答案。
+      本仓的应答里每个发现都锚定<b>真实执行取证</b>（工具返回 + 规则码 + 版本戳）——
+      结论必须出自真跑，不能出自转述。</p></div>
+  </div>
+
+  <p class="body">
+    但「画地图」不等于浅尝辄止——地图要画到什么颗粒度？本仓的三段式语义文件就是深度的答案，
+    每一段精确回答一类问题：
+  </p>
+  <table>
+    <tr><th style="width:90px">段</th><th style="width:250px">回答什么问题</th><th>例子（INV-A-001 诊断时用到）</th><th style="width:180px">谁维护</th></tr>
+    <tr><td class="mono"><b>投影段</b></td><td>有什么（对象/字段/枚举）</td>
+      <td>Invoice 有 amount_cny 字段；POSTED/BLOCKED 状态枚举；采购订单行、收货行实体</td>
+      <td>自动（/metadata 实时生成）</td></tr>
+    <tr><td class="mono"><b>增量段</b></td><td>什么意思、怎么算（元数据推不出的业务约定）</td>
+      <td>「进货单」在华东制造指采购订单；unpaid_cny = amount − paid；「大额」阈值 50 万；发票-订单-收货三单关系</td>
+      <td>人工（只写机器推不出的）</td></tr>
+    <tr><td class="mono"><b>原生段</b></td><td>怎么动、能答什么</td>
+      <td>ap.invoice.checkValidation 工具签名、正反例与错误码；30 条能力问题清单</td>
+      <td>规格派生（bo-ap.yaml）</td></tr>
+  </table>
+
+  <div class="explain">
+    <b>一条准则收束深度问题：</b>模型需要「知道」的进知识库，模型需要「执行」的留在代码。
+    知识库是<b>地图</b>，不是<b>引擎</b>——地图告诉 AI 路怎么走、这条路叫什么名字、限速多少；
+    引擎（存量系统）决定这台车此刻能不能过这道坎。AI 拿着地图开车，而不是自己照着地图修一条新路。
+  </div>
+
+  <h3>一次真实请求里，地图和引擎各干了什么<span class="hint">用第 00 章动画的 INV-A-001 诊断对照</span></h3>
+  <table>
+    <tr><th style="width:200px">环节</th><th style="width:50%">知识库（地图）提供了什么</th><th>存量系统（引擎）做了什么</th></tr>
+    <tr><td><b>理解问题</b></td><td>「校验失败」关联发票对象；术语与口径翻译</td><td>—</td></tr>
+    <tr><td><b>决定怎么查</b></td><td>能力问题清单指向 checkValidation / getMatchDetail 两个工具</td><td>—</td></tr>
+    <tr><td><b>执行与判定</b></td><td>—（不参与）</td><td>PermissionService 判定李四可见范围；RuleEngine 真跑数量/预算规则；事务与审计</td></tr>
+    <tr><td><b>组织答案</b></td><td>AP.MATCH.QTY_MISMATCH 的规则语义解释（供 AI 讲人话）</td><td>真实执行结果与取证（数量 120 vs 100、预算余量）</td></tr>
+    <tr><td><b>诚实披露</b></td><td>—</td><td>权限不足的规则组明确标注「未执行」（completeness）</td></tr>
+  </table>
+
+  <h3>深度的演进路线（与存储选型联动）</h3>
+  <div class="grid c3" style="margin-top:10px">
+    <div class="card"><h4>阶段一 · 单域关系（本仓）</h4>
+      <p>关系 = 增量段手写（三单匹配）。YAML + 自动喂养足够，七个「按名取」工具。</p></div>
+    <div class="card"><h4>阶段二 · 跨域关系</h4>
+      <p>多域接入后，跨域引用、影响分析需要结构化关系边——这是上图数据库的第一个真实触发点
+      （触发决策一的迁移阈值）。</p></div>
+    <div class="card"><h4>阶段三 · 流程关系</h4>
+      <p>事件目录、状态机、流程编排进图谱——但依然只「描述」流程，不「执行」流程。
+      执行永远在确定性系统。</p></div>
+  </div>
+  <p class="body" style="margin-top:10px">
+    <b>永不进知识库的三样东西</b>：付款/入账等核心逻辑的执行步骤（留在代码）、权限判定的具体规则
+    （存权限模型的<b>映射</b>可以，判定<b>逻辑</b>不行）、以及任何「让模型自行推断业务结果」的规则全集。
+    这条边界与判断 4（本体=语义核心而非逻辑核心）是同一件事的两种说法。
+  </p>
 </section>
+
 
 <!-- ============ 07 演示验证 ============ -->
 <section id="scenes">
