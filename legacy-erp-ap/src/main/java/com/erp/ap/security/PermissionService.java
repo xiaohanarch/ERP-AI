@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * ★ 三维数据权限服务（UI API 与 BO API 共用 —— 权限同源是平价保证）。
+ * ★ 三维数据权限服务（UI API 与 BO API 共用 —— 权限同源，页面和 AI 看到的数据范围才一致）。
  *
  * 权限码 -> DataScope（orgs 集合或 all_orgs）。T3 的 sub 即最终用户，
  * AI 侧零权限计算：判定全部发生在这里。
