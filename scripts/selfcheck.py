@@ -23,14 +23,17 @@ import _common as C
 OUT = Path(C.REPO) / "docs" / "selfcheck-latest.md"
 EVAL_DIR = Path(C.REPO) / "eval" / "reports"
 
-# 已知拒绝/错误码：护栏与策略拦截 + 评测/租检刻意触发的业务拒绝（跨租隔离探针、草稿/权限负向用例）。
+# 已知拒绝/错误码：护栏与策略拦截 + 评测/租检/scene 负向断言刻意触发的业务拒绝
+# （跨租隔离探针、草稿/权限负向用例、scene_11 未在本体定义的派生字段），
+# 以及交互面正常操作会产生的业务拒绝（对已决定/过期审批再决定 = 状态冲突，UI 列表滞后或重复点击即触发）。
 # 出现这些 = 机制生效；出现清单之外的错误码才视为异常信号。
 REJECT_CODES = ("HUB.GUARDRAIL_BLOCKED", "GW.SCOPE_EXCEEDED", "GW.AGENT_NOT_REGISTERED",
                 "GW.AGENT_REVOKED", "GW.TENANT_MISMATCH", "GW.SOD_CONFLICT",
                 "GW.DELEGATION_NOT_ALLOWED",
                 "AP.PERMISSION_DENIED", "GW.APPROVAL_REQUIRED",
                 "AP.INVOICE_NOT_FOUND", "AP.INVOICE_IN_DRAFT", "AP.PO_NOT_ACCESSIBLE",
-                "AP.PO_NOT_FOUND", "AP.IDEMPOTENCY_CONFLICT", "GW.APPROVAL_PARAMS_MISMATCH")
+                "AP.PO_NOT_FOUND", "AP.IDEMPOTENCY_CONFLICT", "GW.APPROVAL_PARAMS_MISMATCH",
+                "AP.DERIVED_FIELD_NOT_FOUND", "GW.APPROVAL_STATE_CONFLICT")
 
 
 def q1_agents() -> tuple[str, bool]:

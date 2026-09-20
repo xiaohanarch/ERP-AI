@@ -191,9 +191,11 @@ def main() -> int:
     for d in dr.get("items") or []:
         md.append(f"- [{d['kind']}/{d['severity']}] {d['detail']}")
     base = dr.get("baseline") or {}
+    dc = dr.get("counts") or {}
     md += ["", f"- 基线：ruleset `{base.get('ruleSetVersion')}` / seed `{base.get('seedVersion')}`"
-           f" / 语义 `{base.get('semanticVersion')}`；检查字段 {(dr.get('counts') or {}).get('checkedFields', 0)}"
-           f" 个、规则 {(dr.get('counts') or {}).get('checkedRules', 0)} 条", ""]
+           f" / 语义 `{base.get('semanticVersion')}`；检查字段 {dc.get('checkedFields', 0)}"
+           f" 个、规则 {dc.get('checkedRules', 0)} 条、术语目标 {dc.get('checkedTermTargets', 0)}"
+           f" 个、派生基字段 {dc.get('checkedDerivedBases', 0)} 个", ""]
 
     md += ["## 六、事故三口径对照（张三，T-EAST）", "", caliber_md, "",
            "---",
