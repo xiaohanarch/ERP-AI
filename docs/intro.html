@@ -517,7 +517,7 @@
     每个场景一个独立动画：先看这件事在系统里怎么发生，后面的章节再解释为什么这样设计。
     每一步都是真实系统的实际行为（不是概念示意），每个动画下方都有 ▶ 按钮——
     点一下会在真实运行的系统里发起同样的请求。滚动到哪个动画，哪个就开始播放。
-    链路按真实拓扑画成<b>树</b>：场景图同时分出「问模型」和「调工具」两条支线——不是一条直线。
+    链路按真实拓扑画成<b>树</b>：执行类场景图分出「问模型」和「调工具」两条支线；消息场景是直线——事件诊断确定性拼装，不经模型。
   </p>
 
   <h3>场景① 读 · 财务李四问：「INV-A-001 这张发票为什么被拦？」<span class="hint">最常走的链路：从提问到带证据的答案</span></h3>
@@ -592,7 +592,7 @@
   <h3>场景④ 消息 · 「发票被阻断」这件事推给租户自己的系统<span class="hint">事件出平台的链路：租户订阅 webhook，隔离投递</span></h3>
   <div class="flow-panel" id="fp-msg">
     <div class="flow-top">
-      <div class="flow-title">消息扩展 · 8 步<span class="dot">同一 outbox 事件：平台内进 Agent、出平台进租户系统 · 事件例程钉定 mock 确定性通道</span></div>
+      <div class="flow-title">消息扩展 · 7 步<span class="dot">同一 outbox 事件：平台内进 Agent、出平台进租户系统 · 诊断确定性拼装，不经模型</span></div>
       <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="ftree-wrap"><div class="ftree"></div></div>
@@ -606,7 +606,7 @@
     </div>
   </div>
   <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
-    看点：华东制造的订阅收到投递、星联科技收不到（租户隔离）；每次投递带防伪造签名、逐次审计，吊销即停。
+    看点：诊断不经模型（确定性拼装、天然可复现）；华东制造的订阅收到投递、星联科技收不到（租户隔离）；投递带防伪造签名、逐次审计，吊销即停。
   </p>
 
   <div class="explain">
@@ -2626,23 +2626,20 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
     {
       id: "fp-msg",
       nodes: [
-        { id: "java",    label: "Java 存量域", sub: "发票被阻断 → outbox", pos: ["c", 0] },
-        { id: "evt",     label: "hub · 事件线程", sub: "无头诊断 → 通知", pos: ["c", 1] },
-        { id: "modelgw", label: "模型网关", sub: "事件例程钉定 mock", pos: ["l", 2], cls: "mdl" },
-        { id: "disp",    label: "ai-gateway · 分发", sub: "订阅匹配（租户×主题）", pos: ["r", 2] },
-        { id: "llm",     label: "LLM · 脚本应答", sub: "生成诊断摘要", pos: ["l", 3], cls: "mdl" },
-        { id: "hook",    label: "租户系统 · webhook", sub: "HMAC 验签", pos: ["r", 3], cls: "ten" }
+        { id: "java", label: "Java 存量域", sub: "发票被阻断 → outbox", pos: ["c", 0] },
+        { id: "evt",  label: "hub · 事件线程", sub: "确定性诊断 · 不经模型", pos: ["c", 1] },
+        { id: "disp", label: "ai-gateway · 分发", sub: "订阅匹配（租户×主题）", pos: ["c", 2] },
+        { id: "hook", label: "租户系统 · webhook", sub: "HMAC 验签", pos: ["c", 3], cls: "ten" }
       ],
-      edges: [["java", "evt"], ["evt", "modelgw"], ["evt", "disp"], ["modelgw", "llm"], ["disp", "hook"]],
+      edges: [["java", "evt"], ["evt", "disp"], ["disp", "hook"]],
       steps: [
         { n: ["java"], tk: [], c: "<b>① 业务事实发生</b>　Java 存量域判定发票被阻断 → 幂等写入事件表（outbox：租户/组织/金额/阻断发现）" },
-        { n: ["java", "evt"], tk: [], c: "<b>② 事件线程拉取（事件进 Agent）</b>　hub 事件线程拉取 outbox → 无头诊断开始（event-diag 代理代表执行）" },
-        { n: ["evt", "modelgw"], tk: [], c: "<b>③ 模型网关路由</b>　事件例程<b>钉定 mock</b>——确定性通道（与评测同策略），零 live 配额消耗、结果可回归" },
-        { n: ["modelgw", "llm"], tk: [], c: "<b>④ LLM 生成诊断摘要</b>　按事件载荷生成归因摘要与处置建议 → 通知李四" },
-        { n: ["evt", "disp"], tk: ["msg"], c: "<b>⑤ 同一事件扇出（事件出平台）</b>　hub 调网关分发（右支线）——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
-        { n: ["disp"], tk: ["msg"], c: "<b>⑥ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
-        { n: ["disp", "hook"], tk: ["msg"], c: "<b>⑦ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
-        { n: ["hook", "disp"], tk: [], c: "<b>⑧ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
+        { n: ["java", "evt"], tk: [], c: "<b>② 事件线程拉取（事件进 Agent）</b>　hub 事件线程拉取 outbox → 无头诊断开始（event-diag 代理代表执行，换自己的 T2）" },
+        { n: ["evt"], tk: [], c: "<b>③ 确定性诊断——不经模型</b>　事件载荷已在手，一次工具取证（checkValidation）后<b>确定性拼装</b>结论 → 通知李四。这是形态④与交互面的关键区别：<b>零模型调用</b>，结果天然可复现（审计实证：事件线程 model_call 为零；调模型且钉定 mock 的是定时例程与评测脚本）" },
+        { n: ["evt", "disp"], tk: ["msg"], c: "<b>④ 同一事件对外分发（事件出平台）</b>　hub 调网关分发——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
+        { n: ["disp"], tk: ["msg"], c: "<b>⑤ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
+        { n: ["disp", "hook"], tk: ["msg"], c: "<b>⑥ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
+        { n: ["hook", "disp"], tk: [], c: "<b>⑦ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
       ]
     }
   ];
