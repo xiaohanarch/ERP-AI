@@ -1,4 +1,4 @@
-"""七个语义查询工具（网关契约：POST /tools/{name} -> {tool, result, _meta}）。
+"""八个语义查询工具（网关契约：POST /tools/{name} -> {tool, result, _meta}）。
 
   semantic.metadata.entities   实体清单（投影段术语 + 实时元数据合并）
   semantic.metadata.fields     实体字段（存量字段实时取 + 派生字段标注来源）
@@ -6,6 +6,7 @@
   semantic.term.translate      业务术语 -> 语义实体（租户叠加优先，回退 Standard）
   semantic.task.match          能力问题清单匹配（30 条锚点）
   semantic.operation.explain   BO 操作解释（规格即工具：读 bo-ap.yaml x-bo-*）
+  semantic.capability.discover 能力发现（按意图检索候选 BO 操作，渐进披露第一步）
   semantic.drift.status        漂移检测（增量段 vs 元数据现状）
 
 每个工具返回 (result, sourceLayer)；sourceLayer ∈ standard | partner | tenant（partner = 行业语义包）。
@@ -275,6 +276,91 @@ def tool_drift_status(args: dict, tenant: str | None) -> tuple[dict, str]:
     return report, "standard"
 
 
+def tool_capability_discover(args: dict, tenant: str | None) -> tuple[dict, str]:
+    """能力发现（Discover）：按业务意图检索候选 BO 操作，带能力卡片与风险分级。
+
+    渐进披露三段的第一段——候选（本工具）→ 契约（semantic.operation.explain）
+    → 执行（网关 MCP 代理）。工具集增长后模型不必把全部工具放进上下文：
+    按意图检索候选，再对选定候选取完整契约（原则 20 的解法）。
+
+    召回与排序（确定性，可回归）：
+      1) 能力问题清单：意图 ~ 锚点问题（相似度），问题绑定的工具加权 1.2
+         （问题清单与评测 verified_by 同源，召回即带评测锚点）
+      2) 规格操作文本：意图 ~ bo-ap.yaml summary/description 直接相似度
+      取并集按分数降序，最多 6 个候选。
+    """
+    intent = str(args.get("intent") or args.get("question") or "").strip()
+    if not intent:
+        raise ToolError("参数 intent 必填（业务意图，如「把发票的税码补全」）")
+
+    ops = _spec_operations(loader.load_spec())
+
+    # 1) 问题清单召回：意图 -> 锚点问题 -> 绑定工具
+    bound: dict[str, float] = {}
+    best_q: tuple[float, dict] | None = None
+    for q in loader.load_questions():
+        s = _similarity(intent, q.get("question", ""))
+        if best_q is None or s > best_q[0]:
+            best_q = (s, q)
+        if s < 0.05:
+            continue
+        for t in q.get("tools") or []:
+            if t in ops:
+                bound[t] = max(bound.get(t, 0.0), s * 1.2)
+
+    # 2) 规格文本召回：意图 ~ summary/description
+    direct: dict[str, float] = {}
+    for name, d in ops.items():
+        text = f"{d.get('summary', '')} {str(d.get('description', ''))[:200]}"
+        s = _similarity(intent, text)
+        if s >= 0.12:
+            direct[name] = max(direct.get(name, 0.0), s)
+
+    merged = {**direct}
+    for name, s in bound.items():
+        merged[name] = max(merged.get(name, 0.0), s)
+    ranked = sorted(merged.items(), key=lambda kv: kv[1], reverse=True)[:6]
+    if not ranked:
+        raise ToolError(
+            f"意图「{intent}」未命中任何能力；可用 semantic.operation.explain（不带参数）"
+            "浏览全部操作，或换一种说法描述意图")
+
+    def card(name: str, score: float) -> dict:
+        d = ops[name]
+        if d["irreversible"]:
+            risk = "High：不可逆，网关强制审批（OT 一次性令牌）"
+        elif d["kind"] == "write":
+            risk = "Medium：写路径，全程审计"
+        else:
+            risk = "Low：只读，可自主"
+        return {
+            "operation": name,
+            "summary": d["summary"],
+            "kind": d["kind"],
+            "riskLevel": risk,
+            "permissions": d["permissions"],
+            "sodGroup": d["sod_group"],
+            "score": round(score, 3),
+        }
+
+    result = {
+        "intent": intent,
+        "candidates": [card(n, s) for n, s in ranked],
+        "matchedQuestion": None,
+        "describe": ("对选定候选调用 semantic.operation.explain 取得完整能力契约"
+                     "（业务含义/幂等/错误码/正反例），再经网关 Dispatch 执行"),
+        "note": ("Discover / Describe / Dispatch 渐进披露：候选不直接执行；"
+                 "写路径候选必经审批。分数为确定性相似度，可回归。"),
+    }
+    if best_q and best_q[0] >= 0.5:
+        s, q = best_q
+        result["matchedQuestion"] = {
+            "id": q.get("id"), "question": q.get("question"),
+            "intent": q.get("intent"), "tools": q.get("tools"),
+            "verifiedBy": q.get("verified_by"), "score": round(s, 3)}
+    return result, "standard"
+
+
 HANDLERS = {
     "semantic.metadata.entities": tool_metadata_entities,
     "semantic.metadata.fields": tool_metadata_fields,
@@ -282,6 +368,7 @@ HANDLERS = {
     "semantic.term.translate": tool_term_translate,
     "semantic.task.match": tool_task_match,
     "semantic.operation.explain": tool_operation_explain,
+    "semantic.capability.discover": tool_capability_discover,
     "semantic.drift.status": tool_drift_status,
 }
 
