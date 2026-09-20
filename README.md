@@ -1,5 +1,15 @@
 # ERP-Demo：Agentic-ERP AI 参考架构（可运行演示）
 
+## 在线阅读（GitHub Pages 渲染版，无需下载）
+
+| 文档 | 在线地址 | 说明 |
+|------|---------|------|
+| **ERP AI · L1 级参考架构（汇报版）** | https://xiaohanarch.github.io/ERP-AI/docs/intro_v2.html | 三档场景分级 · 20 条架构判断 · 四个树形链路动画 · 逐幕验证手册 |
+| L1 级参考架构（初版） | https://xiaohanarch.github.io/ERP-AI/docs/intro.html | 同一文档的前一版本，保留对照 |
+
+> GitHub 仓库页直接点开 `.html` 文件看到的是源代码；用上表链接打开才是渲染后的完整版（含动画与排版）。
+> 汇报幻灯片 [docs/ERP-AI-L1参考架构-汇报版.pptx](docs/ERP-AI-L1参考架构-汇报版.pptx) 请下载后用 PowerPoint/WPS 打开。
+
 把《ERP AI 技术架构总纲》（14 章，`erp-ai-architecture-master.html`）的核心机制做成**真实可运行、
 可检验**的工程参考：跑通「用户 → 网关 → Agent → BO API → Java 存量应付模块」全链路，
 复现「页面 50 条 vs Open API 5000 条」权限事故，通过 50 条评测用例，输出双租户六项检验报告。
