@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>从MCP连接到任务闭环：Claudeforce的企业AI Native架构与设计方法</title>
+  <style>
+    :root{--ink:#14233a;--body:#35465d;--muted:#68778a;--line:#dce4ed;--paper:#fff;--bg:#edf2f7;--navy:#0b223d;--blue:#1769e0;--purple:#7156d9;--green:#167c65;--amber:#a55b12;--soft-blue:#edf5ff;--soft-purple:#f4f0ff;--soft-green:#edf9f5;--soft-amber:#fff7e8;--shadow:0 20px 65px rgba(20,39,67,.11)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--body);font:16px/1.78 Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}a{color:#075fc8;text-underline-offset:3px}b,strong{color:var(--ink);font-weight:760}.wrap{max-width:1180px;margin:auto;padding:0 30px}
+    .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.top .wrap{height:54px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-size:12px;font-weight:850;letter-spacing:.1em;color:var(--navy)}.top nav{display:flex;gap:16px;font-size:12px}.top nav a{text-decoration:none;color:#526277}
+    .hero{background:radial-gradient(circle at 84% 5%,rgba(0,161,224,.24),transparent 32%),linear-gradient(137deg,#071a30 0%,#10385d 63%,#0c5a72 100%);color:#fff;padding:76px 0 86px}.eyebrow{font-size:12px;letter-spacing:.17em;color:#9cddff;font-weight:800}.hero h1{font-size:clamp(39px,5.2vw,66px);line-height:1.1;letter-spacing:-.043em;max-width:1080px;margin:18px 0 24px}.hero h1 em{font-style:normal;color:#91ddff}.deck{font-size:clamp(18px,2vw,24px);line-height:1.6;color:#dceeff;max-width:980px}.meta{display:flex;flex-wrap:wrap;gap:22px;margin-top:30px;color:#b9d2e6;font-size:13px}
+    main{max-width:1180px;margin:-35px auto 74px;padding:0 30px}.paper{background:var(--paper);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}.summary{padding:48px 58px 40px}.summary-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:38px}.summary h2{margin:0 0 13px;font-size:28px}.lead{font-size:18px;line-height:1.82;color:#2d4058}.thesis{margin:24px 0 0;padding:21px 24px;border-left:5px solid var(--blue);border-radius:0 14px 14px 0;background:var(--soft-blue);font-size:20px;line-height:1.65;font-weight:720;color:#123b61}.readline{display:grid;gap:10px}.readline div{padding:14px 16px;border:1px solid var(--line);border-radius:13px;background:#fbfcfe}.readline b{display:block;color:var(--blue);font-size:13px}.readline span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .toc{padding:29px 58px 31px;background:#f7f9fc;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.toc h2{font-size:17px;margin:0 0 13px}.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 34px}.toc a{padding:8px 0;text-decoration:none;border-bottom:1px dotted #c8d2df;color:#344c66}.toc b{display:inline-block;width:34px;color:var(--blue)}
+    article{padding:0 58px 58px}.section{padding:62px 0 35px;border-bottom:1px solid var(--line);scroll-margin-top:58px}.section:last-child{border:0}.kicker{font-size:12px;font-weight:850;letter-spacing:.15em;color:var(--blue)}.section h2{font-size:35px;line-height:1.25;letter-spacing:-.026em;color:var(--ink);margin:7px 0 18px}.section h3{font-size:21px;color:#173d62;margin:33px 0 10px}.section>p{max-width:970px}.point{font-size:20px;line-height:1.65;font-weight:720;color:#173c60;margin:18px 0 28px}
+    pre{margin:24px 0;padding:21px 24px;border-radius:14px;background:#0d223a;color:#ddecfb;overflow:auto;font:14px/1.8 "SFMono-Regular",Consolas,monospace}.insight{margin:28px 0;padding:20px 23px;border:1px solid #d3c8f5;border-left:5px solid var(--purple);border-radius:0 14px 14px 0;background:var(--soft-purple)}.insight b{display:block;color:#563bb4;margin-bottom:5px}.insight p{margin:0;color:#4d536d}.quote{margin:28px 0;padding:22px 25px;border-radius:15px;background:var(--navy);color:#fff;font-size:19px;font-weight:680}.quote small{display:block;color:#9ed9ff;font-size:11px;letter-spacing:.1em;margin-bottom:6px}
+    .evolution{display:grid;grid-template-columns:1fr 44px 1fr 44px 1fr 44px 1fr;align-items:stretch;margin:27px 0}.stage{padding:20px 16px;border:1px solid var(--line);border-radius:14px;background:#fff}.stage b{display:block;color:#173d62}.stage span{display:block;color:var(--muted);font-size:12px;margin-top:6px}.stage:nth-of-type(3){background:var(--soft-blue)}.stage:nth-of-type(5){background:var(--soft-purple)}.stage:nth-of-type(7){background:var(--soft-green)}.arrow{display:grid;place-items:center;color:var(--blue);font-size:26px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:25px 0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:25px 0}.card{padding:21px;border:1px solid var(--line);border-radius:15px;background:#fff}.card h3{font-size:17px;margin:0 0 8px}.card p,.card li{font-size:14px;color:#566579}.card ul{margin:8px 0 0;padding-left:19px}.blue{border-top:4px solid var(--blue)}.purple{border-top:4px solid var(--purple)}.green{border-top:4px solid var(--green)}
+    table{width:100%;border-collapse:collapse;margin:25px 0;font-size:14px}th,td{text-align:left;vertical-align:top;padding:13px 14px;border-bottom:1px solid var(--line)}th{background:#f0f4f8;color:#263f59;font-weight:760}tbody tr:hover{background:#fafcff}.compact th,.compact td{padding:10px 12px}
+    .layers{display:grid;gap:10px;margin:27px 0}.layer{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:center;padding:18px 21px;border-radius:14px;border:1px solid var(--line)}.layer b{color:#173d62}.layer span{font-size:14px;color:#556478}.layer.product{background:var(--soft-purple);border-color:#d5cafa}.layer.runtime{background:var(--soft-blue);border-color:#c6dcff}.layer.platform{background:var(--soft-green);border-color:#bce3d6}.layer.control{background:#f5f7fa}
+    .context{display:grid;grid-template-columns:1fr 58px 1fr 58px 1fr;align-items:center;gap:8px;margin:27px 0}.context>div:not(.carr){padding:20px 16px;border-radius:14px;border:1px solid var(--line);min-height:165px}.context b{display:block;color:#173d62}.context span{display:block;font-size:13px;color:#5c6a7c;margin-top:7px}.context .visible{background:var(--soft-purple)}.context .callable{background:var(--soft-blue)}.context .enforced{background:var(--soft-green)}.carr{text-align:center;color:var(--blue);font-size:27px}
+    .dual{display:grid;grid-template-columns:1fr 80px 1fr;align-items:stretch;margin:27px 0}.asset{padding:24px;border-radius:16px;border:1px solid var(--line)}.asset.skill{background:var(--soft-purple);border-color:#d6cbfa}.asset.operation{background:var(--soft-blue);border-color:#c5dcff}.asset h3{margin:0 0 9px}.asset ul{margin:0;padding-left:20px;color:#536276}.bridge{display:grid;place-items:center;text-align:center;color:var(--blue);font-size:12px;font-weight:750}
+    .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:25px 0}.tool{padding:17px 14px;border:1px solid var(--line);border-radius:13px;background:#fff}.tool b{display:block;color:#173d62}.tool em{display:block;font-style:normal;color:var(--blue);font-size:11px;font-weight:800;margin:3px 0}.tool span{display:block;color:var(--muted);font-size:12px}
+    .sequence{margin:28px 0;border:1px solid var(--line);border-radius:17px;overflow:hidden}.step{display:grid;grid-template-columns:54px 185px 1fr;border-bottom:1px solid var(--line);min-height:68px}.step:last-child{border:0}.num{display:grid;place-items:center;background:var(--navy);color:#fff;font-weight:800}.who{padding:16px;color:#173d62;font-weight:740;background:#f4f7fa}.what{padding:14px 18px}.what b{color:#173d62}.what span{display:block;color:var(--muted);font-size:13px}.step.optional .num{background:var(--purple)}.step.write .num{background:var(--green)}
+    .formula{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:26px 0}.factor{padding:17px 10px;border:1px solid #cddbef;border-radius:13px;background:#f6f9fe;text-align:center;font-size:13px;font-weight:720;color:#173e65}.controlbar{margin:-17px 0 26px;padding:12px 18px;border-radius:11px;background:var(--navy);color:#d8e7f5;text-align:center;font-size:13px}.controlbar b{color:#fff;margin-right:14px}
+    .checklist{counter-reset:item;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:25px 0}.check{counter-increment:item;position:relative;padding:20px 20px 20px 62px;border:1px solid var(--line);border-radius:14px}.check:before{content:counter(item);position:absolute;left:19px;top:20px;width:29px;height:29px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800}.check b{display:block;color:#173c60}.check span{font-size:13px;color:#5a697c}.back{display:inline-block;margin-top:18px;font-size:12px}footer{padding:29px 58px;background:var(--navy);color:#bdd0e3;font-size:12px}footer b{color:#fff}
+    @media(max-width:900px){.top nav{display:none}.summary-grid,.grid3{grid-template-columns:1fr}.grid2,.checklist{grid-template-columns:1fr}.evolution{grid-template-columns:1fr}.arrow{transform:rotate(90deg);min-height:36px}.context{grid-template-columns:1fr}.carr{transform:rotate(90deg)}.dual{grid-template-columns:1fr}.bridge{min-height:52px}.tools,.formula{grid-template-columns:1fr 1fr}.layer{grid-template-columns:1fr}.summary,.toc,article{padding-left:28px;padding-right:28px}}
+    @media(max-width:560px){.wrap,main{padding-left:14px;padding-right:14px}.hero{padding:52px 0 67px}.hero h1{font-size:36px}.summary,.toc,article{padding-left:20px;padding-right:20px}.toc-grid,.tools,.formula{grid-template-columns:1fr}.section h2{font-size:29px}.section{padding-top:48px}.step{grid-template-columns:44px 1fr}.who{grid-column:2}.what{grid-column:2}.meta{display:block}.meta span{display:block;margin-top:5px}table{font-size:12px}th,td{padding:9px 7px}}
+    @media print{body{background:#fff;font-size:10pt}.top{display:none}.hero{background:#fff;color:#111;padding:30px 0;border-bottom:2px solid #111}.hero .deck,.hero .meta,.hero .eyebrow{color:#333}.paper{box-shadow:none;border-radius:0}main{margin:0;max-width:none}.summary,.toc,article,footer{padding-left:0;padding-right:0}.section{break-before:page}.card,table,.layer,.sequence{break-inside:avoid}.back{display:none}footer{background:#fff;color:#444;border-top:1px solid #999}}
+  </style>
+</head>
+<body id="top">
+  <header class="top"><div class="wrap"><div class="brand">CLAUDEFORCE · 架构与设计深度剖析</div><nav><a href="#shift">转变</a><a href="#product">产品</a><a href="#context">上下文</a><a href="#capability">能力</a><a href="#case">案例</a><a href="#method">方法</a></nav></div></header>
+
+  <section class="hero"><div class="wrap">
+    <div class="eyebrow">ENTERPRISE AI NATIVE · ARCHITECTURE & DESIGN</div>
+    <h1>从MCP连接到任务闭环：<br><em>Claudeforce</em>的企业AI Native架构与设计方法</h1>
+    <p class="deck">面向企业架构师、产品架构师与体验设计人员：理解模型厂商和企业应用厂商如何共同补上任务方法、企业上下文、能力契约、原生治理与连续体验。</p>
+    <div class="meta"><span>阅读时间：约25分钟</span><span>结构：概述—展开—启示</span><span>依据：前期联合研讨与技术核验结论</span></div>
+  </div></section>
+
+  <main><div class="paper">
+    <section class="summary"><div class="summary-grid"><div>
+      <h2>概述</h2>
+      <p class="lead">Claudeforce值得研究，并不是因为它让Claude“连上了Salesforce”。MCP早已使这种连接成为可能。它真正提供的样板，是如何把模型、任务知识、运行时企业上下文、可扩展行动能力和原生治理组织成一个员工可以直接使用的产品。</p>
+      <p class="lead">这件事同时改变了企业应用架构与产品设计：应用不再只把能力封装在固定页面里，而要让能力能够被AI发现、理解、组合和安全执行；AI产品也不能停留在聊天入口，而要对完整任务的结果负责。</p>
+      <div class="thesis">核心判断：Claudeforce不是新的Agent技术范式，而是一套企业AI Native产品化方法——由模型厂商提供开放式认知与任务运行环境，由企业应用厂商提供任务方法、可信上下文、确定性行动和治理，再由联合产品层把它们做成完整体验。</div>
+    </div><aside class="readline">
+      <div><b>连接</b><span>MCP解决系统之间怎样标准化通信。</span></div>
+      <div><b>上下文</b><span>任务需要的事实、语义和能力在运行时按需组装。</span></div>
+      <div><b>行动</b><span>AI通过明确契约调用企业能力，并继承原有治理。</span></div>
+      <div><b>产品</b><span>从目标、分析、成果、确认到写回形成连续闭环。</span></div>
+    </aside></div></section>
+
+    <nav class="toc"><h2>目录</h2><div class="toc-grid">
+      <a href="#shift"><b>01</b> 企业智能化不是增加聊天入口</a>
+      <a href="#mcp"><b>02</b> MCP是基础设施，不是完整产品</a>
+      <a href="#product"><b>03</b> 产品边界与联合产品层</a>
+      <a href="#architecture"><b>04</b> 企业AI Native参考架构</a>
+      <a href="#context"><b>05</b> 企业上下文怎样进入模型</a>
+      <a href="#capability"><b>06</b> Skills与Operations双资产</a>
+      <a href="#governance"><b>07</b> 权限、确认与责任边界</a>
+      <a href="#case"><b>08</b> 一个任务的完整运行链</a>
+      <a href="#method"><b>09</b> 架构与设计团队怎样复用</a>
+      <a href="#conclusion"><b>10</b> 总结：从功能开放到产品闭环</a>
+    </div></nav>
+
+    <article>
+      <section class="section" id="shift"><div class="kicker">01 · THE SHIFT</div><h2>企业智能化不是在现有应用上增加聊天入口</h2>
+        <p class="point">聊天窗口改变了交互方式，却不自动改变企业应用的能力结构。真正的AI Native改造，要把页面背后的数据、语义、流程和行动释放出来。</p>
+        <p>过去很多企业AI项目遵循一条直观路径：</p>
+        <pre><code>现有系统
++ 大模型
++ 聊天窗口
+= AI应用</code></pre>
+        <p>这种方式适合查询、总结和内容生成，但当任务要求跨对象理解、业务判断、多人协作和系统写回时，聊天窗口很快暴露出边界：模型不知道高质量任务怎样完成，不知道企业字段和流程的真实含义，也无法仅靠Prompt承担权限与审计责任。</p>
+        <div class="evolution" aria-label="从传统企业应用到Claudeforce产品的演进">
+          <div class="stage"><b>传统企业应用</b><span>数据、逻辑和行动封装在固定UI中</span></div><div class="arrow">→</div>
+          <div class="stage"><b>Headless Toolkit</b><span>用MCP、API、Skills和工具开放平台能力</span></div><div class="arrow">→</div>
+          <div class="stage"><b>AIforce</b><span>把可信上下文与行动带到各种AI界面</span></div><div class="arrow">→</div>
+          <div class="stage"><b>Claudeforce</b><span>围绕具体销售任务形成可直接使用的体验</span></div>
+        </div>
+        <p>Headless Toolkit首先解决能力如何走出Salesforce固定界面；AIforce把这一方向提升为Live Interface Layer；Claudeforce则在Claude中给出第一个具体产品形态。三者不是同一个物理组件，而是从技术开放、产品架构到用户体验的三个层次。</p>
+        <div class="insight"><b>对架构与设计团队的启示</b><p>不要只问“怎样给现有产品增加AI”，还要问“怎样把现有产品中的业务能力从固定界面中释放出来，供不同Agent和AI界面安全复用”。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="mcp"><div class="kicker">02 · FROM CONNECTION TO PRODUCT</div><h2>MCP是基础设施，不是完整产品</h2>
+        <p class="point">MCP解决“能否标准化连接和调用”；完整产品还要解决“应该完成什么任务、需要什么上下文、怎样行动以及谁承担责任”。</p>
+        <p>Salesforce在Claudeforce之前已经开放Hosted MCP Server。客户理论上可以自行把Claude连接到Salesforce，但连接以后仍要补齐一整层产品工程：</p>
+        <table><thead><tr><th>已有技术</th><th>仍待解决的产品问题</th><th>缺失时的结果</th></tr></thead><tbody>
+          <tr><td>MCP连接</td><td>选择值得委派的完整业务任务</td><td>只能展示“能查数据”，难以持续使用</td></tr>
+          <tr><td>通用模型</td><td>沉淀专业任务步骤、判断和输出标准</td><td>回答合理但遗漏关键业务检查</td></tr>
+          <tr><td>CRM数据</td><td>确定当前任务需要哪些事实、元数据和协作信息</td><td>数据很多，上下文却不正确</td></tr>
+          <tr><td>大量API与工具</td><td>让模型稳定发现能力并理解调用契约</td><td>工具选择错误、参数猜测和接口幻觉</td></tr>
+          <tr><td>企业权限</td><td>绑定用户身份，设计确认、失败处理和审计</td><td>重复建设权限，或把Prompt误当成安全机制</td></tr>
+          <tr><td>聊天界面</td><td>串联跨系统研究、成果生成、用户确认与写回</td><td>最后一公里仍由员工手工完成</td></tr>
+        </tbody></table>
+        <h3>完整AI Native产品的评价框架</h3>
+        <div class="grid3">
+          <div class="card blue"><h3>任务可委派</h3><p>用户表达业务目标，而不是逐个指定页面、字段和API。</p></div>
+          <div class="card purple"><h3>方法可复用</h3><p>系统具备完成专业任务的步骤、检查项和输出结构。</p></div>
+          <div class="card green"><h3>上下文可信且按需</h3><p>相关事实和语义围绕任务取得，不预载整个企业系统。</p></div>
+          <div class="card blue"><h3>能力可发现和理解</h3><p>模型能够找到行动，并在执行前获得明确技术契约。</p></div>
+          <div class="card purple"><h3>行动继承原生治理</h3><p>身份、权限、规则、确认和审计都能被验证。</p></div>
+          <div class="card green"><h3>体验形成闭环</h3><p>目标、分析、成果、预览与写回在同一任务中完成。</p></div>
+        </div>
+        <div class="insight"><b>对架构与设计团队的启示</b><p>技术验收不能停在“模型成功调用工具”。应围绕完整任务验证方法、上下文、行动、治理与用户体验是否共同成立。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="product"><div class="kicker">03 · PRODUCT BOUNDARIES</div><h2>先分清Claudeforce、插件、AIforce与Headless 360</h2>
+        <p class="point">理解边界是理解架构的前提。它们分别属于联合产品、用户载体、产品架构、技术集合和运行时服务。</p>
+        <table><thead><tr><th>名称</th><th>准确定位</th><th>在物理调用链中的位置</th></tr></thead><tbody>
+          <tr><td><strong>Claudeforce</strong></td><td>Salesforce与Anthropic形成的联合产品体系和体验</td><td>不是独立服务器、协议或API</td></tr>
+          <tr><td><strong>Salesforce in Claude</strong></td><td>Salesforce构建、安装在Claude中的专用插件；用户真正使用的产品载体</td><td>承载Skills、Connector、个性化、成果、确认和写回体验</td></tr>
+          <tr><td><strong>AIforce</strong></td><td>Salesforce的Live Interface Layer，把可信上下文与行动带到任何AI界面</td><td>产品与架构角色，不是每次请求必经的运行时网关</td></tr>
+          <tr><td><strong>Headless Toolkit</strong></td><td>MCP Servers、APIs、Skills、Plugins、CLI和开发体验工具的开放技术集合</td><td>技术基础，不是单一SDK或服务器</td></tr>
+          <tr><td><strong>Headless 360 MCP Server</strong></td><td>具体的Salesforce Hosted MCP Beta服务，用四个工具组织持续增长的operations</td><td>Salesforce Connector实际连接的运行时服务</td></tr>
+        </tbody></table>
+        <h3>联合产品层是可以看见和配置的</h3>
+        <div class="grid2">
+          <div class="card purple"><h3>用户可以看到</h3><ul><li>Salesforce in Claude插件</li><li>37个Sales Skills与Setup Skill</li><li>Salesforce和Slack Connector</li><li>Claude Chat与Cowork中的任务和成果</li><li>拟变更预览与Allow/Deny确认</li></ul></div>
+          <div class="card blue"><h3>管理员可以配置</h3><ul><li>插件部署与用户准入</li><li>Salesforce External Client App和OAuth</li><li>Connector连接与权限范围</li><li>需要确认的高风险动作策略</li><li>企业数据、语义、流程和自定义能力</li></ul></div>
+        </div>
+        <div class="insight"><b>对产品设计人员的启示</b><p>所谓“联合产品层”不能只是架构图中的抽象盒子。它必须落实为可安装、可初始化、可理解、可确认、可恢复并能够交付结果的用户体验。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="architecture"><div class="kicker">04 · REFERENCE ARCHITECTURE</div><h2>一种可复用的企业AI Native产品架构</h2>
+        <p class="point">标准Agent架构已经有模型、工具和企业系统。Claudeforce的贡献，是给这些组件补上领域任务方法、运行时上下文、渐进能力披露、原生治理和连续产品体验。</p>
+        <div class="layers">
+          <div class="layer product"><b>联合产品与体验层</b><span>Salesforce in Claude：安装、Setup Skill、任务入口、成果交付、变更预览、用户确认与状态反馈。</span></div>
+          <div class="layer runtime"><b>通用智能与任务运行层</b><span>Claude / Cowork：理解目标、规划任务、跨Connector编排、分析推断与内容生成。</span></div>
+          <div class="layer runtime"><b>领域方法与能力通道</b><span>Sales Skills提供任务方法；Salesforce与Slack Connector提供上下文和行动通道；Headless 360提供渐进能力发现。</span></div>
+          <div class="layer platform"><b>企业记录与执行层</b><span>Customer 360、Org元数据、API、Flow、Apex及其他平台能力保存事实并执行确定性业务逻辑。</span></div>
+          <div class="layer control"><b>横向治理控制面</b><span>身份、CRUD、FLS、Sharing、Validation、审批、人工确认、审计、质量评估与版本回归贯穿各层。</span></div>
+        </div>
+        <div class="formula"><div class="factor">通用智能<br>运行时</div><div class="factor">领域任务<br>方法</div><div class="factor">运行时企业<br>上下文</div><div class="factor">受治理的<br>行动能力</div><div class="factor">连续的人机<br>协作体验</div></div>
+        <div class="controlbar"><b>治理控制面</b>身份 · 权限 · 用户确认 · 审计 · 评估 · 版本回归</div>
+        <p>这套架构的关键不是增加更多中间层，而是明确责任边界：Claude负责开放式理解、规划和推断；Salesforce负责事实、能力、确定性规则和最终执行；插件负责把两者组织成用户可以委派和监督的任务。</p>
+        <div class="insight"><b>对企业架构师的启示</b><p>不要把所有企业知识塞进Prompt，也不要让模型直接承担确定性规则。应把“模型需要看见的信息”“模型可以调用的能力”和“必须留在系统内强制执行的控制”分开设计。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="context"><div class="kicker">05 · ENTERPRISE CONTEXT</div><h2>企业上下文不是数据包，而是一套运行时组装机制</h2>
+        <p class="point">Claude不会在登录时获得整个Salesforce Org。它围绕当前任务逐步取得方法、事实、结构和能力契约；权限与大量业务规则继续留在Salesforce服务端。</p>
+        <div class="context">
+          <div class="visible"><b>进入Claude工作上下文</b><span>用户目标、Sales Skill、相关业务事实、必要的对象结构和字段含义、Operation技术契约，以及Slack等Connector结果。</span></div><div class="carr">←</div>
+          <div class="callable"><b>作为运行时可调用能力</b><span>Connector、Hosted MCP Server、Salesforce operations、API、Flow、Apex和其他平台能力。它们不需要全部展开在模型上下文中。</span></div><div class="carr">←</div>
+          <div class="enforced"><b>留在服务端强制执行</b><span>OAuth身份、CRUD、FLS、Sharing、Validation、自动化、审批、事务和审计。模型获得结果，但不能替代这些控制。</span></div>
+        </div>
+        <table><thead><tr><th>上下文</th><th>回答的问题</th><th>主要来源</th><th>暴露时机</th></tr></thead><tbody>
+          <tr><td>任务上下文</td><td>这次要完成什么</td><td>用户对话、Setup Skill</td><td>任务开始</td></tr>
+          <tr><td>任务方法上下文</td><td>应该怎样完成</td><td>Sales Skills</td><td>Skill匹配或加载时</td></tr>
+          <tr><td>业务事实上下文</td><td>企业现在发生了什么</td><td>Salesforce记录、Slack协作信息</td><td>按任务实时读取</td></tr>
+          <tr><td>元数据与业务语义</td><td>这些数据怎样解释</td><td>Org Schema、对象/字段描述、指标定义、管理员指导</td><td>需要理解结构或口径时</td></tr>
+          <tr><td>能力上下文</td><td>系统可以做什么、怎样调用</td><td>Discover与Describe</td><td>需要查找或核实能力时</td></tr>
+          <tr><td>治理上下文</td><td>当前用户能看什么、做什么</td><td>Salesforce身份、权限和规则</td><td>每次读取与执行时</td></tr>
+        </tbody></table>
+        <h3>元数据不等于业务语义</h3>
+        <p>Schema可以告诉Claude字段名称、类型、关系和Picklist，但不会自动告诉它本企业的Pipeline Coverage究竟采用Amount还是ACV、什么条件构成红色风险。模型可见语义需要对象与字段描述、指标口径、管理员指导和Skill补充；Flow、Validation、Apex和审批则主要在服务端强制执行规则。</p>
+        <div class="insight"><b>对信息架构与体验设计的启示</b><p>上下文设计不是“把更多数据送给模型”。应定义每类信息的权威来源、暴露条件、新鲜度、可见范围，以及结果中哪些是系统事实、哪些是模型判断。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="capability"><div class="kicker">06 · SKILLS & OPERATIONS</div><h2>企业AI需要同时建设任务方法和行动能力两类资产</h2>
+        <p class="point">Sales Skill回答“应该怎样做”；Salesforce operation回答“平台能够执行什么”。任务方法与执行能力分层，是Claudeforce能够兼顾业务质量和技术扩展性的关键。</p>
+        <div class="dual">
+          <div class="asset skill"><h3>Sales Skill · 任务方法资产</h3><ul><li>任务目标与适用场景</li><li>推荐步骤和检查项</li><li>需要取得的事实与证据</li><li>分析维度和输出结构</li><li>何时调用Connector、何时要求确认</li></ul></div>
+          <div class="bridge">Claude<br>规划与选择<br>↔</div>
+          <div class="asset operation"><h3>Salesforce operation · 行动能力资产</h3><ul><li>可发现和执行的Salesforce行动单元</li><li>关联的API和端点</li><li>输入参数和依赖</li><li>完成行动的有序步骤</li><li>Dispatch前的Access Guard与平台执行</li></ul></div>
+        </div>
+        <h3>四个工具构成渐进式能力披露</h3>
+        <div class="tools">
+          <div class="tool"><b>Discover</b><em>找到行动</em><span>根据任务意图语义检索并返回排序后的候选operations。</span></div>
+          <div class="tool"><b>Describe</b><em>理解契约</em><span>返回选定operation的API、参数、依赖和有序步骤。</span></div>
+          <div class="tool"><b>Dispatch Read-Only</b><em>安全读取</em><span>执行只读行动，不改变数据或配置。</span></div>
+          <div class="tool"><b>Dispatch</b><em>执行行动</em><span>路由至正确端点，在运行前执行Access Guard。</span></div>
+        </div>
+        <p>四个MCP工具保持小而稳定，后端operations可以持续增长。这避免把成百上千个API全部放进模型工具列表，也降低模型盲选接口和猜测参数的概率。Discover和Describe是一种渐进披露机制，并不意味着每个任务都必须机械地走完相同序列；预置Skill可能已缩小范围，客户端也可能缓存部分信息。</p>
+        <div class="insight"><b>对能力架构师的启示</b><p>不要把裸API目录直接交给模型。应为企业能力设计可检索的语义描述、明确技术契约、读写属性、前置条件、错误模型和可审计执行路径。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="governance"><div class="kicker">07 · IDENTITY & GOVERNANCE</div><h2>权限继承和用户确认是两道不同的控制</h2>
+        <p class="point">Claudeforce没有复制一套Salesforce权限模型。它把Claude客户端、当前用户身份、人工确认和Salesforce原生治理串在同一条执行链上。</p>
+        <div class="grid2">
+          <div class="card blue"><h3>系统授权：决定能不能做</h3><p>External Client App和<code>mcp_api</code>控制客户端及用户准入；每位用户以自己的Salesforce账号OAuth。每次调用继续应用CRUD、FLS、Sharing、Profile和Permission Set。</p></div>
+          <div class="card purple"><h3>用户确认：决定这次要不要做</h3><p>Claude展示拟变更内容，用户选择Allow once、Always allow或Deny。这个确认体现人的责任，但不能赋予用户原本没有的Salesforce权限。</p></div>
+        </div>
+        <table class="compact"><thead><tr><th>阶段</th><th>主要控制</th><th>失败时应怎样呈现</th></tr></thead><tbody>
+          <tr><td>连接</td><td>客户端准入、OAuth身份和Scope</td><td>明确提示未连接、未授权或账号不匹配</td></tr>
+          <tr><td>读取</td><td>CRUD、FLS、Sharing和只读平台逻辑</td><td>区分无数据、无权限和调用失败</td></tr>
+          <tr><td>写前</td><td>展示具体对象、字段和值，要求用户确认</td><td>允许修改、拒绝或取消，不产生写入</td></tr>
+          <tr><td>写入</td><td>Access Guard、权限、Validation、Flow/Apex、审批与事务</td><td>返回真实成功字段或受控错误，不能假装完成</td></tr>
+          <tr><td>写后</td><td>审计、结果反馈和后续状态</td><td>让用户知道成功、部分成功、失败或未执行</td></tr>
+        </tbody></table>
+        <div class="insight"><b>对交互设计人员的启示</b><p>确认界面不应只显示“是否允许工具调用”。它应让用户看见业务对象、拟变更字段、影响范围和失败结果，使用户能对具体业务行动承担责任。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="case"><div class="kicker">08 · END-TO-END CASE</div><h2>一个简化案例：准备会前简报并更新下一步行动</h2>
+        <p class="point">案例只承担一个目的：把任务方法、企业上下文、Operation契约、模型判断、用户确认和Salesforce执行放进同一条可验证工作链。</p>
+        <div class="sequence" aria-label="Salesforce in Claude任务运行时序">
+          <div class="step"><div class="num">1</div><div class="who">销售人员</div><div class="what"><b>提出完整目标</b><span>“准备Acme客户会前简报；总结近期活动、当前商机和风险；确认后更新Next Step。”</span></div></div>
+          <div class="step"><div class="num">2</div><div class="who">Sales Skill</div><div class="what"><b>提供任务方法</b><span>给出应检查的客户、活动、商机、利益相关者、风险信号和输出结构。</span></div></div>
+          <div class="step"><div class="num">3</div><div class="who">Claude / Cowork</div><div class="what"><b>规划任务</b><span>把目标分解成事实读取、风险分析、简报生成和候选写回，并明确需要的上下文。</span></div></div>
+          <div class="step optional"><div class="num">4</div><div class="who">Connector / MCP</div><div class="what"><b>按需发现和描述能力</b><span>Discover返回候选operations；Describe返回选定行动的技术契约。Skill若已缩小能力范围，此分支可被简化。</span></div></div>
+          <div class="step"><div class="num">5</div><div class="who">Salesforce</div><div class="what"><b>返回有权限的业务事实</b><span>Dispatch Read-Only读取Account、Opportunity和Activity；平台在服务端执行身份、字段权限和共享控制。</span></div></div>
+          <div class="step"><div class="num">6</div><div class="who">Claude</div><div class="what"><b>区分事实与判断并生成成果</b><span>Salesforce记录属于事实；风险、优先级和建议属于Claude判断；拟更新Next Step属于待批准动作。</span></div></div>
+          <div class="step write"><div class="num">7</div><div class="who">销售人员</div><div class="what"><b>检查成果与拟变更</b><span>用户可以批准、修改或拒绝。拒绝意味着不发生写入，修改则重新生成预览。</span></div></div>
+          <div class="step write"><div class="num">8</div><div class="who">Salesforce</div><div class="what"><b>受治理执行并返回真实结果</b><span>使用已经确定并核实契约的写Operation调用Dispatch；平台执行Access Guard、权限、校验、自动化、审批和审计。</span></div></div>
+        </div>
+        <h3>这条链路揭示了什么</h3>
+        <div class="grid2">
+          <div class="card purple"><h3>企业上下文是逐步形成的</h3><p>任务方法、能力契约和业务事实分阶段进入Claude；不存在一次性传入完整Org的必要。</p></div>
+          <div class="card blue"><h3>模型判断与系统事实分离</h3><p>CRM记录由Salesforce提供；风险判断由Claude产生；待执行动作必须由用户确认。</p></div>
+          <div class="card green"><h3>Operation契约与Schema不同</h3><p>Describe解释行动怎样调用；对象字段结构仍通过相关Schema或平台能力按需获得。</p></div>
+          <div class="card purple"><h3>成功必须以系统结果为准</h3><p>Claude不能把“已发起调用”表述为“已完成业务动作”，必须返回真实执行结果或错误。</p></div>
+        </div>
+        <div class="insight"><b>对端到端体验设计的启示</b><p>界面要持续回答四件事：AI正在完成什么任务、依据了哪些事实、形成了什么判断、准备执行什么动作。可解释性应围绕任务责任展开，而不是展示冗长思维过程。</p></div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="method"><div class="kicker">09 · REUSABLE METHOD</div><h2>架构师和设计团队可以怎样复用这套方法</h2>
+        <p class="point">Claudeforce最值得复用的不是某个专用插件，而是从业务任务反推方法、上下文、能力、治理和体验的产品化路径。</p>
+        <div class="checklist">
+          <div class="check"><b>从完整业务任务开始</b><span>选择高频、结果可衡量、能够形成闭环的任务，而不是从“接入哪个模型或API”开始。</span></div>
+          <div class="check"><b>把专业方法变成正式资产</b><span>定义步骤、判断、检查项、证据要求和输出标准；明确哪些是推荐方法，哪些必须由系统强制。</span></div>
+          <div class="check"><b>设计企业上下文边界</b><span>区分模型可见事实、可调用能力和服务端约束；明确权威来源、时效、权限和语义责任。</span></div>
+          <div class="check"><b>把企业能力做成可理解契约</b><span>支持发现、描述、读写区分、错误返回和审计，避免把裸API目录直接交给模型。</span></div>
+          <div class="check"><b>让AI继承现有治理</b><span>用当前用户身份行动，把权限、共享、校验和审批留在记录系统；对高风险行动增加明确人工确认。</span></div>
+          <div class="check"><b>设计任务状态而不只是聊天状态</b><span>呈现目标、证据、判断、拟动作、批准状态、执行结果和失败恢复。</span></div>
+          <div class="check"><b>建立跨团队长期责任</b><span>业务负责人维护任务方法和成功指标；平台团队维护语义、能力与权限；AI团队维护模型、评估和回归。</span></div>
+          <div class="check"><b>按完整任务成本衡量价值</b><span>同时计算Token、延迟、Connector维护、契约维护、人工复核、异常处理和组织变更成本。</span></div>
+        </div>
+        <h3>企业侧仍需完成的五项准备</h3>
+        <table class="compact"><thead><tr><th>准备</th><th>核心工作</th><th>典型问题</th></tr></thead><tbody>
+          <tr><td>数据准备</td><td>保证客户、商机和活动完整、及时并正确关联</td><td>模型不能修复源系统长期缺失的业务事实</td></tr>
+          <tr><td>语义准备</td><td>完善对象与字段描述，统一指标、阶段和权威口径</td><td>同名字段或自定义字段可能具有不同业务含义</td></tr>
+          <tr><td>能力准备</td><td>把复杂确定性流程封装成Flow、Apex或Custom MCP Tool</td><td>自定义API不会自动进入标准operations集合</td></tr>
+          <tr><td>权限准备</td><td>检查客户端准入、OAuth、CRUD、FLS、Sharing和确认策略</td><td>自定义工具仍需验证运行上下文和安全检查</td></tr>
+          <tr><td>运营准备</td><td>建立典型任务评估、质量监控、失败分析和版本回归</td><td>一次成功Demo不能证明规模化质量</td></tr>
+        </tbody></table>
+        <div class="quote"><small>规模化采用门槛</small>只有当企业存在高频且结果可衡量的任务、拥有可靠的数据语义与权限基础，并具备持续运营Skills、能力契约和评估体系的组织能力时，才适合扩大部署。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+
+      <section class="section" id="conclusion"><div class="kicker">10 · CONCLUSION</div><h2>总结：企业AI Native的核心，是把连接变成产品</h2>
+        <p class="point">Claudeforce展示了一条清晰的演进路线：先将企业能力从固定UI中释放出来，再以运行时上下文和明确契约让模型理解这些能力，最后通过专用产品层把任务方法、人的责任和系统执行连成闭环。</p>
+        <div class="grid3">
+          <div class="card blue"><h3>对架构师</h3><p>建立认知运行时、企业能力和治理控制面的清晰边界；让模型处理开放判断，让记录系统执行确定性规则。</p></div>
+          <div class="card purple"><h3>对产品设计人员</h3><p>围绕完整任务设计目标、证据、判断、预览、确认、结果和恢复，而不是围绕聊天轮次堆叠功能。</p></div>
+          <div class="card green"><h3>对平台团队</h3><p>把任务方法、业务语义和行动契约建设成长期资产，使不同模型和AI界面能够安全复用。</p></div>
+        </div>
+        <div class="quote"><small>最终判断</small>企业AI Native不是“模型替代所有软件”，而是重新定义模型、企业应用与人的分工：模型负责理解与判断，企业平台提供可信事实与受治理行动，人对关键目标和高风险变更保留最终责任。</div>
+        <a class="back" href="#top">返回顶部 ↑</a>
+      </section>
+    </article>
+    <footer><b>Claudeforce架构与设计深度剖析</b> · 基于前期研讨结论整理 · 2026年9月</footer>
+  </div></main>
+</body>
+</html>
