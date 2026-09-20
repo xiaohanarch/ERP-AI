@@ -57,7 +57,9 @@ def _make_receiver() -> tuple[ThreadingHTTPServer, list]:
         def log_message(self, fmt, *args):  # 精简日志
             pass
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Hook)
+    # 0.0.0.0：host.docker.internal 从容器网段到达宿主，不走 loopback——
+    # 绑 127.0.0.1 会被拒绝连接（Docker Desktop 的 host 映射行为）
+    server = ThreadingHTTPServer(("0.0.0.0", 0), Hook)
     threading.Thread(target=server.serve_forever, daemon=True, name="webhook-receiver").start()
     return server, records
 
