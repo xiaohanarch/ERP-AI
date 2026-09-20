@@ -370,6 +370,8 @@
   .fnode.proc b::after { content: " · 跨域"; font-size: 9.5px; color: #7fd8c0; font-weight: 400; }
   .fnode.ten { border-style: dashed; border-color: #f0b37a; }
   .fnode.ten b::after { content: " · 租户侧"; font-size: 9.5px; color: #f0b37a; font-weight: 400; }
+  .fnode.mdl { border-style: dashed; border-color: #b48aff; }
+  .fnode.mdl b::after { content: " · 模型侧"; font-size: 9.5px; color: #b48aff; font-weight: 400; }
   .tokens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
   .tk {
     font-family: var(--mono); font-size: 11.5px; padding: 3px 10px; border-radius: 6px;
@@ -495,7 +497,7 @@
   <h3>场景① 读 · 财务李四问：「INV-A-001 这张发票为什么被拦？」<span class="hint">最常走的链路：从提问到带证据的答案</span></h3>
   <div class="flow-panel" id="fp-read">
     <div class="flow-top">
-      <div class="flow-title">读路径 · 7 步<span class="dot">令牌逐跳收窄 T1 → T2 → T3 · 判定在网关与存量系统，不在模型</span></div>
+      <div class="flow-title">读路径 · 9 步<span class="dot">令牌逐跳收窄 T1 → T2 → T3 · 模型经模型网关调用（三态）· 判定在网关与存量系统，不在模型</span></div>
       <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="chain-wrap">
@@ -504,7 +506,9 @@
         <div class="packet"></div>
         <div class="fnode"><b>李四 · WorkBuddy</b><span>T1 · 只有聊天权限</span></div>
         <div class="fnode"><b>ai-gateway</b><span>注册 · 令牌 · 拦截</span></div>
-        <div class="fnode"><b>hub · AP 场景图</b><span>意图分类 · 填参数</span></div>
+        <div class="fnode"><b>hub · AP 场景图</b><span>按契约编排</span></div>
+        <div class="fnode mdl"><b>模型网关</b><span>mock / 回放 / live 三态</span></div>
+        <div class="fnode mdl"><b>LLM · GLM-5.3</b><span>理解意图 · 填参数</span></div>
         <div class="fnode"><b>网关 MCP 代理</b><span>拦截链 · 铸 T3</span></div>
         <div class="fnode"><b>Java 存量域</b><span>权限判定 · 规则引擎</span></div>
       </div>
@@ -527,7 +531,7 @@
   <h3>场景② 写 · 李四要把 INV-A-052 的税码补全<span class="hint">改数据的链路：不可逆操作必须人批</span></h3>
   <div class="flow-panel" id="fp-write">
     <div class="flow-top">
-      <div class="flow-title">写路径 · 8 步<span class="dot">挂起期间零常驻凭据 · 批准后铸一次性令牌 OT（参数指纹 · 120 秒）</span></div>
+      <div class="flow-title">写路径 · 10 步<span class="dot">模型只给建议，人批之后才动 · 挂起期间零常驻凭据 · 批准后铸一次性令牌 OT（参数指纹 · 120 秒）</span></div>
       <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="chain-wrap">
@@ -537,6 +541,8 @@
         <div class="fnode"><b>李四 · WorkBuddy</b><span>T1 · 发起变更</span></div>
         <div class="fnode"><b>ai-gateway</b><span>发现「不可逆」</span></div>
         <div class="fnode"><b>hub · 税码图</b><span>建议 · 挂起</span></div>
+        <div class="fnode mdl"><b>模型网关</b><span>三态路由</span></div>
+        <div class="fnode mdl"><b>LLM · GLM-5.3</b><span>结合规则给建议</span></div>
         <div class="fnode"><b>网关 MCP 代理</b><span>验 OT · 铸 T3</span></div>
         <div class="fnode"><b>Java 存量域</b><span>事务落库 · 幂等</span></div>
         <div class="fnode appr"><b>王五 · 审批台</b><span>三要素 · 快照</span></div>
@@ -562,7 +568,7 @@
   <h3>场景③ 跨域 · 「发票为什么被拦？采购那边什么情况？」<span class="hint">AP 委派采购域取证的链路：委派有清单、权限最小、责任可追</span></h3>
   <div class="flow-panel" id="fp-xdom">
     <div class="flow-top">
-      <div class="flow-title">跨域协同 · 8 步<span class="dot">协作清单 + 委托链单调增长 [proc → ap → hub] · 清单外委派一律 403</span></div>
+      <div class="flow-title">跨域协同 · 9 步<span class="dot">协作清单 + 委托链单调增长 [proc → ap → hub] · 两域证据交模型综合 · 清单外委派一律 403</span></div>
       <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="chain-wrap">
@@ -573,6 +579,8 @@
         <div class="fnode"><b>ai-gateway</b><span>第七道校验</span></div>
         <div class="fnode"><b>hub · AP 图</b><span>AP 侧归因</span></div>
         <div class="fnode proc"><b>hub · 采购图</b><span>proc-copilot · 被委派</span></div>
+        <div class="fnode mdl"><b>模型网关</b><span>三态路由</span></div>
+        <div class="fnode mdl"><b>LLM · GLM-5.3</b><span>按证据综合</span></div>
         <div class="fnode"><b>网关 MCP 代理</b><span>子代理 T2′ → T3</span></div>
         <div class="fnode"><b>Java 存量域</b><span>委托链落审计</span></div>
       </div>
@@ -596,7 +604,7 @@
   <h3>场景④ 消息 · 「发票被阻断」这件事推给租户自己的系统<span class="hint">事件出平台的链路：租户订阅 webhook，隔离投递</span></h3>
   <div class="flow-panel" id="fp-msg">
     <div class="flow-top">
-      <div class="flow-title">消息扩展 · 6 步<span class="dot">同一 outbox 事件：平台内进 Agent、出平台进租户系统——不是两套事件</span></div>
+      <div class="flow-title">消息扩展 · 8 步<span class="dot">同一 outbox 事件：平台内进 Agent、出平台进租户系统 · 事件例程钉定 mock 确定性通道</span></div>
       <div class="flow-ctl"><button type="button" class="replay-btn" title="从头播放">&#8635; 重播</button></div>
     </div>
     <div class="chain-wrap">
@@ -605,6 +613,8 @@
         <div class="packet"></div>
         <div class="fnode"><b>Java 存量域</b><span>发票被阻断 → outbox</span></div>
         <div class="fnode"><b>hub · 事件线程</b><span>无头诊断 → 通知</span></div>
+        <div class="fnode mdl"><b>模型网关</b><span>事件例程钉定 mock</span></div>
+        <div class="fnode mdl"><b>LLM · 脚本应答</b><span>生成诊断摘要</span></div>
         <div class="fnode"><b>ai-gateway · 分发</b><span>订阅匹配（租户×主题）</span></div>
         <div class="fnode ten"><b>租户系统 · webhook</b><span>HMAC 验签</span></div>
       </div>
@@ -624,6 +634,7 @@
 
   <div class="explain">
     <b>四个场景共用的一个设计：</b>所有「该不该」的判定都在网关和存量系统里，不在模型里——模型只负责理解意图和填参数。
+    模型本身也被网关管着：每次模型调用都经<b>模型网关</b>（mock / 回放 / live 三态按请求钉定），调用留痕、按租户计量计费。
     令牌逐跳收窄：T1 像工牌（只能聊天）→ T2 像「本会议室门禁卡」（场景∩清单，15 分钟）→
     T3 像「操作票」（单工具，60 秒）→ OT 像「一次性的盖章授权书」（绑定参数指纹，用一次作废）。
     出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。<b>接下来两章解释为什么这样设计（01 / 02）。</b>
@@ -2001,44 +2012,55 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
 (function () {
   "use strict";
   // ---------- 四个场景各自的分步脚本（节点下标按各自链路从 0 计） ----------
+  // 节点编号（各面板独立）：
+  //   读:  0李四 1网关 2AP图 3模型网关 4LLM 5MCP代理 6Java
+  //   写:  0李四 1网关 2税码图 3模型网关 4LLM 5MCP代理 6Java 7审批台
+  //   跨域: 0李四 1网关 2AP图 3采购图 4模型网关 5LLM 6MCP代理 7Java
+  //   消息: 0Java 1事件线程 2模型网关 3LLM 4网关分发 5租户webhook
   var READ = [
     { n: [0], tk: ["t1"], c: "<b>① 用户发起</b>　李四在 WorkBuddy 提问：「INV-A-001 校验失败的原因是什么？」——带着 T1（只有聊天权限）" },
-    { n: [0, 1], tk: ["t1", "t2"], c: "<b>② 网关验身份、换门禁卡</b>　查注册中心（ap-copilot 在册且未吊销）→ 铸 T2：还是李四，但范围收窄为「这个场景 ∩ 这个 Agent 的工具清单」" },
-    { n: [1, 2], tk: ["t2"], c: "<b>③ 场景图理解意图</b>　LangGraph 分类：这是诊断类问题 → 决定调「校验 + 差异下钻」两个工具（模型只填空，不自由发挥）" },
-    { n: [2, 3], tk: ["t3"], c: "<b>④ 网关铸操作票 T3</b>　只能调这一个工具 · 60 秒过期 —— 工具级最小授权" },
-    { n: [3, 4], tk: ["t3"], c: "<b>⑤ 存量系统最终判定</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维）—— AI 没有第二套权限" },
-    { n: [2, 4], tk: [], c: "<b>⑥ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回；没跑的步骤会明说（completeness 披露），绝不静默" },
-    { n: [0, 2], tk: [], c: "<b>⑦ 流式应答 + 全程留痕</b>　场景图组装结论 → SSE 流式回 WorkBuddy；调用树入 Jaeger，审计五要素入库" }
+    { n: [0, 1], tk: ["t1", "t2"], c: "<b>② 网关验身份、换门禁卡</b>　查注册中心（ap-copilot 在册且未吊销）→ 铸 T2：范围收窄为「这个场景 ∩ 这个 Agent 的工具清单」" },
+    { n: [1, 2], tk: ["t2"], c: "<b>③ 场景图接手</b>　要理解李四问的是什么，先要过模型——hub 把问题交给模型网关" },
+    { n: [2, 3], tk: ["t2"], c: "<b>④ 模型网关路由</b>　三态可切：评测与定时例程钉定 mock（确定性），交互面走 live（当前 GLM-5.3）——按请求钉定，换模型不动业务代码" },
+    { n: [3, 4], tk: [], c: "<b>⑤ LLM 理解与填空</b>　模型输出：这是诊断类问题 → 调「校验 + 差异下钻」（只填空不发挥；<b>该不该调、有没有权限，模型说了不算</b>）" },
+    { n: [2, 5], tk: ["t3"], c: "<b>⑥ 按契约发起工具调用</b>　场景图拿着意图与参数发起调用 → 网关 MCP 代理铸操作票 T3（单工具 · 60 秒）" },
+    { n: [5, 6], tk: ["t3"], c: "<b>⑦ 存量系统最终判定</b>　T3 进 Java 后走与页面<b>同一个</b> PermissionService（租户/公司/组织三维）—— AI 没有第二套权限" },
+    { n: [2, 6], tk: [], c: "<b>⑧ 结果回链</b>　规则引擎执行（数量差异 / 预算）→ 结果沿链路返回；没跑的步骤会明说（completeness 披露），绝不静默" },
+    { n: [0, 2], tk: [], c: "<b>⑨ 流式应答 + 全程留痕</b>　场景图组装结论 → SSE 流式回 WorkBuddy；模型调用与工具调用都入 Jaeger 与审计" }
   ];
   var WRITE = [
     { n: [0], tk: ["t1"], c: "<b>① 写路径开始</b>　李四请求：「把 INV-A-052 的税码补全为 CN-VAT-13」" },
-    { n: [1, 2], tk: ["t2"], c: "<b>② 网关铸 T2 → 场景图给建议</b>　结合税码规则给出建议（发票 / 税码 / 理由）" },
-    { n: [3, 4], tk: ["t3"], c: "<b>③ 网关发现「不可逆」</b>　税码变更在规格里标记为不可逆 → 网关创建审批任务，返回「需要审批」，<b>此时不落库</b>" },
-    { n: [5], tk: [], c: "<b>④ 挂起等审批（期间零凭据）</b>　场景图在审批门挂起（状态存库）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响（三要素）" },
-    { n: [5, 1], tk: ["ot"], c: "<b>⑤ 审批人决定</b>　王五批准 → 记录批准人与快照 → 铸<b>一次性令牌 OT</b>：只对这组参数有效 · 120 秒 · 用一次即作废" },
-    { n: [2, 3], tk: ["ot"], c: "<b>⑥ 唤醒重发</b>　场景图从审批门继续 → 携 OT 重发（业务幂等键不变，重复投递命中网关短窗）" },
-    { n: [3, 4], tk: [], c: "<b>⑦ 验 OT + 落库</b>　网关验 OT（有效+未用+参数指纹匹配）→ 存量域与变更同事务落库：变更记录 + 幂等表（重放返回首次结果）" },
-    { n: [0, 4], tk: [], c: "<b>⑧ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；五要素 + 快照留痕，租户证据包可导出" }
+    { n: [1, 2], tk: ["t2"], c: "<b>② 网关铸 T2 → 场景图生成建议</b>　要给出合适的税码建议，先过模型" },
+    { n: [2, 3], tk: ["t2"], c: "<b>③ 模型网关路由</b>　交互面走 live（GLM-5.3）；评测沿同一链路钉定 mock，写路径回归可重复" },
+    { n: [3, 4], tk: [], c: "<b>④ LLM 结合规则给建议</b>　输出：发票 / 建议税码 / 理由（依据 AP.TAX.CODE_SUGGESTED）——只是建议，落不落库它说了不算" },
+    { n: [2, 5], tk: ["t3"], c: "<b>⑤ 发起变更 → 网关发现「不可逆」</b>　税码变更在规格里标记为不可逆 → 网关创建审批任务，返回「需要审批」，<b>此时不落库</b>" },
+    { n: [7], tk: [], c: "<b>⑥ 挂起等审批（期间零凭据）</b>　场景图在审批门挂起（状态存库）→ WorkBuddy 出审批卡：打算做什么 / 依据 / 影响（三要素）" },
+    { n: [7, 1], tk: ["ot"], c: "<b>⑦ 审批人决定</b>　王五批准 → 记录批准人与快照 → 铸<b>一次性令牌 OT</b>：只对这组参数有效 · 120 秒 · 用一次即作废" },
+    { n: [2, 5], tk: ["ot"], c: "<b>⑧ 唤醒重发</b>　场景图从审批门继续 → 携 OT 重发（业务幂等键不变，重复投递命中网关短窗）" },
+    { n: [5, 6], tk: [], c: "<b>⑨ 验 OT + 落库</b>　网关验 OT（有效+未用+参数指纹匹配）→ 存量域与变更同事务落库：变更记录 + 幂等表（重放返回首次结果）" },
+    { n: [0, 6], tk: [], c: "<b>⑩ 完成与审计</b>　应答含审批人 / 审批单号 / 变更记录号；模型建议、审批、落库全程留痕，租户证据包可导出" }
   ];
   var XDOM = [
     { n: [0], tk: ["t1"], c: "<b>① 跨域问题</b>　李四：「INV-A-001 为什么被阻断？采购和收货那边什么情况？」——AP 域只能看到数量差异，根因需要采购域上下文" },
-    { n: [1, 2], tk: ["t2"], c: "<b>② AP 侧归因</b>　AP 图先查自己域：发票 120 vs 收货 100，关联采购订单 PO-A-0001" },
-    { n: [2, 3], tk: ["t2", "t2p"], c: "<b>③ 显式委派</b>　ap-copilot 的注册表协作清单里声明了 proc-copilot → hub 以「被委派」身份启动采购域子图（清单外委派会被 403 拒绝）" },
+    { n: [1, 2], tk: ["t2"], c: "<b>② AP 侧归因</b>　AP 图先查自己域（意图理解同样经模型网关，同读路径）：发票 120 vs 收货 100，关联 PO-A-0001" },
+    { n: [2, 3], tk: ["t2", "t2p"], c: "<b>③ 显式委派</b>　ap-copilot 的协作清单里声明了 proc-copilot → hub 以「被委派」身份启动采购域子图（清单外委派 403）" },
     { n: [3, 1], tk: ["t2p"], c: "<b>④ 网关第七道校验</b>　委派方在册 / 同租户 / 在协作清单内 → 铸采购代理<b>自己的</b> T2′，委托链增长为 [采购 → AP → hub]" },
-    { n: [3, 4], tk: ["t2p", "t3"], c: "<b>⑤ 采购域取证（最小权限）</b>　T2′ 只有两个采购只读工具：订单 100 件 = 已收 100 件，整单已收齐" },
-    { n: [4, 5], tk: ["t3"], c: "<b>⑥ 委托链贯穿到存量</b>　委托链随 T3 进 Java 落审计；越界组织按「未找到」处理（不泄露存在性）" },
-    { n: [2], tk: [], c: "<b>⑦ 综合根因</b>　AP 差异 + 采购上下文 → 根因 = <b>供应商超开 20 件</b>（订单量=收货量&lt;开票量）；建议红字冲销或按实收重开" },
-    { n: [0, 2], tk: [], c: "<b>⑧ 完成与留痕</b>　双 Agent 审计（含委派链）；负向保证：清单外 / 反向 / 跨租委派一律 403" }
+    { n: [3, 6], tk: ["t2p", "t3"], c: "<b>⑤ 采购域取证（最小权限）</b>　T2′ 只有两个采购只读工具（每跳工具调用照旧铸 T3）：订单 100 = 已收 100，整单收齐" },
+    { n: [6, 7], tk: ["t3"], c: "<b>⑥ 委托链贯穿到存量</b>　委托链随 T3 进 Java 落审计；越界组织按「未找到」处理（不泄露存在性）" },
+    { n: [2, 4], tk: [], c: "<b>⑦ 两域证据汇合 → 模型网关</b>　AP 差异 + 采购上下文交回场景图，综合归因要过模型" },
+    { n: [4, 5], tk: [], c: "<b>⑧ LLM 按证据综合</b>　根因 = <b>供应商超开 20 件</b>（订单量=收货量&lt;开票量）——只依据两域工具返回的证据综合，不发明事实；建议红字冲销或按实收重开" },
+    { n: [0, 2], tk: [], c: "<b>⑨ 完成与留痕</b>　双 Agent 审计（含委派链）+ 模型调用留痕；负向保证：清单外 / 反向 / 跨租委派一律 403" }
   ];
   var MSG = [
     { n: [0], tk: [], c: "<b>① 业务事实发生</b>　Java 存量域判定发票被阻断 → 幂等写入事件表（outbox：租户/组织/金额/阻断发现）" },
-    { n: [0, 1], tk: [], c: "<b>② 平台内先消费（事件进 Agent）</b>　hub 事件线程拉取 → 无头诊断（event-diag 代理代表执行）→ 通知李四" },
-    { n: [1, 2], tk: ["msg"], c: "<b>③ 同一事件扇出（事件出平台）</b>　hub 调网关分发——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
-    { n: [2], tk: ["msg"], c: "<b>④ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
-    { n: [2, 3], tk: ["msg"], c: "<b>⑤ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
-    { n: [3, 2], tk: [], c: "<b>⑥ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
+    { n: [0, 1], tk: [], c: "<b>② 事件线程拉取（事件进 Agent）</b>　hub 事件线程拉取 outbox → 无头诊断开始（event-diag 代理代表执行）" },
+    { n: [1, 2], tk: [], c: "<b>③ 模型网关路由</b>　事件例程<b>钉定 mock</b>——确定性通道（与评测同策略），零 live 配额消耗、结果可回归" },
+    { n: [2, 3], tk: [], c: "<b>④ LLM 生成诊断摘要</b>　按事件载荷生成归因摘要与处置建议 → 通知李四" },
+    { n: [1, 4], tk: ["msg"], c: "<b>⑤ 同一事件扇出（事件出平台）</b>　hub 调网关分发——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
+    { n: [4], tk: ["msg"], c: "<b>⑥ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
+    { n: [4, 5], tk: ["msg"], c: "<b>⑦ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
+    { n: [5, 4], tk: [], c: "<b>⑧ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
   ];
-
   var FLOWS = [
     { id: "fp-read", steps: READ },
     { id: "fp-write", steps: WRITE },
