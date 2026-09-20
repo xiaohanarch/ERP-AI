@@ -216,7 +216,7 @@ _READ_TOOLS = [
 _SEMANTIC_TOOLS = [
     "semantic.metadata.entities", "semantic.metadata.fields", "semantic.metric.get",
     "semantic.term.translate", "semantic.task.match", "semantic.operation.explain",
-    "semantic.drift.status",
+    "semantic.capability.discover", "semantic.drift.status",
 ]
 _TAX_TOOLS = ["ap.invoice.applyTaxCode"]
 

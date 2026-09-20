@@ -131,7 +131,24 @@ try:
 except tools.ToolError:
     check("op:unknown", True)
 
-# 7) 漂移：两条预埋漂移必须检出
+# 7) 能力发现（Discover）：意图 -> 候选能力卡片（渐进披露第一步）
+r, _ = tools.tool_capability_discover({"intent": "把 INV-A-052 的税码补全为 CN-VAT-13"}, None)
+top = (r["candidates"] or [{}])[0]
+check("discover:taxcode", top.get("operation") == "ap.invoice.applyTaxCode"
+      and top.get("riskLevel", "").startswith("High")
+      and "审批" in top.get("riskLevel", ""), str(top)[:120])
+r, _ = tools.tool_capability_discover({"intent": "这张发票为什么被阻断"}, None)
+ops_found = {c["operation"] for c in r["candidates"]}
+check("discover:diagnose", "ap.invoice.checkValidation" in ops_found
+      and r.get("matchedQuestion", {}).get("verifiedBy"),
+      f"{sorted(ops_found)[:3]} q={r.get('matchedQuestion', {}).get('id')}")
+try:
+    tools.tool_capability_discover({"intent": "帮我订一张机票"}, None)
+    check("discover:miss", False)
+except tools.ToolError:
+    check("discover:miss", True)
+
+# 8) 漂移：两条预埋漂移必须检出
 r, _ = tools.tool_drift_status({}, None)
 kinds = [(d["kind"], d["semanticRef"]) for d in r["items"]]
 check("drift:count", r["drifted"] and r["counts"]["drifts"] == 2, str(kinds))

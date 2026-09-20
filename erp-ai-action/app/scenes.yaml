@@ -16,6 +16,7 @@ scenes:
       - semantic.term.translate
       - semantic.task.match
       - semantic.operation.explain
+      - semantic.capability.discover
       - semantic.drift.status
 
   ap.batch:

@@ -20,7 +20,7 @@ from service import loader, tools
 INTERNAL_SECRET = os.environ.get("GW_INTERNAL_SECRET", "dev-internal-secret")
 
 app = FastAPI(title="erp-ai-context", version="1.0.0",
-              description="语义层服务：七查询工具 + 漂移检测 + A0 租户叠加")
+              description="语义层服务：八查询工具 + 漂移检测 + A0 租户叠加")
 
 # 与网关内置兜底清单同构（网关优先以本 /manifest 为准）
 MANIFEST = [
@@ -46,6 +46,10 @@ MANIFEST = [
     {"name": "semantic.operation.explain",
      "description": "解释 BO 操作（规格即工具：性质/权限/幂等/审批要求）",
      "input_schema": {"type": "object", "properties": {"operation": {"type": "string"}}}},
+    {"name": "semantic.capability.discover",
+     "description": "按业务意图发现候选 BO 操作（Discover：问题清单+规格文本召回，带风险分级卡片）",
+     "input_schema": {"type": "object", "properties": {"intent": {"type": "string"}},
+                      "required": ["intent"]}},
     {"name": "semantic.drift.status",
      "description": "语义层漂移检测状态（增量段 vs 元数据现状）",
      "input_schema": {"type": "object", "properties": {}}},
