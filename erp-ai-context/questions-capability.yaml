@@ -4,7 +4,7 @@
 #   - 评测用例与语义 verified_tasks 同源复用（AP-PERM-003 等两处同一份）
 questions:
   # ---- 诊断（读侧归因）----
-  # verified_by 指向 eval/cases 锚点用例（两处同一份，防能力清单与评测脱节）
+  # verified_by 指向 eval/cases 基准用例（两处同一份，防能力清单与评测脱节）
   - {id: Q01, question: 这张发票为什么被阻断？, intent: diagnose_block,
      tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail],
      verified_by: [AP-PERM-003, AP-DIAG-001]}

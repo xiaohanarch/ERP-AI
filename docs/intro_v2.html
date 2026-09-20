@@ -640,7 +640,7 @@
     这就是企业接 AI 进 ERP 时反复摔跤的四类问题，也是本项目要逐一解决的事：
   </p>
   <div class="grid c2" style="margin-top:12px">
-    <div class="card"><h4>① 数据权限口径不一致</h4>
+    <div class="card"><h4>① 数据权限标准不一致</h4>
       <p>老接口是机对机设计，只有租户隔离、没有人的权限。AI 接上去 = 拿到万能钥匙。</p></div>
     <div class="card"><h4>② Agent 影子接入，无法治理</h4>
       <p>各个团队自己偷偷接 AI，没有注册、没有吊销、没有审计。出了事查不到「哪个 AI 替谁干了什么」。</p></div>
@@ -659,11 +659,11 @@
   <div class="grid c3" style="margin-top:14px">
     <div class="card">
       <h4>权限事故可复现、已修复 <span class="tag">scene_1</span></h4>
-      <p>同份数据三种口径：ERP 页面 ~50 条（组织过滤）、Open API 5000+（事故口径）、
+      <p>同份数据三种结果：ERP 页面 ~50 条（组织过滤）、Open API 5000+（事故的统计范围）、
       <b>BO API 与页面共享同一个权限组件</b>，AI 看到的和页面一模一样，还会主动声明「我按什么维度过滤了」。</p>
       <div class="try"><b>&#9654; 在线演示：</b>
         <a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面（zhangsan 看 ~50 条）</a> ·
-        <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">问 AI（同权限口径 + 披露）</a>
+        <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">问 AI（同样的权限范围 + 披露）</a>
       </div>
     </div>
     <div class="card">
@@ -687,8 +687,8 @@
     </div>
     <div class="card">
       <h4>同一个问题，两家租户答案不同 <span class="tag">scene_5</span></h4>
-      <p>「大额风险发票」——华东制造按 50 万口径筛、星联科技按 500 万口径筛；
-      「进货单」在一家指采购订单、在另一家指收货单。口径差异放在配置层，
+      <p>「大额风险发票」——华东制造按 50 万的标准筛、星联科技按 500 万的标准筛；
+      「进货单」在一家指采购订单、在另一家指收货单。定义差异放在配置层，
       两家各答各的，数据互相看不见。</p>
       <div class="try"><b>&#9654; 在线演示（同一链接，换账号）：</b>
         <a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">大额筛查：lisi 命中 INV-A-011 / qianqi 命中 INV-B-004</a>
@@ -780,7 +780,7 @@
     <div class="lm-band">
       <div class="bh"><span class="t">④ 语义与动作层 · ERP 独有的一层（L3）</span><span class="s">让 AI「看得懂」业务 + 让 AI「动得了」业务，但带着人的权限</span></div>
       <div class="boxes">
-        <div class="lb hot"><b>语义服务</b><span>术语/指标/规则口径 唯一真相源</span></div>
+        <div class="lb hot"><b>语义服务</b><span>术语/指标/规则定义 唯一真相源</span></div>
         <div class="lb hot"><b>元数据自动喂养</b><span>实体清单实时生成</span></div>
         <div class="lb hot"><b>漂移检测</b><span>语义与存量不一致即报警</span></div>
         <div class="lb key"><b>BO API（动作层）</b><span>规格即工具 · 带人的权限</span></div>
@@ -841,12 +841,12 @@
         <div class="lb soft"><b>探索 Agent</b><span>自主决定查询路径</span></div>
       </div>
     </div>
-    <div class="lm-judge">↓ <b>同一套语义层</b>——「高风险」在执行面和探索面必须是同一个定义（口径同源）</div>
+    <div class="lm-judge">↓ <b>同一套语义层</b>——「高风险」在执行面和探索面必须是同一个定义（定义同源）</div>
     <div class="lm-band">
       <div class="bh"><span class="t">② 语义与关系图谱</span><span class="s">AI 拿着地图在关系上走——多跳遍历正是图数据库的用武之地（第 07 章决策一）</span></div>
       <div class="boxes">
         <div class="lb hot"><b>关系图谱</b><span>供应商 ↔ 发票 ↔ 订单 ↔ 组织</span></div>
-        <div class="lb hot"><b>口径同源</b><span>与执行面同一语义服务</span></div>
+        <div class="lb hot"><b>定义同源</b><span>与执行面同一语义服务</span></div>
       </div>
     </div>
     <div class="lm-judge">↓ 查询计划白名单：只读 · 资源上限 · 行数上限 —— <b>AI 不拿裸表权限</b></div>
@@ -884,7 +884,7 @@
     而探索面改由湖侧行列级策略强制，那是另一份资产、另一条维护链路，等于又出现第二套权限体系。
     建的时候要守住两条：湖侧策略不手工维护，由同一份 scope 模型在 ELT 环节生成，
     并把「湖策略与存量权限一致」做成第五条漂移不变式；湖上只给聚合，要看明细就下钻回 BO API。
-    这条在第 05 章列为张力点 D 与缺口 G4。
+    这条在第 05 章列为冲突点 D 与缺口 G4。
   </div>
   <div class="explain" style="margin-top:16px">
     <b>怎么读这张图（执行面）：</b>横向看是「一次请求过的五道关」（①谁能进 → ②网关验身份 → ③Agent 按预设流程干活 →
@@ -1055,10 +1055,10 @@
       <div class="boxes">
         <div class="lb"><b>身份与令牌</b><span>T1/T2/T3/OT 逐跳</span></div>
         <div class="lb"><b>Agent 注册中心</b><span>清册/吊销/SoD/协作</span></div>
-        <div class="lb"><b>语义服务</b><span>术语/口径/规则解释</span></div>
+        <div class="lb"><b>语义服务</b><span>术语/定义/规则解释</span></div>
         <div class="lb"><b>模型网关</b><span>mock/回放/live 三态</span></div>
         <div class="lb"><b>审计/成本/追踪</b><span>五要素+四维计量</span></div>
-        <div class="lb"><b>评测与回放</b><span>50 锚点 + 录制回放</span></div>
+        <div class="lb"><b>评测与回放</b><span>50 条基准 + 录制回放</span></div>
         <div class="lb"><b>配置存储</b><span>三层叠加 · 改完即生效</span></div>
       </div>
     </div>
@@ -1072,9 +1072,9 @@
       <td>标准化意图（message + user + tenant + trace）或事件上下文（invoiceNo + findings）</td>
       <td>接入面（登录态/T1）、网关 exchange、hub 事件与定时线程</td></tr>
     <tr><td><b>决策</b></td>
-      <td>意图 + 语义上下文（术语/口径/规则解释）+ Harness 资产（护栏/提示词）</td>
+      <td>意图 + 语义上下文（术语/定义/规则解释）+ Harness 资产（护栏/提示词）</td>
       <td>工具调用计划（工具名 + 参数），或挂起载荷（审批三要素），或最终应答</td>
-      <td>模型网关（填空）、语义服务（同源口径）、检查点库（挂起/唤醒）</td></tr>
+      <td>模型网关（填空）、语义服务（同源定义）、检查点库（挂起/唤醒）</td></tr>
     <tr><td><b>行动</b></td>
       <td>工具调用计划 + 令牌（T3/OT）+ 业务幂等键</td>
       <td>执行结果 + 取证（错误码/completeness/审批单号/变更记录号/版本戳）</td>
@@ -1087,14 +1087,14 @@
 3. <span class="hl">erp-ai-hub/hub/graphs/agents.py</span>     <span class="c"># 图注册（Agent → 场景映射；多租户 Agent 覆盖也在这）</span>
 4. <span class="hl">erp-ai-action/app/scenes.yaml</span>       <span class="c"># 场景定义（工具清单交集、护栏引用）</span>
 5. <span class="hl">harness-assets/standard/skills/…</span>    <span class="c"># 技能资产（可选）：该场景的领域知识供提示词引用</span>
-6. <span class="hl">eval/cases/ap-*.yaml</span>                <span class="c"># 评测锚点：正例 + 负例（越权/诱导），绑定能力问题清单 verified_by</span>
+6. <span class="hl">eval/cases/ap-*.yaml</span>                <span class="c"># 评测基准：正例 + 负例（越权/诱导），绑定能力问题清单 verified_by</span>
 7. <span class="hl">scripts/demo/scene_N.py</span>            <span class="c"># 演示断言（可重复执行的退出码）</span>
 8. <span class="hl">workbuddy/ 场景预选</span>                 <span class="c"># 交互面入口（可选）：场景下拉项 + 深链</span></div>
   <div class="explain">
     <b>开发视图的纪律：</b>① 场景图只 import <span class="mono">hub.sdk</span>（LangGraph 唯一入口，换框架只改一个文件）；
     ② 决策部件里模型只按动作契约填空（CONTRACTS 枚举），开发者不写自由提示词逻辑；
     ③ 行动部件不直连数据库——新场景复用同一套网关拦截链与 BO 合同，没有旁路；
-    ④ 上线前评测门禁：新场景必须带评测锚点（含负例），50 条全绿才能发；
+    ④ 上线前评测门禁：新场景必须带评测基准（含负例），50 条全绿才能发；
     ⑤ 决策部件还要守一条本仓尚未定死的约定：单个 Agent 挂载的工具数有上限，
     超了就按场景取交集或分层暴露，单次请求的上下文按语义片段、会话历史、工具结果分配预算。
     工具越多模型选错的概率越高，一个应付域已经 33 个操作，这件事要在架构层给默认策略，
@@ -1135,15 +1135,15 @@
       <div class="seg"><div class="ic h">怎么做</div><div class="tx">
         AI 的每一个动作都走完整治理链：令牌（T2/T3）→ BO 合同（<span class="mono">boapi-spec/bo-ap.yaml</span>）→
         存量系统原生校验/幂等/审计。<b>全系统不存在第二套权限体系</b>。验证手段就是开头那个事故的复现：
-        三口径对照证明「AI 看到的 = 页面看到的」。
+        三个入口对照证明「AI 看到的 = 页面看到的」。
         <b>还有一件事要在架构上给结论：</b>老的 Open API 没有因为 BO API 建成而消失。
         它仍然只做租户级隔离、仍然返回 5054 条，而且仍然是别人想接 Agent 时最省事的一条路。
         只要它开着，上面那句话就只是约定，不是机制。可选处置有三种：
-        标为机对机专用并用网络策略限制调用方、在网关侧统一收口、按计划下线。
+        标为机对机专用并用网络策略限制调用方、统一由网关接管、按计划下线。
         本仓未作处置，登记为缺口 G8。
         <div class="dep">落点：<span class="mono">erp-ai-action/app/auth</span>（令牌链）+ <span class="mono">legacy-erp-ap/.../security/PermissionService</span>（权限同源）</div>
       </div></div>
-      <div class="proof"><b>验证：</b>scene_1 三口径对照（页面 ~50 / Open API 5054 / BO API 同组织口径 + 披露过滤维度）<span class="pill ok">scene_1</span></div>
+      <div class="proof"><b>验证：</b>scene_1 三个入口对照（页面 ~50 / Open API 5054 / BO API 同样的组织范围 + 披露过滤维度）<span class="pill ok">scene_1</span></div>
     </div>
   </div>
 
@@ -1164,7 +1164,7 @@
       <div class="seg"><div class="ic h">怎么做</div><div class="tx">
         Java 存量域保持三样东西：<b>事务</b>（<span class="mono">@Transactional</span> 与变更同事务落库）、
         <b>业务幂等</b>（同一业务键重复发起，重放首次结果，不重复执行）、<b>稳定错误码</b>
-        （<span class="mono">AP.MATCH.QTY_MISMATCH</span> 这类语义化编码，评测直接锚定）。
+        （<span class="mono">AP.MATCH.QTY_MISMATCH</span> 这类语义化编码，评测直接断言）。
         AI 只能经 BO 合同进入，没有旁路。
         <div class="dep">落点：<span class="mono">legacy-erp-ap/.../service/TaxCodeService</span>（幂等落库）+ <span class="mono">rules/RuleEngine</span>（规则引擎）</div>
       </div></div>
@@ -1190,9 +1190,9 @@
         三件事做到共享：① BO 工具与页面走<b>同一个</b> <span class="mono">PermissionService</span>
         （租户/公司/组织三维判定，AI 侧零权限计算）；② 审计五要素贯穿四个服务；
         ③ 写路径幂等在 Java 不在网关。一致性由 Java 测试 <span class="mono">PermissionParityTest</span> 守护。
-        <div class="dep">落点：<span class="mono">legacy-erp-ap/.../security/PermissionService.java</span>（★ UI 与 BO 共用，注释里就写着「权限同源是平价保证」）</div>
+        <div class="dep">落点：<span class="mono">legacy-erp-ap/.../security/PermissionService.java</span>（★ UI 与 BO 共用，注释里就写着「权限同源，页面和 AI 看到的数据范围才一致」）</div>
       </div></div>
-      <div class="proof"><b>验证：</b>PermissionParityTest + scene_1 三口径对照<span class="pill ok">scene_1</span></div>
+      <div class="proof"><b>验证：</b>PermissionParityTest + scene_1 三个入口对照<span class="pill ok">scene_1</span></div>
     </div>
   </div>
 
@@ -1203,7 +1203,7 @@
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         模型不知道「进货单」在这家租户指采购订单还是收货单；不知道「大额风险」按哪个阈值算；
-        字段口径、业务规则散落在各处，每个 AI 应用自己理解一遍，<b>口径必然漂移</b>。
+        字段含义、业务规则散落在各处，每个 AI 应用自己理解一遍，<b>定义必然漂移</b>。
         同时还有一个更大的许诺要小心：「本体当逻辑核心」——从「解释业务」升级到「生成业务结构」。
       </div></div>
       <div class="seg"><div class="ic w">为什么</div><div class="tx">
@@ -1238,14 +1238,14 @@
       </div></div>
       <div class="seg"><div class="ic w">为什么</div><div class="tx">
         存量系统的元数据（有哪些实体、哪些字段、哪些枚举）本身就是「户口本」，应该<b>实时取用</b>
-        而不是人工誊抄一份。人只该写机器推不出来的东西：业务术语口径（「进货单」指什么）、
+        而不是人工誊抄一份。人只该写机器推不出来的东西：业务术语定义（「进货单」指什么）、
         维度分组这类业务约定。机器能生成的让机器生成，剩下的交给<b>漂移检测</b>盯着两边不一致。
       </div></div>
       <div class="seg"><div class="ic h">怎么做</div><div class="tx">
         语义文件三段式里的<b>投影段</b>改为实时生成：实体清单/标签/枚举直接读存量
         <span class="mono">/metadata</span> 接口（<span class="mono">effective_projection</span>，
         60 秒缓存，不可达时回落冷启动清单）；存量新增实体（如 PurchaseOrderLine）<b>自动出现</b>，
-        语义文件从未写过它。配套两条新漂移不变式：口径层术语指向的实体必须存在（TERM_TARGET）、
+        语义文件从未写过它。配套两条新漂移不变式：定义层术语指向的实体必须存在（TERM_TARGET）、
         派生字段的基字段必须存在（DERIVED_BASE）——喂养反过来又加强了校验。
         <div class="dep">落点：<span class="mono">erp-ai-context/service/loader.py</span>（effective_projection）+ <span class="mono">drift/drift_check.py</span>（不变式）</div>
       </div></div>
@@ -1299,7 +1299,7 @@
         <b>适用边界：</b>本条链路约束的是确定性执行与受限自主只读两档。开放探索档不走 BO API，
         走分析侧湖仓直查（只读沙箱 + 证据链 + 人在环），见原则 17 与第 07 章决策三。
         要注意的是，湖侧权限是另一份策略资产，和 PermissionService 之间会漂移，
-        这是第 05 章张力点 D 要回答的问题。
+        这是第 05 章冲突点 D 要回答的问题。
         <div class="dep">落点：<span class="mono">hub/graphs/*</span> → <span class="mono">erp-ai-action/app/mcp/gateway.py</span> → <span class="mono">legacy-erp-ap/.../boapi/</span>；追踪 <span class="mono">erp-ai-action/app/otel_setup.py</span></div>
       </div></div>
       <div class="proof"><b>验证：</b>开场动画即此链的分步演示；Jaeger <a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">现场看真实 trace</a><span class="pill ok">链路</span></div>
@@ -1420,7 +1420,7 @@
 
   <!-- 12 -->
   <div class="belief">
-    <div class="bh"><span class="n">12</span><span class="src-tag core">总纲</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋对冲</span>
+    <div class="bh"><span class="n">12</span><span class="src-tag core">总纲</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋保险</span>
       <span class="orig">Agent 演进：先协同传统，终局替换部分执行</span><span class="st done">✅ 当前协同阶段</span></div>
     <div class="bb">
       <div class="seg"><div class="ic q">问题</div><div class="tx">
@@ -1436,13 +1436,13 @@
         T3 一次性写令牌、审批三要素+快照+参数指纹、幂等键、审计五要素——<b>全部定义在网关与
         <span class="mono">bo-ap.yaml</span> 合同层，不在 Java 里</b>。本仓验证不了终局（也不该），
         但验证了「终局发生时治理不变」这个前提。现处协同阶段。
-        <b>对冲的范围要说准：</b>合同层锁住的是管控面，也就是幂等语义、审批触发、错误码分类、审计要素。
+        <b>保险的范围要说准：</b>合同层锁住的是管控面，也就是幂等语义、审批触发、错误码分类、审计要素。
         业务规则本身在 Java 的 RuleEngine 里，换执行端时这部分要重做一遍。
         准确说法是管控面零改动、业务逻辑需要重新实现并用同一套评测验收，
         说成整体零改动会过头。
         <div class="dep">落点：<span class="mono">boapi-spec/bo-ap.yaml</span>（★ 合同即治理）+ <span class="mono">erp-ai-action/app/{auth,approval}</span></div>
       </div></div>
-      <div class="proof"><b>验证：</b>合同层定义的幂等/审批/审计语义在评测中全量断言；详见 <a href="token-design.md">令牌设计</a><span class="pill ok">架构对冲</span></div>
+      <div class="proof"><b>验证：</b>合同层定义的幂等/审批/审计语义在评测中全量断言；详见 <a href="token-design.md">令牌设计</a><span class="pill ok">替换保险</span></div>
     </div>
   </div>
 
@@ -1480,12 +1480,12 @@
         标品就被拖垮。租户要能<b>自助接入自己的系统</b>，又不给核心开后门。
       </div></div>
       <div class="seg"><div class="ic w">为什么</div><div class="tx">
-        隔离必须在<b>每一层</b>同时成立才有意义：数据（查询互不可见）、语义（口径各答各的）、
+        隔离必须在<b>每一层</b>同时成立才有意义：数据（查询互不可见）、语义（定义各答各的）、
         消息（投递按租户）、成本（记账按租户）。扩展通道是「不开放核心改造」前提下唯一的
         集成方式：API 让租户的程序调进来，Message 让租户的系统接出去。
       </div></div>
       <div class="seg"><div class="ic h">怎么做</div><div class="tx">
-        双租演示（华东制造 T-EAST / 星联科技 T-UNI）验证隔离：数据/术语/口径/成本四层互不可见。
+        双租演示（华东制造 T-EAST / 星联科技 T-UNI）验证隔离：数据/术语/定义/成本四层互不可见。
         API 扩展 = BO API（规格即工具）；<b>Message 扩展</b> = 租户消息订阅（topic × webhook ×
         HMAC-SHA256 签名），事件按（租户 × topic）隔离投递出平台，逐次审计，吊销即停——
         与形态④同源：同一 outbox 事件，「事件进 Agent」与「事件出平台」不是两套事件。
@@ -1495,19 +1495,19 @@
     </div>
   </div>
 
-  <h3>判断之间的关系：四个需要表态的张力点</h3>
+  <h3>判断之间的关系：四个互相打架、需要表态的冲突点</h3>
   <p class="body">14 条不是并列的清单，有几处互相拉扯，需要明确表态（否则会被问倒）：</p>
   <div class="grid c3" style="margin-top:10px">
     <div class="card"><h4>A · 「内生」（3）vs 两套栈的拓扑</h4>
       <p>Python 底座 + Java 存量，字面上像「外挂」。表态：内生 = 共享器官（权限/审计/幂等），
-      不是进程同体；底座优先是业界承认的原生路线。三口径对照是证据。</p></div>
+      不是进程同体；底座优先是业界承认的原生路线。三个入口对照是证据。</p></div>
     <div class="card"><h4>B · 「本体是核心」（4）vs 「元数据是来源」（5）</h4>
       <p>从元数据推导的本体只是镜子——镜子能校验（漂移检测），不能当引擎。表态：分三阶段，
       本仓已走到阶段二第一切片（派生字段→API）。把阶段一说成核心会言过其实。</p></div>
     <div class="card"><h4>C · 「终局替换」（12）vs 「存量确定性」（2）</h4>
       <p>替换之后谁做确定性执行？表态：治理面在网关与合同层、不在 Java，执行端只要履行
-      同一 BO 合同（同幂等语义、同错误码、同审计），管控面零改动。这是替换的对冲。
-      对冲只覆盖管控面，业务规则要跟着迁移，见判断 12。</p></div>
+      同一 BO 合同（同幂等语义、同错误码、同审计），管控面零改动。这是给终局替换留的保险。
+      保险只覆盖管控面，业务规则要跟着迁移，见判断 12。</p></div>
     <div class="card"><h4>D · 「权限同源」（1/3）vs 探索面的湖上权限（17）</h4>
       <p>执行面的地基是 AI 与页面共用同一个 PermissionService，整篇文章的说服力都建在这上面。
       而探索面走湖仓直查，权限由湖侧的行列级策略强制。那是另一份资产、另一条维护链路，
@@ -1528,11 +1528,11 @@
 
   <div class="grid c2" style="margin-top:12px">
     <div class="card"><h4><span class="src-tag add">增补</span>15 · 可验证性是一等公民</h4>
-      <p>50 条锚点评测分六类，幻觉与诱导是两个专门的负向类；能力问题清单与评测用例同源绑定；
+      <p>50 条基准评测分六类，幻觉与诱导是两个专门的负向类；能力问题清单与评测用例同源绑定；
       mock/replay/live 三态可按请求钉定。被评测的不只是业务答案对不对，护栏本身也在评测范围内。
-      新场景没有评测锚点（含负例）不允许发布。</p></div>
-    <div class="card"><h4><span class="src-tag add">增补</span>16 · 口径互证是治理基础设施</h4>
-      <p>三口径权限对照、成本台账与审计五要素对账、四问自检，这些都是可以重复跑的脚本。
+      新场景没有评测基准（含负例）不允许发布。</p></div>
+    <div class="card"><h4><span class="src-tag add">增补</span>16 · 自动对账是治理基础设施</h4>
+      <p>三个入口的权限对照、成本台账与审计五要素对账、四问自检，这些都是可以重复跑的脚本。
       「监督者」这个角色要成立，靠的是这类数据设施，不是靠责任心。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>17 · 三档形态：确定性执行 / 受限自主只读 / 开放探索</h4>
       <p>14 条总纲描述的是第一档。把所有场景都塞进第一档是有代价的：每个新问题要新画一张图、
@@ -1548,11 +1548,11 @@
       工具即可演示「底座不绑定单一 ERP」。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>19 · 知识库建设节奏：场景驱动生长</h4>
       <p>骨架一次建好（三段式、自动喂养、漂移检测、评测同源绑定），血肉按场景生长，
-      每寸口径层资产都带评测锚。「一次建全、一劳永逸」的问题是：没有消费就没有验证，
+      每寸定义层资产都带评测基准。「一次建全、一劳永逸」的问题是：没有消费就没有验证，
       手工维护的面积越大漂移越多，而且这类长周期基座项目在组织上很难走到上线。
       参照文选型第五条「单点切入、拒绝一步到位」是同一个意思。详见第 07 章决策四。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>20 · 上下文预算与工具规模是架构约束<span class="tag">本仓未定</span></h4>
-      <p>语义层回答了口径是什么，没回答一次请求该给模型多少上下文。
+      <p>语义层回答了定义是什么，没回答一次请求该给模型多少上下文。
       单个 Agent 挂载的工具越多，工具选对的概率越低，这个衰减在几十个工具的量级上就已经明显。
       本仓一个应付域就有 33 个操作，十几个子产品之后必须在架构上给答案，而不是各产品自己试。
       要定三件事：单 Agent 工具数上限与超限后的收窄办法（按场景取交集、分层暴露）、
@@ -1568,15 +1568,15 @@
       <tr><td class="mono">G1</td><td>数据侧提示注入</td>
         <td>护栏拦的是用户说出来的话。工具返回的数据没有当不可信输入处理，而发票备注、供应商名称、附件文本这些字段供应商可以填。合法用户只是让 AI 读一张发票，指令藏在数据里。配上写路径和审批台，攻击目标就变成让审批人批一个看起来合理的变更。</td>
         <td>提示词里把工具输出与指令物理分隔并标注来源；审批卡标明每个参数抽自哪段文本；评测加一类数据侧注入负例。见判断 9。</td></tr>
-      <tr><td class="mono">G2</td><td>版本锚点缺模型与提示词</td>
-        <td>四件套锚定了 spec/ruleset/seed/semantics，但让行为变化最大的两样是模型版本和提示词版本。这两样改了，录制不会作废、评测不会重跑，50/50 全绿可能已经不代表当前行为。</td>
+      <tr><td class="mono">G2</td><td>版本标识缺模型与提示词</td>
+        <td>四件套锁定了 spec/ruleset/seed/semantics，但让行为变化最大的两样是模型版本和提示词版本。这两样改了，录制不会作废、评测不会重跑，50/50 全绿可能已经不代表当前行为。</td>
         <td>扩成六件套，模型或提示词版本变更同样触发录制作废与全量重跑。见贯穿线 B。</td></tr>
       <tr><td class="mono">G3</td><td>受限自主只读档未建；工具规模与上下文预算未定</td>
-        <td>所有场景都走静态图，场景数会随问题数线性增长；工具数与上下文没有上限约定，各产品各试一套，跨产品的质量口径就没法比。</td>
+        <td>所有场景都走静态图，场景数会随问题数线性增长；工具数与上下文没有上限约定，各产品各试一套，跨产品的质量标准就没法比。</td>
         <td>先定工具数上限与上下文预算，再挑一个只读场景做试点。见原则 17、20。</td></tr>
       <tr><td class="mono">G4</td><td>探索面的湖侧权限同源未实现</td>
         <td>执行面靠共用 PermissionService 保证「AI 看到的 = 页面看到的」，探索面改由湖侧行列级策略强制，等于又有了第二套权限体系，时间一长必然对不上。</td>
-        <td>湖侧策略由同一份 scope 模型在 ELT 环节生成，加第五条漂移不变式；湖上只给聚合，明细下钻回 BO API。见张力点 D。</td></tr>
+        <td>湖侧策略由同一份 scope 模型在 ELT 环节生成，加第五条漂移不变式；湖上只给聚合，明细下钻回 BO API。见冲突点 D。</td></tr>
       <tr><td class="mono">G5</td><td>事件与定时的固定身份</td>
         <td>形态④⑤没有真人会话，由后台线程代表固定身份执行。这是一个长期存在的账号，和逐跳收窄的令牌链是两回事，现在没有授权人、没有复核周期。</td>
         <td>明确授权人、只读边界、复核周期，纳入注册中心统一管理。见判断 10。</td></tr>
@@ -1588,7 +1588,7 @@
         <td>定委托深度上限与超时传播规则；部分失败时应答必须声明哪一域未取到证据，不允许静默给结论。</td></tr>
       <tr><td class="mono">G8</td><td>老 Open API 的归宿</td>
         <td>它还在，还是租户级隔离，还是接 Agent 最省事的一条路。只要它开着，「全系统不存在第二套权限体系」就只是约定而不是机制。</td>
-        <td>三选一：标为机对机专用加网络策略限制调用方、网关统一收口、按计划下线。见判断 1。</td></tr>
+        <td>三选一：标为机对机专用加网络策略限制调用方、统一由网关接管、按计划下线。见判断 1。</td></tr>
     </tbody>
   </table>
 
@@ -1637,7 +1637,7 @@
         <span class="ow">应用部门</span></div>
       <div class="layer l3"><div class="ln">L3</div>
         <div class="lc"><div class="nm">ERP 上下文与动作层（ERP 独有）<span class="repo">erp-ai-context/ · boapi-spec/ · legacy-erp-ap/{boapi,mcp}</span></div>
-        <div class="ds">3a 语义与上下文：元数据/关系/规则/口径，实时可查的语义服务；3b 动作暴露：既有 API 包装成带人的权限的工具（BO API 承载）。</div></div>
+        <div class="ds">3a 语义与上下文：元数据/关系/规则/定义，实时可查的语义服务；3b 动作暴露：既有 API 包装成带人的权限的工具（BO API 承载）。</div></div>
         <span class="ow">应用主导 · 平台供技术</span></div>
       <div class="layer l4"><div class="ln">L4</div>
         <div class="lc"><div class="nm">AI 能力组件<span class="repo">eval/ · mock-model 容器</span></div>
@@ -1713,15 +1713,15 @@
       <h5>3a 语义与上下文 · <span class="mono">erp-ai-context/</span></h5>
       <p>让 Agent「看得懂」。不是数据仓库（业务数据零拷贝，只存「地图」）。核心是语义文件三段式：
       <b>投影段</b>（实体清单/标签/枚举——由存量 <span class="mono">/metadata</span> 实时生成，
-      人工只写口径层术语）+ <b>增量段</b>（元数据推不出的业务资产：派生字段、术语、指标口径）+
-      <b>原生段</b>（引用 BO 规格的能力问题）。租户/行业口径经 overlays 三层叠加解析。
+      人工只写定义层术语）+ <b>增量段</b>（元数据推不出的业务资产：派生字段、术语、指标定义）+
+      <b>原生段</b>（引用 BO 规格的能力问题）。租户/行业定义经 overlays 三层叠加解析。
       <b>漂移检测</b>把「语义与存量一致」做成可检验不变式（预埋 2 处漂移必须全部检出，
       含术语目标与派生基字段两条新规则）。<b>本体驱动</b>：增量段带 compute 的派生字段经构建期
       生成器（<span class="mono">scripts/gen_derived_fields.py</span>）产出 <span class="mono">derived-fields.json</span>
       （带语义版本戳），Java 侧通用引擎加载——本体改定义、重建，API 能力随之改变。</p>
       <div class="cm-files"><span class="hl">domains/ap_invoice.yaml</span>        <span class="c"># 语义文件三段式（版本 ap-sem-1.1.0）</span>
 <span class="hl">service/loader.py</span>               <span class="c"># effective_projection：投影段实时生成（元数据自动喂养）+ 冷启动回退</span>
-<span class="hl">service/tools.py</span>                <span class="c"># 七个语义查询工具：术语翻译/指标口径/规则解释/实体与字段清单…</span>
+<span class="hl">service/tools.py</span>                <span class="c"># 七个语义查询工具：术语翻译/指标定义/规则解释/实体与字段清单…</span>
 <span class="hl">service/config_store.py</span>         <span class="c"># 配置存储：DB 层（管理端可改）+ 文件层（出厂默认）+ 变更记录</span>
 <span class="hl">drift/drift_check.py</span>            <span class="c"># 漂移检测：四类不变式（字段/规则/术语目标/派生基字段）</span>
 <span class="hl">overlays/{tenant-east,tenant-uni,partner-manufacturing}.yaml</span>  <span class="c"># 双租 + 行业语义包</span></div>
@@ -1729,17 +1729,17 @@
       <p>让 Agent「动得了」且带着人的权限。<b>全项目唯一规格真源</b>是
       <span class="mono">boapi-spec/bo-ap.yaml</span>（OpenAPI 3.1 + x-bo-extensions：操作性质/不可逆/
       幂等键/错误分类/completeness/正反例），其余全部派生：MCP 工具定义构建期生成
-      （规格即工具）、网关注册表加载它、评测用例锚定它、语义投影引用它。改规格 →
+      （规格即工具）、网关注册表加载它、评测用例引用它、语义投影引用它。改规格 →
       版本戳变 → 录制作废 → 评测重跑。BO API 与页面<b>共用同一个 PermissionService</b>
       （三维数据权限），越界按「未找到」处理（不泄露存在性）；权限不足时披露
       <span class="mono">completeness.skippedRuleGroups</span> 而非静默。</p>
       <div class="cm-files"><span class="hl">boapi-spec/bo-ap.yaml</span>              <span class="c"># ★ 规格真源（spec 1.2.0）：33 个操作含 proc 采购域与 ap.invoice.getDerivedField</span>
 <span class="hl">legacy-erp-ap/…/boapi/BoApiController</span> <span class="c"># BO API 入口（T3 进这里）</span>
 <span class="hl">legacy-erp-ap/…/mcp/McpDispatcher</span>     <span class="c"># MCP 工具分发；manifest 由规格构建期生成</span>
-<span class="hl">legacy-erp-ap/…/security/PermissionService</span> <span class="c"># ★ 三维数据权限（UI 与 BO 共用 = 平价保证）</span>
+<span class="hl">legacy-erp-ap/…/security/PermissionService</span> <span class="c"># ★ 三维数据权限（UI 与 BO 共用 = 页面与 AI 一致的保证）</span>
 <span class="hl">legacy-erp-ap/…/service/BoToolExecutor</span> <span class="c"># BO 工具执行器（校验/下钻/税码/派生字段…）</span>
 <span class="hl">legacy-erp-ap/…/service/DerivedFieldService</span> <span class="c"># 本体驱动通用求值引擎（零字段特定逻辑）</span></div>
-      <div class="cm-verify"><b>验证：</b>scene_1（三口径）、scene_2（completeness）、scene_5（双租口径）、scene_11（喂养+驱动）、drift_check、PermissionParityTest</div>
+      <div class="cm-verify"><b>验证：</b>scene_1（三个入口对照）、scene_2（completeness）、scene_5（双租定义）、scene_11（喂养+驱动）、drift_check、PermissionParityTest</div>
     </div>
   </div>
 
@@ -1750,7 +1750,7 @@
       <h5>设计要点</h5>
       <p>这层放「开发态与运行态的通用零件」。本演示域小（单领域 AP + 采购切片），
       <b>诚实地说明建了什么、没建什么</b>：</p>
-      <p><b>已建——评测与回放体系</b>：50 条锚点用例分六类（含幻觉/诱导两个负向类），三层 runner
+      <p><b>已建——评测与回放体系</b>：50 条基准用例分六类（含幻觉/诱导两个负向类），三层 runner
       （deterministic / judge / 采样），与能力问题清单同源绑定（<span class="mono">verified_by</span>，
       两处同一份防脱节）。mock 脚本模型保证评测确定性。<br>
       <b>未建——知识平台、检索、图数据库、Memory</b>：演示域单小，语义层用「YAML 语义文件 +
@@ -1758,7 +1758,7 @@
       这不影响架构结论：语义服务对外暴露的是查询工具接口，后端从 YAML 换图数据库，调用方无感。
       <b>注：</b>引入探索面（第 07 章决策三）是这些组件从「未建」变「必建」的第一个业务理由——
       探索 = L3a 语义图谱 + L4 数据湖/检索的组合应用。</p>
-      <div class="cm-files"><span class="hl">eval/cases/ap-*.yaml</span>       <span class="c"># 50 条锚点用例（六类：perm/diag/tool/mislead/hallu/comp）</span>
+      <div class="cm-files"><span class="hl">eval/cases/ap-*.yaml</span>       <span class="c"># 50 条基准用例（六类：perm/diag/tool/mislead/hallu/comp）</span>
 <span class="hl">eval/runner/run_eval.py</span>     <span class="c"># 三层 runner：确定性检查（工具名/禁调/步数/不变式）</span>
 <span class="hl">erp-ai-context/questions-capability.yaml</span>  <span class="c"># 30 条能力问题（与评测用例同源绑定）</span></div>
       <div class="cm-verify"><b>验证：</b>run_eval --tier full → 50/50，门禁全绿</div>
@@ -1835,11 +1835,11 @@
 <span class="hl">app/otel_setup.py</span>        <span class="c"># GenAI span 树 + 六组扩展字段</span>
 <span class="hl">app/cost/service.py</span>      <span class="c"># 租户×Agent×场景×用户 四维计量</span></div>
       <h5 style="margin-top:14px">贯穿线 B · Agent 生命周期</h5>
-      <p>版本四件套（<span class="mono">spec / ruleset / seed / semantics</span>）锚定「跑的是什么版本」：
+      <p>版本四件套（<span class="mono">spec / ruleset / seed / semantics</span>）锁定「跑的是什么版本」：
       证据包与检验报告都携带；任一版本变更，replay 录制自动作废、评测强制重跑。Agent 的上/下线
       走注册中心（吊销即时生效，scene_4），灰度按「场景+租户」切。评测门禁是发布的最后一道闸。
       <b>这里有个缺口要点出来：</b>四件套锚的是规格、规则、种子数据和语义，
-      而让行为变化最大的两样是模型版本和提示词版本，它们现在不在锚点里。
+      而让行为变化最大的两样是模型版本和提示词版本，它们现在不在四件套里。
       模型升一个小版本，录制不会作废、评测不会重跑，50/50 全绿就可能已经不代表当前行为。
       建议扩成六件套，模型或提示词版本变更同样触发录制作废与全量重跑。登记为缺口 G2。</p>
       <div class="cm-verify"><b>验证：</b>GET /gw/versions 四件套；selfcheck Q2/Q3/Q4（谁在用/有无异常/花多少钱）；scene_4 吊销即时生效</div>
@@ -1883,10 +1883,10 @@
   <h4 style="margin-top:18px">业界有没有硬性数字门槛？——没有硬门槛，但有可量化的技术判据</h4>
   <p class="body">
     诚实的回答：<b>业界不存在「超过多少个实体必须上图」这样的硬性标准</b>——厂商和论文给的是<b>判据方向</b>，
-    不是数字门槛，而且判据本身存在争论。但有一条技术锚点是硬的，可以拿来做工程决策：
+    不是数字门槛，而且判据本身存在争论。但有一条技术依据是硬的，可以拿来做工程决策：
   </p>
   <div class="explain">
-    <b>技术锚点 · 遍历成本模型（index-free adjacency）：</b>
+    <b>技术依据 · 遍历成本模型（index-free adjacency）：</b>
     原生图数据库（Neo4j 一类）的每个节点直接持有指向相邻关系的指针——<b>每跳一跳是一次 O(1) 的指针追访，
     成本只和「实际走过的子图大小」有关，与全图大小无关</b>；关系型数据库每次 JOIN 是一次约 O(log n) 的
     索引查找 + 连接开销，<b>成本随表规模和 JOIN 深度累积</b>（出处：Robinson / Webber / Eifrem
@@ -1909,7 +1909,7 @@
       <td>实体 &lt; 10³，字段 &lt; 10⁴（本仓 8 实体、约百字段）</td>
       <td>实体 &gt; 10⁵、关系边 &gt; 节点数 × 10（SAP 端点：730 万项）</td></tr>
     <tr><td><b>查询遍历深度</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">最硬的一条判据</span></td>
-      <td>≤ 2 跳，或批量延迟可接受（按名取：术语翻译、口径查读、规则解释）</td>
+      <td>≤ 2 跳，或批量延迟可接受（按名取：术语翻译、定义查询、规则解释）</td>
       <td><b>≥ 3 跳且要求交互级延迟（&lt; 1s）</b>：跨域关系链、影响力分析、血缘追溯——关系型引擎在 3~4 跳急剧劣化，图引擎近乎平坦</td></tr>
     <tr><td><b>平均连通度</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">边数 ÷ 节点数</span></td>
       <td>&lt; 3（稀疏）：三单匹配这类固定关系，手写增量段即可</td>
@@ -1918,12 +1918,12 @@
       <td>≤ 3 种边类型（本仓：对象关系/术语引用/规则引用）</td>
       <td><b>≥ 5 种</b>且需要按边类型过滤/推理（跨域引用、流程编排、事件因果、权限继承）</td></tr>
     <tr><td><b>维护主体</b></td>
-      <td>语义资产需要<b>人工评审 + 版本管理</b>（口径是业务约定，改错要能回滚追责）</td>
+      <td>语义资产需要<b>人工评审 + 版本管理</b>（定义是业务约定，改错要能回滚追责）</td>
       <td>元数据管道<b>高频自动写入</b>（分钟级同步数十个子产品），文件工作流无法承载写放大</td></tr>
   </table>
 
   <div class="explain">
-    <b>「具体多复杂才算复杂」的可测口径（本仓整理）：</b>同时满足以下三条中的两条，就到了该评估上图的临界——
+    <b>「具体多复杂才算复杂」的可测标准（本仓整理）：</b>同时满足以下三条中的两条，就到了该评估上图的临界——
     ① 最长业务查询要<b>走 3 跳以上关系且要求交互延迟</b>（例：「这张发票的供应商，近一年还关联哪些被拦的单据，
     它们的共同收货组织是哪个」——发票→供应商→被拦发票→收货组织，4 跳）；
     ② 平均连通度 ≥ 10（对象间关系比对象本身还多）；
@@ -1946,24 +1946,24 @@
   <p class="body">
     最常见的误解：「上图 = 把业务数据搬进图里」。错。<b>图里存的是「类型层」和「语义资产」，
     不存交易数据本身</b>——一张张具体的发票行留在 ERP 数据库里（零拷贝），图里只有「发票是什么、
-    和谁有关系、谁能看、怎么查」。SAP 的 730 万项也是这个口径：字段、实体、流程、关系的<b>定义</b>，
+    和谁有关系、谁能看、怎么查」。SAP 的 730 万项也是这个范畴：字段、实体、流程、关系的<b>定义</b>，
     不是 730 万行交易记录。
   </p>
 
   <table>
     <tr><th style="width:150px">节点（五类）</th><th>代表什么</th><th style="width:34%">本仓对应（若上图的样子）</th></tr>
     <tr><td><b>业务对象类型</b></td><td>「发票」「采购订单」「收货单」「供应商」这些<b>类</b>——不是某一张发票</td><td>Invoice / PurchaseOrder / GoodsReceipt / Supplier 等 8 个实体节点</td></tr>
-    <tr><td><b>字段</b></td><td>对象下的字段定义（名、类型、口径），挂在所属对象节点上</td><td>amount_cny、status 等约百个字段节点</td></tr>
-    <tr><td><b>业务术语</b></td><td>人工口径层的术语锚点（同一术语在不同租户指向不同对象）</td><td>「进货单」「大额风险」等术语节点，按租户分区</td></tr>
+    <tr><td><b>字段</b></td><td>对象下的字段定义（名、类型、含义），挂在所属对象节点上</td><td>amount_cny、status 等约百个字段节点</td></tr>
+    <tr><td><b>业务术语</b></td><td>人工定义层的术语条目（同一术语在不同租户指向不同对象）</td><td>「进货单」「大额风险」等术语节点，按租户分区</td></tr>
     <tr><td><b>规则</b></td><td>业务规则的登记项（供解释与引用，<b>不存执行逻辑</b>）</td><td>AP.MATCH.QTY_MISMATCH 等 6 条规则节点</td></tr>
     <tr><td><b>能力/操作</b></td><td>BO 工具（AI「动得了」的入口）及其参数与正反例</td><td>ap.invoice.checkValidation 等 33 个操作节点</td></tr>
   </table>
   <table style="margin-top:10px">
     <tr><th style="width:150px">边（四类语义）</th><th>代表什么关系</th><th style="width:34%">本仓示例</th></tr>
     <tr><td><b>对象 ↔ 对象</b></td><td>业务关系：三单匹配、归属、承运</td><td>Invoice —匹配→ PurchaseOrder —收货→ GoodsReceipt；Invoice —归属→ Supplier</td></tr>
-    <tr><td><b>术语 → 对象/字段</b></td><td>口径翻译：术语在<b>某租户语境下</b>指什么</td><td>「进货单」—T-EAST 语境→ PurchaseOrder；—T-UNI 语境→ GoodsReceipt</td></tr>
+    <tr><td><b>术语 → 对象/字段</b></td><td>含义翻译：术语在<b>某租户语境下</b>指什么</td><td>「进货单」—T-EAST 语境→ PurchaseOrder；—T-UNI 语境→ GoodsReceipt</td></tr>
     <tr><td><b>规则 → 对象/字段</b></td><td>规则引用了哪些对象字段（解释与血缘）</td><td>QTY_MISMATCH —比较→ Invoice.qty 与 GoodsReceipt.qty</td></tr>
-    <tr><td><b>操作 → 对象</b></td><td>访问路径：这个工具读写哪个对象、什么口径</td><td>checkValidation —读取→ Invoice（阻断子集，同页面权限）</td></tr>
+    <tr><td><b>操作 → 对象</b></td><td>访问路径：这个工具读写哪个对象、什么范围</td><td>checkValidation —读取→ Invoice（阻断子集，同页面权限）</td></tr>
   </table>
 
   <div class="explain">
@@ -1997,7 +1997,7 @@
       存量系统<b>本来就有</b>（/metadata 免费提供）——地图可以自动画，逻辑只能人抄。</p></div>
     <div class="card"><h4>理由四 · 审计要求唯一事实</h4>
       <p>如果 AI 的结论可以来自知识库里的逻辑描述而非真系统的执行结果，「依据是什么」就有了两个答案。
-      本仓的应答里每个发现都锚定<b>真实执行取证</b>（工具返回 + 规则码 + 版本戳）——
+      本仓的应答里每个发现都出自<b>真实执行取证</b>（工具返回 + 规则码 + 版本戳）——
       结论必须出自真跑，不能出自转述。</p></div>
   </div>
 
@@ -2027,7 +2027,7 @@
   <h3>一次真实请求里，地图和引擎各干了什么<span class="hint">用第 00 章动画的 INV-A-001 诊断对照</span></h3>
   <table>
     <tr><th style="width:200px">环节</th><th style="width:50%">知识库（地图）提供了什么</th><th>存量系统（引擎）做了什么</th></tr>
-    <tr><td><b>理解问题</b></td><td>「校验失败」关联发票对象；术语与口径翻译</td><td>—</td></tr>
+    <tr><td><b>理解问题</b></td><td>「校验失败」关联发票对象；术语与含义翻译</td><td>—</td></tr>
     <tr><td><b>决定怎么查</b></td><td>能力问题清单指向 checkValidation / getMatchDetail 两个工具</td><td>—</td></tr>
     <tr><td><b>执行与判定</b></td><td>—（不参与）</td><td>PermissionService 判定李四可见范围；RuleEngine 真跑数量/预算规则；事务与审计</td></tr>
     <tr><td><b>组织答案</b></td><td>AP.MATCH.QTY_MISMATCH 的规则语义解释（供 AI 讲人话）</td><td>真实执行结果与取证（数量 120 vs 100、预算余量）</td></tr>
@@ -2056,7 +2056,7 @@
   <div class="grid c2" style="margin-top:10px">
     <div class="card"><h4>策略 A · 场景驱动（先搭框架，随场景生长）</h4>
       <p>先把容器建好（三段式结构、喂养管道、漂移检测、三层叠加），内容从第一个场景起步——
-      每上一个场景补一寸口径层（术语 / 关系 / 指标），<b>每一寸都有评测锚</b>。</p></div>
+      每上一个场景补一寸定义层（术语 / 关系 / 指标），<b>每一寸都有评测锚</b>。</p></div>
     <div class="card"><h4>策略 B · 一次建全（大而全，一劳永逸）</h4>
       <p>立项阶段就试图覆盖所有业务域的知识，建成后「所有未来场景都搞定」。
       诱惑在于不用反复动知识库；风险在于<b>建成之前它一直在腐烂</b>。</p></div>
@@ -2065,7 +2065,7 @@
   <p class="body"><b>本仓的判断：策略 A，且是强判断。</b>四个理由：</p>
   <div class="grid c2" style="margin-top:10px">
     <div class="card"><h4>理由一 · 没有消费验证的知识是负债</h4>
-      <p>知识切片的价值在被使用时才成立。大而全建出来的切片没有场景消费、没有评测锚定，错了发现不了。
+      <p>知识切片的价值在被使用时才成立。大而全建出来的切片没有场景消费、没有评测验证，错了发现不了。
       本仓的机制是能力问题清单与评测用例<b>同源绑定</b>（<span class="mono">verified_by</span>）——
       知识长一寸就有一寸的验证；没有场景的切片连验证的资格都没有。</p></div>
     <div class="card"><h4>理由二 · 漂移面积与维护成本线性增长</h4>
@@ -2076,14 +2076,14 @@
       场景交付反而停滞；最后变成一个昂贵的、还没上线就过期的数据资产。业界对这类项目的结局并不陌生。</p></div>
     <div class="card"><h4>理由四 · 自动喂养让增量几乎免费</h4>
       <p>框架建好后，基础层（实体 / 字段 / 枚举）由 <span class="mono">/metadata</span> 实时生成——不花钱；
-      场景只需要补「口径层」（机器推不出的术语、关系、指标定义）——增量成本极低。
+      场景只需要补「定义层」（机器推不出的术语、关系、指标定义）——增量成本极低。
       <b>既然增量便宜，就没有必要为省增量而预建全量。</b></p></div>
   </div>
 
   <div class="explain">
     <b>一句话：骨架一次建好，血肉按场景生长。</b>「骨架」= 三段式结构 + 自动喂养管道 + 漂移检测 +
     三层叠加 + 评测同源绑定——平台资产，一次建好所有场景共用；
-    「血肉」= 各场景的口径层资产——按场景生长、带评测锚、错了能发现。
+    「血肉」= 各场景的定义层资产——按场景生长、带评测基准、错了能发现。
     业界参照：SAP 730 万项知识图谱也不是一次建成的——它是数十年产品元数据的<b>持续沉淀</b>，
     但它的「骨架」（图谱 schema、喂养管道、权限内嵌）是平台化的一次性投资。
     本仓走的就是这条路：ap_invoice.yaml 从单场景长起（诊断 → 筛查 → 税码 → 跨域 → 派生字段），
@@ -2142,10 +2142,10 @@
       只是消费方从人换成了 AI + 人。</p></div>
     <div class="card"><h4>② AI 不拿裸表权限：语义层中转</h4>
       <p>AI 不直接写 SQL 扫湖，而是经语义层/图谱生成受约束的查询（查询计划白名单：只读、资源上限、行数上限）；
-      术语口径沿用同一套知识库（「高风险」在这个租户怎么定义，探索与执行必须是同一个答案）。
+      术语定义沿用同一套知识库（「高风险」在这个租户怎么定义，探索与执行必须是同一个答案）。
       6.1 节的图数据库判据在探索场景下全面倒向图——多跳关系遍历正是图的用武之地。</p></div>
     <div class="card"><h4>③ 证据优先于结论</h4>
-      <p>每条探索发现必须携带可复现的证据链：查询语句、数据快照、推理路径。这一条是对冲探索面更高幻觉风险的关键——
+      <p>每条探索发现必须携带可复现的证据链：查询语句、数据快照、推理路径。这一条是抵消探索面更高幻觉风险的关键——
       结论可以错，但证据必须真、可重放。拿不出证据的「发现」直接丢弃，不进入确认环节。</p></div>
     <div class="card"><h4>④ 人确认后固化闭环</h4>
       <p>AI 发现「某供应商高风险」→ 证据包给人 → 人确认成立 → <b>沉淀为确定性资产</b>：
@@ -2159,7 +2159,7 @@
       把「湖策略与存量权限一致」做成第五条漂移不变式，和现有四条一起跑。
       再加一条收窄：湖上只提供聚合结果，要看明细就下钻回 BO API 走执行面通道，
       这样最敏感的行级数据仍然只有一个判定入口。目前只有方向，实现未做，
-      见第 05 章张力点 D 与缺口 G4。</p></div>
+      见第 05 章冲突点 D 与缺口 G4。</p></div>
   </div>
 
   <div class="explain">
@@ -2188,13 +2188,13 @@
   </p>
 
   <table>
-    <tr><th style="width:130px">层</th><th style="width:30%">负责什么</th><th>判断口径（什么东西放这层）</th></tr>
+    <tr><th style="width:130px">层</th><th style="width:30%">负责什么</th><th>判断标准（什么东西放这层）</th></tr>
     <tr><td><b>平台</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">erp-ai-action 等</span></td>
       <td>网关拦截链、令牌交换、模型网关、审计/成本/追踪、评测框架、执行引擎封装</td>
       <td>与具体业务域无关、所有产品无差别复用的机制——「换一个产品这些代码一行不改」</td></tr>
     <tr><td><b>ERP 应用层</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">跨产品共享约定</span></td>
-      <td>事件目录、权限维度模型、SoD 与协作清单规则、语义口径仲裁、规格扩展标准、评测锚点规范、审批分级</td>
-      <td>跨产品的约定与治理——「一旦某个产品私设，跨域协同和口径一致性就断了」</td></tr>
+      <td>事件目录、权限维度模型、SoD 与协作清单规则、语义定义仲裁、规格扩展标准、评测基准规范、审批分级</td>
+      <td>跨产品的约定与治理——「一旦某个产品私设，跨域协同和定义一致性就断了」</td></tr>
     <tr><td><b>应付（AP）产品</b><br><span style="font-weight:400;font-size:12.5px;color:var(--ink-soft)">legacy-erp-ap</span></td>
       <td>BO 规格内容、权限判定组件、业务幂等、完整性披露、事件发布、元数据接口、MCP 工具暴露</td>
       <td>只有 AP 懂的领域资产与判定——「别的产品替你不了，规则引擎只认识 AP 的规则」</td></tr>
@@ -2213,7 +2213,7 @@
       <p>每个对 AI 暴露的操作，在这里声明<b>性质、幂等、权限、错误码、完整性、互斥组</b>。工具定义、
       网关注册表、评测期望、语义投影全部由它派生——改规格 → 版本戳变 → 录制作废 → 评测重跑。
       这是 AP 最重要的一个工作项，其余全部围绕它展开。</p>
-      <div class="cm-files"><span class="c"># 税码变更操作（写路径标的）—— AP 产品声明，平台消费</span>
+      <div class="cm-files"><span class="c"># 税码变更操作（写路径示例）—— AP 产品声明，平台消费</span>
   ap.invoice.applyTaxCode:
     x-bo-operation-kind: <span class="hl">write</span>
     x-bo-irreversible: <span class="hl">true</span>              <span class="c"># 网关见此标记 → 强制审批（GW.APPROVAL_REQUIRED）</span>
@@ -2226,7 +2226,7 @@
     x-bo-completeness:
       discloses: true                                     <span class="c"># 权限不足时披露，不静默</span>
     x-bo-error-codes: [AP.INVOICE_NOT_FOUND, AP.INVOICE_IN_DRAFT, AP.PERMISSION_DENIED]</div>
-      <div class="cm-verify"><b>验证：</b>gen_manifest.py 构建期生成 MCP 工具清单；评测锚定规格示例值；PermissionParityTest</div>
+      <div class="cm-verify"><b>验证：</b>gen_manifest.py 构建期生成 MCP 工具清单；评测断言规格示例值；PermissionParityTest</div>
     </div>
   </div>
 
@@ -2235,7 +2235,7 @@
     <div class="mb">
       <p>AP 必须提供（并只提供一次）<b>三维数据权限</b>（权限码 → 组织集合）的判定：页面和 BO API 走同一个组件，
       「AI 看到的 = 页面看到的」由此保证。越界按「未找到」处理——不泄露单据存在性。</p>
-      <div class="cm-files"><span class="c">// 权限码 + 组织覆盖判定（UI 与 BO 共用 —— 权限同源是平价保证）</span>
+      <div class="cm-files"><span class="c">// 权限码 + 组织覆盖判定（UI 与 BO 共用 —— 权限同源，页面和 AI 看到的数据范围才一致）</span>
 public void requireCovers(String code, String org) {
     require(code);                              <span class="c">// 权限码缺失 → AP.PERMISSION_DENIED</span>
     DataScope scope = AuthContext.get().scopeOf(code);
@@ -2245,7 +2245,7 @@ public void requireCovers(String code, String org) {
                 "单据不存在或不在您的数据权限范围内");
     }
 }</div>
-      <div class="cm-verify"><b>验证：</b>scene_1 三口径对照（页面 ~50 / Open API 5054 / BO 同组织口径）</div>
+      <div class="cm-verify"><b>验证：</b>scene_1 三个入口对照（页面 ~50 / Open API 5054 / BO 同样的组织范围）</div>
     </div>
   </div>
 
@@ -2260,7 +2260,7 @@ IdempotencyRecord existing = idempotencyRepo.findByBusinessKey(businessKey).orEl
 if (existing != null) {
     return replayResult(existing);              <span class="c">// 重放首次结果，引用原审批单号</span>
 }</div>
-      <div class="cm-verify"><b>验证：</b>scene_6 幂等重放（应答含「幂等重放：是」）；AP-TOOL-009 评测锚点</div>
+      <div class="cm-verify"><b>验证：</b>scene_6 幂等重放（应答含「幂等重放：是」）；AP-TOOL-009 评测基准</div>
     </div>
   </div>
 
@@ -2347,7 +2347,7 @@ derived_fields:
 <span class="c"># → 跑一次生成器、重建镜像，BO API 立即多出 ap.invoice.getDerivedField 能力</span>
 <span class="c"># → Java 零业务代码：引擎按声明反射读取 Invoice 的两个字段相减</span></div>
       <p><b>为什么引擎在 AP、定义在语义层：</b>计算必须读 AP 的实体字段（amount_cny、paid_cny），
-      只有 AP 能执行；但「未付金额怎么算」是业务口径，属于语义资产——两边各干自己擅长的事。
+      只有 AP 能执行；但「未付金额怎么算」是业务定义，属于语义资产——两边各干自己擅长的事。
       本体改定义、重建，<b>API 能力随之改变</b>。</p>
       <div class="cm-verify"><b>验证：</b>scene_11 驱动半场 —— unpaid_cny = 3400.00（含公式 / 基字段 / 语义版本取证）；未在本体定义的字段被拒（AP.DERIVED_FIELD_NOT_FOUND）</div>
     </div>
@@ -2355,7 +2355,7 @@ derived_fields:
 
   <div class="explain">
     <b>AP 明确不做的事：</b>不建权限体系（复用组件与平台令牌）、不建网关与模型通道、不建语义服务、
-    不写 Agent 编排（hub 是平台/应用层的）、不建评测框架。<b>判断口径：</b>换一个产品（应收、库存），这些工作项的内容全变、结构不变，
+    不写 Agent 编排（hub 是平台/应用层的）、不建评测框架。<b>判断标准：</b>换一个产品（应收、库存），这些工作项的内容全变、结构不变，
     每个产品都有一份自己的 bo-spec、PermissionService、outbox、/metadata。
     这句话光说没有说服力，第三节用库存推演一遍。
   </div>
@@ -2364,7 +2364,7 @@ derived_fields:
   <h3>二、ERP 应用层的共享能力<span class="hint">每个产品都要用、但谁都不该私设的部分 —— 本仓已逐项落地</span></h3>
   <p class="body">
     平台不管业务、单个产品管不了全局——中间有一层「跨产品约定」，归 ERP 应用层。
-    这层的判断口径：<b>一旦某个产品私设，跨域协同和口径一致性就断了。</b>七个工作项：
+    这层的判断标准：<b>一旦某个产品私设，跨域协同和定义一致性就断了。</b>七个工作项：
   </p>
 
   <div class="cm-module">
@@ -2389,7 +2389,7 @@ payload: { tenantId, orgId, invoiceNo, amountCny, findings[] }   <span class="c"
 { "orgs": ["ORG-EAST-PROC"] }      <span class="c"># 组织集合</span>
 { "all_orgs": true }               <span class="c"># 全域（合并规则：任一 all_orgs 即全域）</span>
 <span class="c"># 约定：越界一律按“未找到”返回（不泄露存在性）—— 全产品一致</span></div>
-      <div class="cm-verify"><b>验证：</b>PermissionParityTest；scene_1 三口径</div>
+      <div class="cm-verify"><b>验证：</b>PermissionParityTest；scene_1 三个入口对照</div>
     </div>
   </div>
 
@@ -2419,7 +2419,7 @@ proc-copilot  反向委托 ap-copilot  → 403（不在它的清单里）
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-4</span><span class="t">跨产品语义口径 —— 同一个词，谁说了算</span><span class="dir">erp-ai-context（三段式规范 + 租户术语映射）</span></div>
+    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-4</span><span class="t">跨产品语义定义 —— 同一个词，谁说了算</span><span class="dir">erp-ai-context（三段式规范 + 租户术语映射）</span></div>
     <div class="mb">
       <p><b>问题是什么：</b>同一个业务词，在不同租户、不同产品嘴里可能指不同的东西。</p>
       <p><b>举个例子：</b>「进货单」这个词——</p>
@@ -2432,10 +2432,10 @@ proc-copilot  反向委托 ap-copilot  → 403（不在它的清单里）
 <span class="c"># 同一句话两家租户两个答案——靠术语按租户映射，而不是两套知识库</span></div>
       <p><b>「仲裁」指什么：</b>各产品、各租户的术语各自维护（AP 管 AP 的术语），但两件事必须统一约定：
       ① <b>三段式结构规范</b>——什么放投影段（/metadata 自动生成，人不写）、什么放增量段（人只写机器推不出的
-      口径，比如上面的术语映射）、什么放原生段（引用 BO 规格），全 ERP 一套结构；② <b>冲突仲裁规则</b>——
+      定义，比如上面的术语映射）、什么放原生段（引用 BO 规格），全 ERP 一套结构；② <b>冲突仲裁规则</b>——
       当采购产品和应付产品对同一个词（比如「大额」）各自登记了定义且互相打架时，谁定对错、按什么优先级——
-      需要一个跨产品的口径治理角色，而不是谁嗓门大听谁的。</p>
-      <p><b>为什么归应用层：</b>任何一个产品私改结构或私设口径，跨产品的术语翻译和指标对比就失去了共同语言。</p>
+      需要一个跨产品的定义治理角色，而不是谁嗓门大听谁的。</p>
+      <p><b>为什么归应用层：</b>任何一个产品私改结构或私设定义，跨产品的术语翻译和指标对比就失去了共同语言。</p>
       <div class="cm-verify"><b>验证：</b>scene_5（双租同题不同答：进货单 / 大额阈值）+ scene_11（三段式喂养与漂移检测）</div>
     </div>
   </div>
@@ -2444,7 +2444,7 @@ proc-copilot  反向委托 ap-copilot  → 403（不在它的清单里）
     <div class="mh"><span class="lv" style="background:var(--warn)">ERP-5</span><span class="t">规格扩展标准（x-bo-extensions 约定）</span><span class="dir">boapi-spec/bo-ap.yaml（扩展头注释）</span></div>
     <div class="mb">
       <p>每个产品的 BO 规格用什么扩展标记、版本四件套怎么演进、什么变更导致录制作废——统一约定。
-      没有这个标准，跨产品的工具治理（网关拦截、审计分类、评测锚定）就无法统一实现。</p>
+      没有这个标准，跨产品的工具治理（网关拦截、审计分类、评测基准）就无法统一实现。</p>
       <div class="cm-files"><span class="c"># x-bo-extensions 统一约定（应用层定，各产品规格必须遵守）</span>
 x-bo-operation-kind : read | write      <span class="c"># 操作性质，入审计与 trace</span>
 x-bo-irreversible   : true 则网关强制审批
@@ -2458,7 +2458,7 @@ x-bo-sod-group      : SoD 互斥组</div>
   </div>
 
   <div class="cm-module">
-    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-6</span><span class="t">评测锚点绑定 —— 「能答什么」与「怎么验证」必须是同一份</span><span class="dir">questions-capability.yaml × eval/cases（verified_by 绑定）</span></div>
+    <div class="mh"><span class="lv" style="background:var(--warn)">ERP-6</span><span class="t">评测基准绑定 —— 「能答什么」与「怎么验证」必须是同一份</span><span class="dir">questions-capability.yaml × eval/cases（verified_by 绑定）</span></div>
     <div class="mb">
       <p><b>问题是什么：</b>系统里有两份清单——给业务看的<b>能力清单</b>（AI 能答什么问题，本仓 30 条）和
       给工程师看的<b>评测用例</b>（用什么输入验证什么输出，本仓 50 条）。两份清单不绑定，必然脱节。</p>
@@ -2474,7 +2474,7 @@ x-bo-sod-group      : SoD 互斥组</div>
     answer_contains: ["AP.MATCH.QTY_MISMATCH", "AP.BUDGET.EXCEEDED"]
     <span class="c"># ↑ 必须答出两个真实根因（数量差异 + 预算超支），少一个就不算能答</span>
 
-<span class="c"># 负例成对约定（写路径锚点长这样）——eval/cases/ap-tool.yaml</span>
+<span class="c"># 负例成对约定（写路径基准长这样）——eval/cases/ap-tool.yaml</span>
 - id: AP-TOOL-008
   expect:
     tool_errors: { ap.invoice.applyTaxCode: GW.APPROVAL_REQUIRED }
@@ -2482,9 +2482,9 @@ x-bo-sod-group      : SoD 互斥组</div>
       <p><b>如果没有绑定会发生什么：</b>能力清单吹「能答 100 个问题」，评测只覆盖 30 个——剩下 70 个没人验证，
       哪天悄悄坏了也没人知道，能力清单沦为营销材料；反过来，评测里有用例但清单没登记，业务根本不知道这个能力存在。</p>
       <p><b>为什么归应用层：</b>每个产品都有自己的能力清单和评测（AP 有 AP 的 50 条），但「怎么绑定、
-      负例必须成对、六类划分（含幻觉与诱导两个负向类）」是统一规范——否则各产品质量口径不一，
+      负例必须成对、六类划分（含幻觉与诱导两个负向类）」是统一规范——否则各产品质量标准不一，
       跨产品的质量门禁无从谈起。</p>
-      <div class="cm-verify"><b>验证：</b>run_eval --tier full 50/50 全绿；能力清单 30 条全部有 verified_by 锚点</div>
+      <div class="cm-verify"><b>验证：</b>run_eval --tier full 50/50 全绿；能力清单 30 条全部有 verified_by 绑定</div>
     </div>
   </div>
 
@@ -2516,7 +2516,7 @@ x-bo-sod-group      : SoD 互斥组</div>
       <tr><td><b>AP-1 BO 规格</b></td><td>33 个操作，写操作少且多数不可逆</td><td>操作更多，写操作频繁但大多可逆，不可逆只有报废与成本结转</td><td>相同。仍然是唯一规格真源，仍然靠 x-bo-irreversible 打标决定走不走审批</td></tr>
       <tr><td><b>AP-2 权限判定</b></td><td>租户 / 公司 / 组织 三维</td><td>要多一个仓位维度，还要支持「可见但不可操作」</td><td>相同。维度模型归应用层定（ERP-2），实现归产品。这条推演正好说明维度模型必须是可扩展的，不能写死三维</td></tr>
       <tr><td><b>AP-3 业务幂等</b></td><td>业务键 = 单号 + 税码 + 期间</td><td>业务键要含批次与仓位；批量操作还要按行幂等</td><td>结构相同，粒度不同。批量场景要补「行级幂等 + 整批结果重放」的语义，这是规格扩展标准（ERP-5）要加的一条</td></tr>
-      <tr><td><b>AP-4 完整性披露</b></td><td>权限不足时披露跳过的规则组</td><td>批量查询要披露「按仓位过滤掉了多少行」</td><td>相同。披露口径不变：说清楚没查全，但不泄露没查到的内容</td></tr>
+      <tr><td><b>AP-4 完整性披露</b></td><td>权限不足时披露跳过的规则组</td><td>批量查询要披露「按仓位过滤掉了多少行」</td><td>相同。披露原则不变：说清楚没查全，但不泄露没查到的内容</td></tr>
       <tr><td><b>AP-5 事件发布</b></td><td>ap.invoice.blocked，事件量小</td><td>库存变动类事件，量比应付高一两个数量级</td><td>相同目录、相同契约。但要补事件限流与聚合规则，否则事件线程会被打爆</td></tr>
       <tr><td><b>AP-6 元数据接口</b></td><td>8 实体、约百字段</td><td>实体和字段各多一个数量级，而且自定义字段多</td><td>相同接口。投影段的缓存策略要调，60 秒全量读不现实，要改成按实体分片</td></tr>
       <tr><td><b>AP-7 MCP 工具暴露</b></td><td>贴产品部署，33 个工具全量暴露</td><td>工具数会超过单 Agent 能有效挂载的上限，必须按场景分组暴露</td><td>相同结构，但直接触发原则 20 的收窄规则。这说明工具规模上限不是理论问题</td></tr>
@@ -2525,7 +2525,7 @@ x-bo-sod-group      : SoD 互斥组</div>
   </table>
   <div class="explain">
     <b>推演的结论：</b>八个工作项的结构完全保留，变的是三处，而且这三处都不是产品自己能定的：
-    幂等粒度（行级）、规模应对（工具分组、缓存分片、事件限流）、不可逆的判定口径。
+    幂等粒度（行级）、规模应对（工具分组、缓存分片、事件限流）、不可逆的判定标准。
     它们分别落在 ERP-5 规格扩展标准、原则 20 工具规模约定、ERP-7 审批分级策略上。
     这反过来验证了跨产品约定那一层确实有存在的必要，不是为应付一个产品定制出来的。
   </div>
@@ -2541,7 +2541,7 @@ x-bo-sod-group      : SoD 互斥组</div>
     <tbody>
       <tr><td><b>L1 只读问答</b></td>
         <td>bo-spec 的读操作、复用同一个 PermissionService、/metadata 只读接口、能力问题清单</td>
-        <td>三口径对照通过（页面条数与 BO 条数一致）；权限平价测试通过；读类评测锚点全绿；权限不足时有 completeness 披露</td>
+        <td>三个入口对照通过（页面条数与 BO 条数一致）；权限一致性测试通过；读类评测基准全绿；权限不足时有 completeness 披露</td>
         <td>形态① 页面内嵌、形态② 员工助手</td></tr>
       <tr><td><b>L2 写路径</b></td>
         <td>写操作规格（irreversible 标记、幂等键、SoD 互斥组）、业务幂等与变更同事务落库、完整性披露</td>
@@ -2560,9 +2560,9 @@ x-bo-sod-group      : SoD 互斥组</div>
   <div class="explain">
     <b>谁来验收：</b>L1 和 L2 由产品自测，架构组按脚本抽检。
     L3 和 L4 涉及跨产品契约（事件目录、协作清单），必须过应用层评审才能上线。<br>
-    <b>明确不允许的三件事：</b>跳过 L1 直接做 L2，等于在没有权限平价的前提下开放写操作，
+    <b>明确不允许的三件事：</b>跳过 L1 直接做 L2，等于在没有权限一致性的前提下开放写操作，
     是把第 01 章那个事故换个地方复制一遍；私设事件名而不登记目录；
-    私设权限维度或委托关系。这三件事一旦发生，跨产品的口径一致性就断了，
+    私设权限维度或委托关系。这三件事一旦发生，跨产品的定义一致性就断了，
     而且断在哪里事后很难查。
   </div>
 </section>
@@ -2573,11 +2573,11 @@ x-bo-sod-group      : SoD 互斥组</div>
   <p class="lead">
     每一幕是一组脚本化断言（0=全过 / 1=失败 / 2=服务不可达，可直接进 CI），
     大多配有可点击的在线版。汇报时建议按 01→06→05→11 的顺序讲：
-    先事故、再写路径审批、再双租口径、最后喂养与驱动（对应判断 5/4 的最新进展）。
+    先事故、再写路径审批、再双租定义、最后喂养与驱动（对应判断 5/4 的最新进展）。
   </p>
   <table>
     <tr><th style="width:66px">幕</th><th>讲什么（对应第 05 章哪条判断）</th><th style="width:60px">类型</th><th style="width:230px">命令</th><th style="width:280px">在线演示</th></tr>
-    <tr><td class="mono">scene_1</td><td><b>权限事故复现</b>：页面 ~50 / Open API 5054（×100）/ BO API 同页面口径并披露过滤维度 <span style="color:var(--ink-soft)">（判断 1/3）</span></td>
+    <tr><td class="mono">scene_1</td><td><b>权限事故复现</b>：页面 ~50 / Open API 5054（×100）/ BO API 与页面一致并披露过滤维度 <span style="color:var(--ink-soft)">（判断 1/3）</span></td>
       <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_1.py</td>
       <td class="lnk"><a href="http://localhost:8080/login" target="_blank" rel="noopener">ERP 页面 · zhangsan</a><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%BD%93%E5%89%8D%E6%95%B0%E6%8D%AE%E6%9D%83%E9%99%90%E5%86%85%E6%9C%89%E5%93%AA%E4%BA%9B%E8%A2%AB%E9%98%BB%E6%96%AD%E7%9A%84%E5%8F%91%E7%A5%A8%EF%BC%9F" target="_blank" rel="noopener">AI 同题</a></td></tr>
     <tr><td class="mono">scene_2</td><td><b>查不完整必披露</b>：张三见「预算校验未执行」，不泄露预算发现 <span style="color:var(--ink-soft)">（判断 16）</span></td>
@@ -2589,7 +2589,7 @@ x-bo-sod-group      : SoD 互斥组</div>
     <tr><td class="mono">scene_4</td><td><b>吊销即时生效</b>：在期令牌下一次调用即 401 <span style="color:var(--ink-soft)">（判断 15/贯穿B）</span></td>
       <td><span class="pill code">拦截</span></td><td class="mono">python scripts/demo/scene_4.py</td>
       <td class="lnk"><a href="demo-script.md">管理侧动作，见剧本</a></td></tr>
-    <tr><td class="mono">scene_5</td><td><b>双租同题不同答</b>：阈值/术语/口径互不泄露，派生指标不变式成立 <span style="color:var(--ink-soft)">（判断 13/14）</span></td>
+    <tr><td class="mono">scene_5</td><td><b>双租同题不同答</b>：阈值/术语/定义互不泄露，派生指标不变式成立 <span style="color:var(--ink-soft)">（判断 13/14）</span></td>
       <td><span class="pill ok">读</span></td><td class="mono">python scripts/demo/scene_5.py</td>
       <td class="lnk"><a href="http://localhost:8088/chat?scene=ap.batch&amp;q=%E5%B8%AE%E6%88%91%E7%AD%9B%E6%9F%A5%E5%A4%A7%E9%A2%9D%E9%A3%8E%E9%99%A9%E7%9A%84%E9%98%BB%E6%96%AD%E5%8F%91%E7%A5%A8" target="_blank" rel="noopener">lisi（50万）/ qianqi（500万）</a></td></tr>
     <tr><td class="mono">scene_6</td><td><b>写路径全生命周期</b>：挂起三要素 → 审批快照+OT → 唤醒落库 → 证据包 → 自检 <span style="color:var(--ink-soft)">（判断 2/11）</span></td>
@@ -2620,10 +2620,10 @@ x-bo-sod-group      : SoD 互斥组</div>
   <h3>当前验证结果（全部体系绿，<a href="verification-report.md">完整报告</a>）</h3>
   <div class="verdict">
     <div class="v"><div class="num">50/50</div><div class="lab">评测用例（工具正确性 1.0 · 步数 ≤4 · 越权 0）</div></div>
-    <div class="v"><div class="num">37/37</div><div class="lab">多租六项检验（隔离/口径/成本对账）</div></div>
+    <div class="v"><div class="num">37/37</div><div class="lab">多租六项检验（隔离/定义/成本对账）</div></div>
     <div class="v"><div class="num">4/4</div><div class="lab">漂移不变式（含术语目标/派生基字段两条新规则）</div></div>
     <div class="v"><div class="num">19/19</div><div class="lab">WorkBuddy 浏览器 E2E</div></div>
-    <div class="v"><div class="num">×100</div><div class="lab">事故口径放大倍数（50 vs 5050+，已复现并修复）</div></div>
+    <div class="v"><div class="num">×100</div><div class="lab">事故的统计范围放大倍数（50 vs 5050+，已复现并修复）</div></div>
   </div>
 </section>
 
@@ -2655,7 +2655,7 @@ docker-compose ps          <span class="c"># 全部 Up/healthy 后（约 30-60 �
         <tr><td>WorkBuddy（主演示面）</td><td class="mono"><a href="http://localhost:8088" target="_blank" rel="noopener">http://localhost:8088</a></td><td class="mono">lisi / demo123</td>
           <td>聊天（真实 GLM-5.3）→ 写请求出审批卡 → 换 <a href="http://localhost:8088/approvals" target="_blank" rel="noopener">wangwu 批准</a> → <a href="http://localhost:8088/resolution" target="_blank" rel="noopener">解析查看器</a> → <a href="http://localhost:8088/notifications" target="_blank" rel="noopener">通知</a>；wangwu 另见 <a href="http://localhost:8088/config" target="_blank" rel="noopener">租户配置</a>页</td></tr>
         <tr><td>ERP 存量页面</td><td class="mono"><a href="http://localhost:8080/login" target="_blank" rel="noopener">http://localhost:8080/login</a></td><td class="mono">zhangsan / demo123</td>
-          <td>发票列表（~50 条权限口径）+ 页内嵌 copilot</td></tr>
+          <td>发票列表（~50 条权限标准）+ 页内嵌 copilot</td></tr>
         <tr><td>Jaeger 追踪</td><td class="mono"><a href="http://localhost:16687/search?service=erp-ai-action" target="_blank" rel="noopener">http://localhost:16687</a></td><td>—</td>
           <td>每次 AI 交互的全链 span 树与六组扩展字段</td></tr>
       </table>
@@ -2674,7 +2674,7 @@ docker-compose ps          <span class="c"># 全部 Up/healthy 后（约 30-60 �
 <pre><span class="c"># 五分钟自检：谁在用 / 刚才发生了什么 / 有没有异常 / 花了多少钱</span>
 python -X utf8 scripts/selfcheck.py
 
-<span class="c"># 汇总报告（跑齐四体系：评测/多租/漂移/自检 + 三口径）→ docs/verification-report.md</span>
+<span class="c"># 汇总报告（跑齐四体系：评测/多租/漂移/自检 + 三个入口对照）→ docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
 <span class="c"># 十一幕演示 + 无头 MCP</span>
@@ -2700,13 +2700,13 @@ docker-compose up -d --build</pre>
 <section id="docs">
   <h2><span class="no">11</span>仓库导航与延伸阅读<span class="en">Repo Map</span></h2>
   <pre>boapi-spec/bo-ap.yaml   <span class="c">★ 全项目唯一规格真源（OpenAPI 3.1 + x-bo-extensions），其余全派生（L3b）</span>
-legacy-erp-ap/          <span class="c">Java 存量域：UI/BO/Open 三口径 API + 规则引擎 + PermissionService + MCP（L1/L3/L4存量）</span>
+legacy-erp-ap/          <span class="c">Java 存量域：UI/BO/Open 三个入口对照 API + 规则引擎 + PermissionService + MCP（L1/L3/L4存量）</span>
 erp-ai-action/          <span class="c">Python AI 网关：注册/令牌/审批/模型网关/MCP 代理/审计/成本/追踪/订阅（L6 + 贯穿A）</span>
 erp-ai-hub/             <span class="c">LangGraph Hub：五场景图 + interrupt 审批断点 + 三层解析 + 事件/定时线程（L2/L5）</span>
 erp-ai-context/         <span class="c">语义服务：三段式语义文件 + 七工具 + 双租/行业叠加 + 漂移检测 + 配置存储（L3a）</span>
 harness-assets/         <span class="c">标品资产层：standard/ + partner/ 行业包 + tenant-{east,uni}/（L2 Harness）</span>
 workbuddy/              <span class="c">React 助手平台：OAuth/聊天/审批台/通知/解析查看器/租户配置（L1）</span>
-eval/                   <span class="c">50 条锚点用例 + 三层 runner（L4 评测与回放）</span>
+eval/                   <span class="c">50 条基准用例 + 三层 runner（L4 评测与回放）</span>
 scripts/                <span class="c">检验体系（自检/租检/报告）+ 十一幕演示 + 无头 CLI（L1 形态③）</span>
 compose/                <span class="c">docker-compose 一键起：postgres / jaeger / 五服务（部署域落地）</span>
 docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + 令牌设计 + 验证报告</span></pre>
@@ -2714,13 +2714,13 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
     <div class="card"><h4>总纲 14 章 ↔ 代码映射</h4>
       <p><a href="architecture-mapping.md"><code>docs/architecture-mapping.md</code></a> —— 总纲每一章落在哪个目录、怎么验证。</p></div>
     <div class="card"><h4>14 条判断对照分析</h4>
-      <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 逐条一致性/张力/缺口分析与补齐记录。</p></div>
+      <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 逐条一致性/冲突点/缺口分析与补齐记录。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、七道拦截、审批时序、两层幂等。</p></div>
     <div class="card"><h4>十一幕演示剧本</h4>
       <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词 + 断言要点 + 浏览器路径 + 45 分钟节奏。</p></div>
     <div class="card"><h4>验证报告（生成物）</h4>
-      <p><a href="verification-report.md"><code>docs/verification-report.md</code></a> —— 四体系结果 + 指标门禁 + 三口径取证，随代码再生成。</p></div>
+      <p><a href="verification-report.md"><code>docs/verification-report.md</code></a> —— 四体系结果 + 指标门禁 + 三个入口取证，随代码再生成。</p></div>
     <div class="card"><h4>Windows 环境注意事项</h4>
       <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / 端口 / 数据复位。</p></div>
   </div>
@@ -2833,7 +2833,7 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
         { n: ["java", "evt"], tk: [], c: "<b>② 事件线程拉取（事件进 Agent）</b>　hub 事件线程拉取 outbox → 无头诊断开始（event-diag 代理代表执行）" },
         { n: ["evt", "modelgw"], tk: [], c: "<b>③ 模型网关路由</b>　事件例程<b>钉定 mock</b>——确定性通道（与评测同策略），零 live 配额消耗、结果可回归" },
         { n: ["modelgw", "llm"], tk: [], c: "<b>④ LLM 生成诊断摘要</b>　按事件载荷生成归因摘要与处置建议 → 通知李四" },
-        { n: ["evt", "disp"], tk: ["msg"], c: "<b>⑤ 同一事件扇出（事件出平台）</b>　hub 调网关分发（右支线）——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
+        { n: ["evt", "disp"], tk: ["msg"], c: "<b>⑤ 同一事件对外分发（事件出平台）</b>　hub 调网关分发（右支线）——平台内消费与租户投递<b>同源同事件</b>，不是两套事件" },
         { n: ["disp"], tk: ["msg"], c: "<b>⑥ 按订阅隔离投递</b>　只投本租户的活跃订阅：华东制造命中、星联科技不投——租户隔离在消息通道同样成立" },
         { n: ["disp", "hook"], tk: ["msg"], c: "<b>⑦ 投递 + 防伪造签名</b>　POST 租户 webhook，带 HMAC-SHA256 签名 → 租户侧验签后执行自己的扩展逻辑（核心零改动）" },
         { n: ["hook", "disp"], tk: [], c: "<b>⑧ 生命周期</b>　每次投递审计留痕；吊销订阅即时停投；支持重投补发（租户调试的标准能力）" }
