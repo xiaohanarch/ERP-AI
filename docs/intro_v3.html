@@ -513,6 +513,57 @@
     .belief .seg .ic { width: auto; }
   }
 </style>
+<script>
+  /* ============================================================
+     ★ 服务地址配置 —— 全文档唯一修改点
+     替换服务器地址/端口时只改这一个对象：正文所有 ▶ 链接、地址表格、
+     说明文字会在页面加载时自动重写为这里的值（含 http:// 前缀的链接
+     与裸地址文本）。默认为本机 docker-compose 端口。
+     注：部署图中的 (:8000) 等标签是容器端口（不含主机），无需修改。
+     ============================================================ */
+  window.SERVICE_BASES = window.SERVICE_BASES || {
+    workbuddy: "http://localhost:8088",   // WorkBuddy 助手平台（形态②，含深链/审批台/配置页）
+    erp:       "http://localhost:8080",   // ERP 存量页面（形态①，Java）
+    gateway:   "http://localhost:8000",   // AI 网关（管理面，需凭据）
+    hub:       "http://localhost:8001",   // 业务 Hub
+    semantics: "http://localhost:8002",   // 语义服务
+    jaeger:    "http://localhost:16687",  // Jaeger 追踪
+  };
+  (function () {
+    "use strict";
+    var DEFAULTS = { workbuddy: "http://localhost:8088", erp: "http://localhost:8080",
+                     gateway: "http://localhost:8000", hub: "http://localhost:8001",
+                     semantics: "http://localhost:8002", jaeger: "http://localhost:16687" };
+    function hostPort(u) { return String(u).replace(/^https?:\/\//, ""); }
+    function rewrite() {
+      var pairs = [];
+      Object.keys(DEFAULTS).forEach(function (k) {
+        var cfg = (window.SERVICE_BASES || {})[k] || DEFAULTS[k];
+        var port = DEFAULTS[k].match(/:(\d+)\/$/) || DEFAULTS[k].match(/:(\d+)$/);
+        if (port && hostPort(cfg) !== hostPort(DEFAULTS[k]))
+          pairs.push(["localhost:" + port[1], hostPort(cfg)]);
+      });
+      if (!pairs.length) return;
+      // 链接 href
+      [].forEach.call(document.querySelectorAll('a[href*="localhost:"]'), function (a) {
+        var h = a.getAttribute("href");
+        pairs.forEach(function (pr) { h = h.split(pr[0]).join(pr[1]); });
+        a.setAttribute("href", h);
+      });
+      // 正文文本（含表格、代码块、说明）
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(function (n) {
+        var t = n.nodeValue, hit = false;
+        pairs.forEach(function (pr) { if (t.indexOf(pr[0]) >= 0) { t = t.split(pr[0]).join(pr[1]); hit = true; } });
+        if (hit) n.nodeValue = t;
+      });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", rewrite);
+    else rewrite();
+  })();
+</script>
 </head>
 <body>
 
@@ -2797,6 +2848,11 @@ x-bo-sod-group      : SoD 互斥组</div>
 
 <section id="quickstart">
   <h2><span class="no">B</span>附录 B · 怎么跑：三步起步<span class="en">Quickstart</span></h2>
+  <div class="explain">
+    <b>换服务器只改一处：</b>本文件 <span class="mono">&lt;head&gt;</span> 顶部的
+    <span class="mono">SERVICE_BASES</span> 对象是全文档唯一地址配置点——改完后正文所有 ▶ 链接、
+    地址表格与说明文字在页面加载时自动重写，无需逐处修改（默认为本机 docker-compose 端口）。
+  </div>
 
   <div class="step">
     <div class="n">1</div>
