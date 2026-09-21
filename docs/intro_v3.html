@@ -282,6 +282,9 @@
     font-family: var(--mono); font-size: 11px; padding: 1px 8px; border-radius: 4px;
     white-space: nowrap; flex: none;
   }
+  sup.rref { font-family: var(--mono); font-size: 10.5px; color: var(--indigo-deep); line-height: 1; }
+  .reflist { font-size: 14px; color: var(--ink-soft); line-height: 1.95; padding-left: 26px; max-width: 900px; }
+  .reflist li { margin: 6px 0; }
   .src-tag.core { color: var(--indigo-deep); background: rgba(46,70,200,.1); }
   .src-tag.add { color: var(--warn); background: rgba(154,107,0,.14); }
   /* ---------- 逐幕验证卡片 ---------- */
@@ -522,6 +525,7 @@
     <a href="#cfref">附A 外部参照</a>
     <a href="#quickstart">附B 怎么跑</a>
     <a href="#docs">附C 仓库导航</a>
+    <a href="#refs">附D 参考文献</a>
   </div>
 </nav>
 
@@ -602,7 +606,7 @@
         它干了什么也不进 ERP 的审计。等于招了一个不上门禁、不留记录的编外员工。
       </div></div>
       <div class="seg"><div class="ic w">为什么</div><div class="tx">
-        业界（老丁《AI 原生重构 ERP 选型逻辑》）给了一条可检验的判据：<b>差别不在「能不能生成单据」，
+        业界<sup class="rref">[1]</sup>给了一条可检验的判据：<b>差别不在「能不能生成单据」，
         而在 AI 执行业务动作时，是否天然复用 ERP 内核的权限、业务校验、风险拦截与审计追溯</b>。
         打个比方：外挂 = 人在车外遥控驾驶（自带一套钥匙）；原生 = AI 坐进驾驶室（用原车的钥匙、
         踩原车的刹车、录原车的行车记录仪）。「不推倒存量、用独立智能体底座封装对接」是公认的
@@ -997,8 +1001,7 @@
 
   <div class="explain">
     <b>一条总前提（不是原则，是输入条件）：</b>「AI+ERP 的瓶颈，从来不是大模型本身的参数与能力，
-    而是企业自身的数据治理与业务流程标准化」（老丁《AI 原生重构 ERP 选型逻辑》，2026-08，
-    即原则 1 的参照原文）。以下所有判断——包括 14 条总纲——都以主数据干净、流程标准为前提；
+    而是企业自身的数据治理与业务流程标准化」<sup class="rref">[1]</sup>（原则 1 的参照原文）。以下所有判断——包括 14 条总纲——都以主数据干净、流程标准为前提；
     数据混乱、流程割裂的企业，架构再对也发挥不出价值。
   </div>
 
@@ -1018,15 +1021,15 @@
       证据链、人在环裁决、确认后沉淀回执行面。三档共用语义层与治理，差别在数据通道和纪律松紧。
       原则 7/8 的边界由此划定，详见第 07 章决策三、第 02 章两张逻辑图。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>18 · 异构系统对接（MCP 多系统）<span class="tag">本仓未做</span></h4>
-      <p>底座优先路线的三大工程挑战之首（参照文原文点名）：AI 底座要能对接<b>多套异构业务系统</b>
-      （ERP / OA / CRM），不绑定单一产品——参照文选型第四条明确要求。
+      <p>底座优先路线的三大工程挑战之首<sup class="rref">[1]</sup>：AI 底座要能对接<b>多套异构业务系统</b>
+      （ERP / OA / CRM），不绑定单一产品——外部选型第四条明确要求<sup class="rref">[1]</sup>。
       本仓现状：MCP 代理只指向一套 Java，<b>诚实标注为路线图项</b>——再挂一个只读 OA/CRM
       工具即可演示「底座不绑定单一 ERP」。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>19 · 知识库建设节奏：场景驱动生长</h4>
       <p>骨架一次建好（三段式、自动喂养、漂移检测、评测同源绑定），血肉按场景生长，
       每寸定义层资产都带评测基准。「一次建全、一劳永逸」的问题是：没有消费就没有验证，
       手工维护的面积越大漂移越多，而且这类长周期基座项目在组织上很难走到上线。
-      参照文选型第五条「单点切入、拒绝一步到位」是同一个意思。详见第 07 章决策四。</p></div>
+      外部选型第五条「单点切入、拒绝一步到位」是同一个意思<sup class="rref">[1]</sup>。详见第 07 章决策四。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>20 · 上下文预算与工具规模是架构约束<span class="tag">本仓未定</span></h4>
       <p>语义层回答了定义是什么，没回答一次请求该给模型多少上下文。
       单个 Agent 挂载的工具越多，工具选对的概率越低，这个衰减在几十个工具的量级上就已经明显。
@@ -1071,7 +1074,7 @@
   <h3>外部坐标：同类系统走到哪一步</h3>
   <p class="body">判断成不成立，一部分要看外部同类系统在做什么。这里只列可核对的事实，不做优劣评价。</p>
   <div class="grid c2" style="margin-top:10px">
-    <div class="card"><h4>商业套件的做法（以 SAP 公开材料为例）</h4>
+    <div class="card"><h4>商业套件的做法（以 SAP 公开材料<sup class="rref">[6]</sup>为例）</h4>
       <p>把整个产品线的表、视图、字段、实体、流程和关系做成一张结构化的知识图谱，
       规模是 45.2 万张表、8 万个视图、730 万个字段项，图谱里内含身份与权限规则；
       在这之上发布了 224 个专用 agent 和 51 个 Joule 助手，
@@ -1712,7 +1715,7 @@
   <h2><span class="no">06</span>场景视图与验证：链路动画 + 十一幕手册<span class="en">Scenarios &amp; Verification</span></h2>
   <p class="lead">
     前四章是静态视图（逻辑 / 部署 / 开发 / 代码对照），本章用<b>运行场景</b>把它们串起来——
-    即经典 4+1 视图模型的「+1」：四个树形链路动画展示请求的真实旅程（滚动到哪个播放哪个，
+    即经典 4+1 视图模型<sup class="rref">[2]</sup>的「+1」：四个树形链路动画展示请求的真实旅程（滚动到哪个播放哪个，
     链路按真实拓扑画成树：场景图分出「问模型」与「调工具」两条支线），十一幕验证手册给出
     每幕<b>谁登录、怎么操作、预期结果、原因</b>（口令统一 demo123）。
     汇报时建议按幕号 1→6→5→11 的顺序讲：先事故、再写路径审批、再双租标准、最后喂养与驱动。
@@ -1975,7 +1978,7 @@
       汇报时能当场打开文件给评审看全部语义资产；变更走 code review，谁改的、为什么改，
       一目了然。图数据库在这个规模是「用生产级复杂度换不存在的能力」。</p></div>
     <div class="card"><h4>立场 B ·「必须上图」</h4>
-      <p>真实 ERP 的语义规模远超文件能承载：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系，
+      <p>真实 ERP 的语义规模远超文件能承载：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系<sup class="rref">[6]</sup>，
       且内含权限规则。<b>多跳关系查询</b>（「这张发票的供应商，还关联着哪些被拦的单？」）
       在 YAML 里根本没法表达；多域多租户的叠加解析需要索引而不是遍历。</p></div>
   </div>
@@ -1991,17 +1994,14 @@
     <b>技术依据 · 遍历成本模型（index-free adjacency）：</b>
     原生图数据库（Neo4j 一类）的每个节点直接持有指向相邻关系的指针——<b>每跳一跳是一次 O(1) 的指针追访，
     成本只和「实际走过的子图大小」有关，与全图大小无关</b>；关系型数据库每次 JOIN 是一次约 O(log n) 的
-    索引查找 + 连接开销，<b>成本随表规模和 JOIN 深度累积</b>（出处：Robinson / Webber / Eifrem
-    《Graph Databases》第二版，O'Reilly；Neo4j 官网提供免费电子版）。
-    实证区间：Neo4j 公开的「朋友的朋友」基准中，<b>1~2 跳两种引擎性能相当；3~4 跳时关系型急剧劣化、
+    索引查找 + 连接开销，<b>成本随表规模和 JOIN 深度累积</b>（出处 <sup class="rref">[3]</sup>，官方提供免费电子版）。
+    实证区间：「朋友的朋友」公开基准<sup class="rref">[4]</sup>中，<b>1~2 跳两种引擎性能相当；3~4 跳时关系型急剧劣化、
     图数据库近乎平坦</b>——这是「什么时候该上图」最有参考价值的经验分界。
-    <br><b>反方意见（诚实引用）：</b>Morales《Index-Free Adjacency? Hybrid Indexes/Adjacency for Graph
-    Databases》（arXiv, 2021）指出 O(1) 宣称有营销成分——B 树索引常数极小、图库定位起点节点仍需索引，
+    <br><b>反方意见（诚实引用）<sup class="rref">[5]</sup>：</b>指出 O(1) 宣称有营销成分——B 树索引常数极小、图库定位起点节点仍需索引，
     2~3 跳内关系库完全可比。<b>本仓据此取保守读法：不到 3 跳交互级查询，不构成上图的性能理由。</b>
   </div>
   <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
-    规模端点的参考：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系，内含权限规则（SAP Sapphire 2026，
-    见总纲第 01 章引注）；本演示 8 个实体、约百个字段——两端相差六个数量级，中间地带靠下面的判据表定位。
+    规模端点的参考：SAP 知识图谱覆盖 <b>730 万</b>个字段、实体、流程与关系，内含权限规则<sup class="rref">[6]</sup>；本演示 8 个实体、约百个字段——两端相差六个数量级，中间地带靠下面的判据表定位。
   </p>
 
   <p class="body"><b>把判据转成可测量的代理指标</b>（数字门槛为本仓整理的可操作读法，业界依据见上）：</p>
@@ -2186,7 +2186,7 @@
     <b>一句话：骨架一次建好，血肉按场景生长。</b>「骨架」= 三段式结构 + 自动喂养管道 + 漂移检测 +
     三层叠加 + 评测同源绑定——平台资产，一次建好所有场景共用；
     「血肉」= 各场景的定义层资产——按场景生长、带评测基准、错了能发现。
-    业界参照：SAP 730 万项知识图谱也不是一次建成的——它是数十年产品元数据的<b>持续沉淀</b>，
+    业界参照<sup class="rref">[6]</sup>：SAP 730 万项知识图谱也不是一次建成的——它是数十年产品元数据的<b>持续沉淀</b>，
     但它的「骨架」（图谱 schema、喂养管道、权限内嵌）是平台化的一次性投资。
     本仓走的就是这条路：ap_invoice.yaml 从单场景长起（诊断 → 筛查 → 税码 → 跨域 → 派生字段），
     每长一寸都有对应的 scene 与评测断言。
@@ -2279,7 +2279,7 @@
 
   <h3>六、能力发现已落地：Discover / Describe / Dispatch<span class="hint">GAP-A（工具规模 / 上下文预算）的渐进披露解法</span></h3>
   <p class="body">
-    工具集增长后模型如何选对能力——这是原则 20、缺口 G3 与外部方法论（附录 A）三方指向的同一个问题。
+    工具集增长后模型如何选对能力——这是原则 20、缺口 G3 与外部方法论<sup class="rref">[[7]–[9]]</sup>（附录 A）三方指向的同一个问题。
     本仓已按<b>渐进披露</b>模式落地第一段：四个小而稳定的语义工具承载全部能力面，后端操作持续增长而不膨胀模型上下文。
   </p>
   <table>
@@ -2692,7 +2692,7 @@ x-bo-sod-group      : SoD 互斥组</div>
     而且断在哪里事后很难查。
   </div>
 
-  <h3>五、外部九步落地路径 × 本仓现状<span class="hint">对照 Claudeforce 方法论（附录 A）——走到哪、差哪、补不补</span></h3>
+  <h3>五、外部九步落地路径 × 本仓现状<span class="hint">对照外部方法论<sup class="rref">[[7]–[9]]</sup>（附录 A）——走到哪、差哪、补不补</span></h3>
   <p class="body">外部方法论给出的落地九步，本仓逐步对照（证据均可复跑）：</p>
   <table>
     <tr><th style="width:36px">#</th><th style="width:26%">步骤</th><th>本仓现状</th><th style="width:76px">判定</th></tr>
@@ -2717,7 +2717,7 @@ x-bo-sod-group      : SoD 互斥组</div>
 <section id="cfref">
   <h2><span class="no">A</span>附录 A · 外部方法论参照<span class="en">External Reference</span></h2>
   <p class="lead">
-    三篇 Claudeforce 架构分析（本地参考资料，来源见本附录末尾）是本篇的重要外部坐标。
+    三篇外部架构分析<sup class="rref">[[7]–[9]]</sup>（本地参考资料）是本篇的重要外部坐标。
     本篇副标题「AI 决定 WHAT / WHY；Enterprise 决定 CAN / HOW」即出自其核心分界。
     本附录回答三个问题：主题思想是否一致（是，七项完全同构）、哪些直接借鉴（已并入正文）、金句留档。
   </p>
@@ -2759,21 +2759,20 @@ x-bo-sod-group      : SoD 互斥组</div>
 
   <h3>三、金句摘录（直接引用，出处标注）</h3>
   <div class="grid c2">
-    <div class="card"><h4>WHAT / HOW 分工</h4><p>Agent = Decide <b>WHAT</b>；Workflow = Execute <b>HOW</b>。Agent 从多条合法路径里选择下一步；Workflow 保证选定路径被正确执行。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 十一</span></p></div>
-    <div class="card"><h4>渐进确定性</h4><p>越靠近 Goal，越允许 AI 自主；越靠近真实交易，越必须确定。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 十二</span></p></div>
-    <div class="card"><h4>确定的不智能化</h4><p>确定的东西不要智能化；真正不确定的东西才使用智能。「客户为什么想离开？」→ AI；「12% 折扣谁审批？」→ Rule。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 启示六</span></p></div>
-    <div class="card"><h4>能力是资产</h4><p>企业未来最重要的资产可能不是 Screen，而是 Capability：应用边界（Sales App / Service App）逐渐弱化，能力边界（CreateQuote / ApproveDiscount / IssueInvoice）不断加强。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 启示四</span></p></div>
-    <div class="card"><h4>请求能力，不是操作应用</h4><p>不是让 Agent 操作应用（updateTable），而是让 Agent 请求业务能力（IssueRefund）——企业系统自己负责 Policy / Permission / Workflow / Transaction / Audit。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 启示三</span></p></div>
-    <div class="card"><h4>Workflow 是资产</h4><p>现有 BPM / Workflow 不是包袱，而是资产——只是入口从 Human clicks UI 变成 Agent invokes Capability。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 启示五</span></p></div>
-    <div class="card"><h4>一句话理解新模式</h4><p>给 Agent 一张企业业务地图和一套受治理的业务能力；允许它自由决定走哪条路，但每条路具体怎么执行，由企业确定性系统保证。<span style="color:var(--ink-soft)">—— 企业能力化篇 · 三十三</span></p></div>
-    <div class="card"><h4>工具小而稳定</h4><p>四个 MCP 工具保持小而稳定，后端 operations 可以持续增长——避免把成百上千个 API 放进模型工具列表，降低盲选与猜参概率。<span style="color:var(--ink-soft)">—— 架构设计篇 · 渐进披露</span></p></div>
+    <div class="card"><h4>WHAT / HOW 分工</h4><p>Agent = Decide <b>WHAT</b>；Workflow = Execute <b>HOW</b>。Agent 从多条合法路径里选择下一步；Workflow 保证选定路径被正确执行。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·十一</span></p></div>
+    <div class="card"><h4>渐进确定性</h4><p>越靠近 Goal，越允许 AI 自主；越靠近真实交易，越必须确定。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·十二</span></p></div>
+    <div class="card"><h4>确定的不智能化</h4><p>确定的东西不要智能化；真正不确定的东西才使用智能。「客户为什么想离开？」→ AI；「12% 折扣谁审批？」→ Rule。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·启示六</span></p></div>
+    <div class="card"><h4>能力是资产</h4><p>企业未来最重要的资产可能不是 Screen，而是 Capability：应用边界（Sales App / Service App）逐渐弱化，能力边界（CreateQuote / ApproveDiscount / IssueInvoice）不断加强。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·启示四</span></p></div>
+    <div class="card"><h4>请求能力，不是操作应用</h4><p>不是让 Agent 操作应用（updateTable），而是让 Agent 请求业务能力（IssueRefund）——企业系统自己负责 Policy / Permission / Workflow / Transaction / Audit。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·启示三</span></p></div>
+    <div class="card"><h4>Workflow 是资产</h4><p>现有 BPM / Workflow 不是包袱，而是资产——只是入口从 Human clicks UI 变成 Agent invokes Capability。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·启示五</span></p></div>
+    <div class="card"><h4>一句话理解新模式</h4><p>给 Agent 一张企业业务地图和一套受治理的业务能力；允许它自由决定走哪条路，但每条路具体怎么执行，由企业确定性系统保证。<span style="color:var(--ink-soft)">—— <sup class="rref">[9]</sup>·三十三</span></p></div>
+    <div class="card"><h4>工具小而稳定</h4><p>四个 MCP 工具保持小而稳定，后端 operations 可以持续增长——避免把成百上千个 API 放进模型工具列表，降低盲选与猜参概率。<span style="color:var(--ink-soft)">—— <sup class="rref">[8]</sup>·渐进披露</span></p></div>
   </div>
 
   <h3>四、来源</h3>
   <p class="body" style="font-size:13.5px;color:var(--ink-soft)">
-    ①《企业应用 AI Native 演进：Anthropic 和 Salesforce 联合打了个样》；②《从 MCP 连接到任务闭环：企业 AI Native 架构与设计方法》；
-    ③《从「应用 MCP 化」到「企业能力化」》。三篇为本地参考文件（不入库），核心分界、渐进披露与九步路径的引述以本地文件为准；
-    九步对照见第 08 章五，能力发现落地见第 07 章六。
+    本附录全部引述来自三篇本地参考文件（不入库），完整题名与出处见<b>附录 D · 参考文献 [7]–[9]</b>；
+    核心分界、渐进披露与九步路径以本地文件为准。九步对照见第 08 章五，能力发现落地见第 07 章六。
   </p>
 </section>
 
@@ -2872,6 +2871,34 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
     <div class="card"><h4>Windows 环境注意事项</h4>
       <p><a href="windows-notes.md"><code>docs/windows-notes.md</code></a> —— UTF-8 / Python 选择 / 端口 / 数据复位。</p></div>
   </div>
+</section>
+
+<section id="refs">
+  <h2><span class="no">D</span>附录 D · 参考文献<span class="en">References</span></h2>
+  <p class="lead">
+    正文中的外部引用一律使用编号标签 <span class="mono">[n]</span>，不在正文罗列题名。
+    标注「本地参考」的文件仅存于本地（.gitignore 已排除，不入库）。
+  </p>
+  <ol class="reflist">
+    <li>老丁.《AI 原生重构 ERP 选型逻辑：外挂式 AI 时代走向落幕》. 2026-08-24.
+      （本地参考：原生ERP.pdf，图片版 7 页——14 条总纲判断第 1 条的参照原文）</li>
+    <li>Kruchten P. "The 4+1 View Model of Architecture". <i>IEEE Software</i>, 12(6), 1995.
+      （本篇 02–06 章视图组的框架出处）</li>
+    <li>Robinson I, Webber J, Eifrem E. <i>Graph Databases</i>, 2nd ed. O'Reilly.
+      （Neo4j 官网提供免费电子版：neo4j.com/books——index-free adjacency 遍历成本模型）</li>
+    <li>Neo4j「朋友的朋友」（Friend-of-Friend）多跳遍历公开基准：
+      1~2 跳关系型与图引擎性能相当、3~4 跳关系型急剧劣化而图引擎近乎平坦.</li>
+    <li>Morales J F. "Index-Free Adjacency? Hybrid Indexes/Adjacency for Graph Databases". arXiv, 2021.
+      （对 O(1) 宣称的批评性分析——2~3 跳内关系库可比）</li>
+    <li>SAP Sapphire 2026 公开材料：知识图谱覆盖 730 万字段 / 实体 / 流程 / 关系（内含权限规则）、
+      Business Data Cloud 零拷贝.（经总纲第 01 章引注转引）</li>
+    <li>《企业应用 AI Native 演进：Anthropic 和 Salesforce 联合打了个样》.
+      （外部架构分析之一，本地参考文件）</li>
+    <li>《从 MCP 连接到任务闭环：企业 AI Native 架构与设计方法》.
+      （外部架构分析之二，本地参考文件——渐进披露 / 权限继承与用户确认两道控制）</li>
+    <li>《从「应用 MCP 化」到「企业能力化」》.
+      （外部架构分析之三，本地参考文件——核心分界 / Business Capability / 九步落地路径）</li>
+  </ol>
 </section>
 
 </main>
