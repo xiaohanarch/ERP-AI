@@ -39,7 +39,7 @@ docker-compose ps                # 全部 healthy 后（约 30-60 秒）即可�
 |---|---|---|---|
 | AI 网关 | `erp-ai-action` | http://localhost:8000 | Agent 注册中心 · 令牌交换 · MCP 代理 · 审批 · 模型网关 · 审计 |
 | 业务 Hub | `erp-ai-hub` | http://localhost:8001 | LangGraph 场景图（诊断/批量/税码+interrupt 审批断点） |
-| 语义服务 | `erp-ai-context` | http://localhost:8002 | 语义文件 + 七个语义查询工具 + 租户叠加 |
+| 语义服务 | `erp-ai-context` | http://localhost:8002 | 语义文件 + 八个语义查询工具（含能力发现）+ 租户叠加 |
 | 存量 ERP（AP） | `erp-ap` | http://localhost:8080 | Java Spring Boot：UI API + BO API + Open API 事故端点 + Spring AI MCP + Thymeleaf 页面 |
 | WorkBuddy | — | http://localhost:8088 | React 助手平台（OAuth 授权码 / 聊天 / 审批 / 通知 / 解析查看器） |
 | Jaeger | — | http://localhost:16687 | OTel GenAI 风格 span 树 |
