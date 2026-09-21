@@ -19,6 +19,21 @@ scenes:
       - semantic.capability.discover
       - semantic.drift.status
 
+  ap.explore:
+    enabled: true
+    description: 受限自主只读探索（第二档：模型自选工具与顺序，只读+步数上限+平台取证）
+    tools:
+      - ap.invoice.checkValidation
+      - ap.invoice.getMatchDetail
+      - ap.invoice.listBlocked
+      - ap.invoice.getDerivedField
+      - ap.balance.query
+      - semantic.capability.discover
+      - semantic.operation.explain
+      - semantic.term.translate
+      - semantic.metadata.entities
+      - semantic.metadata.fields
+
   ap.batch:
     enabled: true
     description: 阻断发票批量筛查（读侧，含大额风险口径）

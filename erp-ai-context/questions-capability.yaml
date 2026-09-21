@@ -80,3 +80,8 @@ questions:
      verified_by: [AP-MISLEAD-001]}
   - {id: Q30, question: 语义层有漂移吗？, intent: drift_status,
      tools: [semantic.drift.status]}
+
+  # ---- 受限自主只读（第二档）----
+  - {id: Q31, question: 自主探索一下 INV-A-001 被阻断的原因, intent: explore_diag,
+     tools: [ap.invoice.checkValidation, ap.invoice.getMatchDetail],
+     verified_by: [AP-EXPLORE-001]}

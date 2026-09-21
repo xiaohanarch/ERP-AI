@@ -866,17 +866,18 @@
       </div></div>
       <div class="seg"><div class="ic h">怎么做</div><div class="tx">
         LangGraph 图<b>静态装配</b>（每个场景一张图：分类 → 业务节点 → 完成）；模型只按「动作契约」
-        （<span class="mono">CONTRACTS</span>）输出意图枚举与参数，不产出路径。这样 50 条评测用例才能
+        （<span class="mono">CONTRACTS</span>）输出意图枚举与参数，不产出路径。这样 51 条评测用例才能
         确定性回归——同样的输入永远走同样的路。
         <b>适用边界（重要）：</b>本条的完整表述分三档，见原则 17。第一档确定性执行：写路径、流程路径、
         监管相关路径一律静态图加模型填空，就是本条原文。第二档受限自主只读：只读、工具集按场景收窄、
         步数设上限、应答必须带取证，模型自己决定先查哪个再查哪个，不为每个问题单独画一张图。
         第三档开放探索：走分析侧湖仓，靠只读沙箱、证据强制、人在环裁决来约束，见第 07 章决策三。
         只做第一档有代价：场景数随问题数线性增长，十几个子产品之后图的数量维护不住。
-        第二档是日常查询价值的主体，本仓当前未建，登记为缺口 G3。
-        <div class="dep">落点：<span class="mono">hub/graphs/</span>（五张场景图）+ <span class="mono">hub/sdk/graph.py</span>（装配薄封装）</div>
+        第二档是日常查询价值的主体，本仓已建（ap.explore 循环图 + 属性评测锚点）。<b>本仓已建（ap.explore 场景，scene_12 验证）</b>：
+        一条模型驱动的工具循环图承载开放问题（诊断/筛查/查字段），不为每个问题画图。
+        <div class="dep">落点：<span class="mono">hub/graphs/</span>（六张场景图，含第二档 explore 循环图）+ <span class="mono">hub/sdk/graph.py</span>（装配薄封装）</div>
       </div></div>
-      <div class="proof"><b>验证：</b>评测 50/50（工具正确性 1.0、步数 ≤4）建立在流程确定性之上<span class="pill ok">eval</span></div>
+      <div class="proof"><b>验证：</b>第一档用评测 51/51（工具正确性 1.0、步数 ≤4）锚定；第二档用属性断言锚定（AP-EXPLORE-001：只读零违规/步数上限/平台取证/终态正确，不锚定路径）<span class="pill ok">eval</span></div>
     </div>
   </div>
 
@@ -1077,7 +1078,7 @@
 
   <div class="grid c2" style="margin-top:12px">
     <div class="card"><h4><span class="src-tag add">增补</span>15 · 可验证性是一等公民</h4>
-      <p>50 条基准评测分六类，幻觉与诱导是两个专门的负向类；能力问题清单与评测用例同源绑定；
+      <p>51 条基准评测分七类，幻觉与诱导是两个专门的负向类；能力问题清单与评测用例同源绑定；
       mock/replay/live 三态可按请求钉定。被评测的不只是业务答案对不对，护栏本身也在评测范围内。
       新场景没有评测基准（含负例）不允许发布。</p></div>
     <div class="card"><h4><span class="src-tag add">增补</span>16 · 自动对账是治理基础设施</h4>
@@ -1107,7 +1108,7 @@
       解法已按渐进披露落地：semantic.capability.discover 检索候选而非全量进上下文（第 07 章六）。要定三件事：单 Agent 工具数上限与超限后的收窄办法（按场景取交集、分层暴露）、
       单次请求的上下文预算（语义片段、会话历史、工具结果各占多少）、
       长任务的上下文压缩规则与子 Agent 的上下文隔离。
-      平台给默认策略，产品按场景覆盖。登记为缺口 G3。</p></div>
+      平台给默认策略，产品按场景覆盖（第二档已落地：ap.explore）。</p></div>
   </div>
 
   <h3>已知缺口清单<span class="hint">逐条对照后留下的空白，写清楚边界在哪，避免各产品以为已经有人解决了</span></h3>
@@ -1118,11 +1119,11 @@
         <td>护栏拦的是用户说出来的话。工具返回的数据没有当不可信输入处理，而发票备注、供应商名称、附件文本这些字段供应商可以填。合法用户只是让 AI 读一张发票，指令藏在数据里。配上写路径和审批台，攻击目标就变成让审批人批一个看起来合理的变更。</td>
         <td>提示词里把工具输出与指令物理分隔并标注来源；审批卡标明每个参数抽自哪段文本；评测加一类数据侧注入负例。见判断 9。</td></tr>
       <tr><td class="mono">G2</td><td>版本标识缺模型与提示词</td>
-        <td>四件套锁定了 spec/ruleset/seed/semantics，但让行为变化最大的两样是模型版本和提示词版本。这两样改了，录制不会作废、评测不会重跑，50/50 全绿可能已经不代表当前行为。</td>
+        <td>四件套锁定了 spec/ruleset/seed/semantics，但让行为变化最大的两样是模型版本和提示词版本。这两样改了，录制不会作废、评测不会重跑，51/51 全绿可能已经不代表当前行为。</td>
         <td>扩成六件套，模型或提示词版本变更同样触发录制作废与全量重跑。见贯穿线 B。</td></tr>
-      <tr><td class="mono">G3</td><td>受限自主只读档未建；工具规模与上下文预算未定</td>
+      <tr><td class="mono">G3</td><td>受限自主只读档已建（ap.explore 循环图 + 属性评测锚点）；余项：上下文预算的量化约定</td>
         <td>所有场景都走静态图，场景数会随问题数线性增长；工具数与上下文没有上限约定，各产品各试一套，跨产品的质量标准就没法比。</td>
-        <td>工具规模的解法已落地（capability.discover 渐进披露，见第 07 章六）；第二档场景与属性评测方法仍待建。见原则 17、20。</td></tr>
+        <td>已全部落地：工具规模解法 = capability.discover 渐进披露（第 07 章六）；第二档 = ap.explore 循环图 + 属性评测锚点 AP-EXPLORE-001（只读/步数/取证/终态，不锚定路径）。余项：上下文预算的量化约定。见原则 17、20。</td></tr>
       <tr><td class="mono">G4</td><td>探索面的湖侧权限同源未实现</td>
         <td>执行面靠共用 PermissionService 保证「AI 看到的 = 页面看到的」，探索面改由湖侧行列级策略强制，等于又有了第二套权限体系，时间一长必然对不上。</td>
         <td>湖侧策略由同一份 scope 模型在 ELT 环节生成，加第五条漂移不变式；湖上只给聚合，明细下钻回 BO API。见冲突点 D。</td></tr>
@@ -1170,12 +1171,12 @@
     按约束松紧，AI 场景分三档（见第 01 章原则 17）：确定性执行、受限自主只读、开放探索。
     前两档走同一条物理链路，共用下面这张执行面图，差别只在有没有预先画好流程图；
     第三档换了数据通道，单独一张探索面图。
-    本仓已建的是第一档，第 06 章动画即此面；第二、三档本仓未建，对应缺口 G3 与 G4。
+    本仓已建第一、二档（第 06 章动画即第一档；第二档见 scene_12）；第三档未建，对应缺口 G4。
     先看执行面，第 06 章动画的树形链路展开就是下面这张图。关键设计不变：
     <b>所有「该不该」的判定都发生在网关和存量系统里，不在模型里</b>。
   </p>
 
-  <h3>执行面 · 一个请求过五道关<span class="hint">第一、二档共用此图；本仓已建第一档，第 06 章四条链路动画对应此图</span></h3>
+  <h3>执行面 · 一个请求过五道关<span class="hint">第一、二档共用此图；本仓已建第一、二档（四条链路动画对应第一档，第二档见 scene_12）</span></h3>
   <div class="arch logicmap">
     <!-- 接入带 -->
     <div class="lm-band">
@@ -1499,7 +1500,7 @@
         <div class="lb"><b>语义服务</b><span>术语/定义/规则解释</span></div>
         <div class="lb"><b>模型网关</b><span>mock/回放/live 三态</span></div>
         <div class="lb"><b>审计/成本/追踪</b><span>五要素+四维计量</span></div>
-        <div class="lb"><b>评测与回放</b><span>50 条基准 + 录制回放</span></div>
+        <div class="lb"><b>评测与回放</b><span>51 条基准 + 录制回放</span></div>
         <div class="lb"><b>配置存储</b><span>三层叠加 · 改完即生效</span></div>
       </div>
     </div>
@@ -1535,7 +1536,7 @@
     <b>开发视图的纪律：</b>① 场景图只 import <span class="mono">hub.sdk</span>（LangGraph 唯一入口，换框架只改一个文件）；
     ② 决策部件里模型只按动作契约填空（CONTRACTS 枚举），开发者不写自由提示词逻辑；
     ③ 行动部件不直连数据库——新场景复用同一套网关拦截链与 BO 合同，没有旁路；
-    ④ 上线前评测门禁：新场景必须带评测基准（含负例），50 条全绿才能发；
+    ④ 上线前评测门禁：新场景必须带评测基准（含负例），51 条全绿才能发；
     ⑤ 决策部件还要守一条本仓尚未定死的约定：单个 Agent 挂载的工具数有上限，
     超了就按场景取交集或分层暴露，单次请求的上下文按语义片段、会话历史、工具结果分配预算。
     工具越多模型选错的概率越高，本仓两个域已定义 9 个操作、未来只增不减，这件事要在架构层给默认策略，
@@ -1560,7 +1561,7 @@
         <span class="ow">应用部门</span></div>
       <div class="layer l2"><div class="ln">L2</div>
         <div class="lc"><div class="nm">ERP AI 业务 Hub<span class="repo">erp-ai-hub/hub/graphs/</span></div>
-        <div class="ds">ERP 自己的 Agent 与编排：五张场景图 + 三层 Harness 资产解析。业务逻辑集中地。</div></div>
+        <div class="ds">ERP 自己的 Agent 与编排：六张场景图（含第二档 explore 循环图）+ 三层 Harness 资产解析。业务逻辑集中地。</div></div>
         <span class="ow">应用部门</span></div>
       <div class="layer l3"><div class="ln">L3</div>
         <div class="lc"><div class="nm">ERP 上下文与动作层（ERP 独有）<span class="repo">erp-ai-context/ · boapi-spec/ · legacy-erp-ap/{boapi,mcp}</span></div>
@@ -1679,7 +1680,7 @@
       <h5>设计要点</h5>
       <p>这层放「开发态与运行态的通用零件」。本演示域小（单领域 AP + 采购切片），
       <b>诚实地说明建了什么、没建什么</b>：</p>
-      <p><b>已建——评测与回放体系</b>：50 条基准用例分六类（含幻觉/诱导两个负向类），三层 runner
+      <p><b>已建——评测与回放体系</b>：51 条基准用例分七类（含幻觉/诱导负向类与第二档属性断言类），三层 runner
       （deterministic / judge / 采样），与能力问题清单同源绑定（<span class="mono">verified_by</span>，
       两处同一份防脱节）。mock 脚本模型保证评测确定性。<br>
       <b>未建——知识平台、检索、图数据库、Memory</b>：演示域单小，语义层用「YAML 语义文件 +
@@ -1687,10 +1688,10 @@
       这不影响架构结论：语义服务对外暴露的是查询工具接口，后端从 YAML 换图数据库，调用方无感。
       <b>注：</b>引入探索面（第 07 章决策三）是这些组件从「未建」变「必建」的第一个业务理由——
       探索 = L3a 语义图谱 + L4 数据湖/检索的组合应用。</p>
-      <div class="cm-files"><span class="hl">eval/cases/ap-*.yaml</span>       <span class="c"># 50 条基准用例（六类：perm/diag/tool/mislead/hallu/comp）</span>
+      <div class="cm-files"><span class="hl">eval/cases/ap-*.yaml</span>       <span class="c"># 51 条基准用例（七类：perm/diag/tool/mislead/hallu/comp/explore）</span>
 <span class="hl">eval/runner/run_eval.py</span>     <span class="c"># 三层 runner：确定性检查（工具名/禁调/步数/不变式）</span>
-<span class="hl">erp-ai-context/questions-capability.yaml</span>  <span class="c"># 30 条能力问题（与评测用例同源绑定）</span></div>
-      <div class="cm-verify"><b>验证：</b>run_eval --tier full → 50/50，门禁全绿</div>
+<span class="hl">erp-ai-context/questions-capability.yaml</span>  <span class="c"># 31 条能力问题（与评测用例同源绑定）</span></div>
+      <div class="cm-verify"><b>验证：</b>run_eval --tier full → 51/51，门禁全绿</div>
     </div>
   </div>
 
@@ -1769,26 +1770,26 @@
       走注册中心（吊销即时生效，scene_4），灰度按「场景+租户」切。评测门禁是发布的最后一道闸。
       <b>这里有个缺口要点出来：</b>四件套锚的是规格、规则、种子数据和语义，
       而让行为变化最大的两样是模型版本和提示词版本，它们现在不在四件套里。
-      模型升一个小版本，录制不会作废、评测不会重跑，50/50 全绿就可能已经不代表当前行为。
+      模型升一个小版本，录制不会作废、评测不会重跑，51/51 全绿就可能已经不代表当前行为。
       建议扩成六件套，模型或提示词版本变更同样触发录制作废与全量重跑。登记为缺口 G2。</p>
       <div class="cm-verify"><b>验证：</b>GET /gw/versions 四件套；selfcheck Q2/Q3/Q4（谁在用/有无异常/花多少钱）；scene_4 吊销即时生效</div>
     </div>
   </div>
 
   <div class="explain">
-    <b>给评审人的话：</b>以上每层都可以现场验证——第 06 章的十一幕脚本按层组织，附录 B 给出一键启动方式。
+    <b>给评审人的话：</b>以上每层都可以现场验证——第 06 章的十二幕脚本按层组织，附录 B 给出一键启动方式。
     被追问「这层真的存在吗」时，答案永远是「目录在这里、服务在跑、断言可重放」。
   </div>
 </section>
 
 <section id="scenes">
-  <h2><span class="no">06</span>场景视图与验证：链路动画 + 十一幕手册<span class="en">Scenarios &amp; Verification</span></h2>
+  <h2><span class="no">06</span>场景视图与验证：链路动画 + 十二幕手册<span class="en">Scenarios &amp; Verification</span></h2>
   <p class="lead">
     前四章是静态视图（逻辑 / 部署 / 开发 / 代码对照），本章用<b>运行场景</b>把它们串起来——
     即经典 4+1 视图模型<sup class="rref">[2]</sup>的「+1」：四个树形链路动画展示请求的真实旅程（滚动到哪个播放哪个，
-    链路按真实拓扑画成树：场景图分出「问模型」与「调工具」两条支线），十一幕验证手册给出
+    链路按真实拓扑画成树：场景图分出「问模型」与「调工具」两条支线），十二幕验证手册给出
     每幕<b>谁登录、怎么操作、预期结果、原因</b>（口令统一 demo123）。
-    汇报时建议按幕号 1→6→5→11 的顺序讲：先事故、再写路径审批、再双租标准、最后喂养与驱动。
+    汇报时建议按幕号 1→6→5→12 的顺序讲：先事故、再写路径审批、再双租标准、最后喂养与第二档自主探索。
   </p>
 
 <h3>场景① 读 · 财务李四问：「INV-A-001 这张发票为什么被拦？」<span class="hint">最常走的链路：从提问到带证据的答案</span></h3>
@@ -1888,7 +1889,7 @@
     出问题能精确回答「哪个 Agent 替谁在什么范围干了什么」。<b>接下来两章解释为什么这样设计（01 / 02）。</b>
   </div>
 
-<div class="scn-index"><span class="lbl">十一幕速览：</span><a href="#sc-1"><b>1</b>权限事故复现</a><a href="#sc-2"><b>2</b>查不完整必披露</a><a href="#sc-3"><b>3</b>越权诱导被拦</a><a href="#sc-4"><b>4</b>吊销即时生效</a><a href="#sc-5"><b>5</b>双租同题不同答</a><a href="#sc-6"><b>6</b>写路径全生命周期</a><a href="#sc-7"><b>7</b>行业包 + 定时触发</a><a href="#sc-8"><b>8</b>跨域协同（委派采购）</a><a href="#sc-9"><b>9</b>消息扩展（事件出平台）</a><a href="#sc-10"><b>10</b>配置即产品</a><a href="#sc-11"><b>11</b>元数据喂养 + 本体驱动</a></div>
+<div class="scn-index"><span class="lbl">十二幕速览：</span><a href="#sc-1"><b>1</b>权限事故复现</a><a href="#sc-2"><b>2</b>查不完整必披露</a><a href="#sc-3"><b>3</b>越权诱导被拦</a><a href="#sc-4"><b>4</b>吊销即时生效</a><a href="#sc-5"><b>5</b>双租同题不同答</a><a href="#sc-6"><b>6</b>写路径全生命周期</a><a href="#sc-7"><b>7</b>行业包 + 定时触发</a><a href="#sc-8"><b>8</b>跨域协同（委派采购）</a><a href="#sc-9"><b>9</b>消息扩展（事件出平台）</a><a href="#sc-10"><b>10</b>配置即产品</a><a href="#sc-11"><b>11</b>元数据喂养 + 本体驱动</a><a href="#sc-12"><b>12</b>受限自主只读</a></div>
 
   <div class="scn t-read" id="sc-1">
     <div class="sh"><span class="num">1</span><span class="st">权限事故复现</span><span class="sid">scene_1</span><span class="pill ok">读</span><span class="who">zhangsan（ERP 页面）· lisi（WorkBuddy）</span></div>
@@ -2015,15 +2016,27 @@
   <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">
     浏览器人工全旅程（WorkBuddy 登录→聊天→审批→解析→通知）另有 Playwright E2E 19 项：
     <code>python scripts/e2e_workbuddy.py</code>。讲解词与 45 分钟节奏见
-    <a href="demo-script.md">十一幕演示剧本</a>。
+    <a href="demo-script.md">十二幕演示剧本</a>。
   </p>
 
+
+  <div class="scn t-read" id="sc-12">
+    <div class="sh"><span class="num">12</span><span class="st">受限自主只读（第二档）</span><span class="pill ok">读</span><span class="who">lisi</span></div>
+    <div class="sb">
+      <p class="desc">模型驱动的工具循环：模型自选下一步查什么、何时收尾，安全靠平台四约束（不靠流程图）（原则 17）</p>
+      <p class="cmd"><span class="mono">python scripts/demo/scene_12.py</span> · <a href="http://localhost:8088/chat?scene=ap.explore&amp;q=INV-A-001%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A2%AB%E9%98%BB%E6%96%AD%EF%BC%9F%E9%A1%BA%E4%BE%BF%E7%9C%8B%E7%9C%8B%E5%AE%83%E7%9A%84%E6%9C%AA%E4%BB%98%E9%87%91%E9%A2%9D" target="_blank" rel="noopener">▶ 自主探索 · lisi（live 模型真实自选路径）</a></p>
+      <div class="row"><span class="k s">步骤</span><div class="v">① WorkBuddy 用 lisi 登录，点 ▶ 链接（「INV-A-001 为什么被阻断？顺便看看它的未付金额」）② 观察模型自选的工具路径与应答尾部的取证清单 ③ 问一个筛查类问题（「有哪些被阻断的发票」）看同一循环图改选工具 ④（可选）运行脚本看属性断言</div></div>
+      <div class="row"><span class="k r">预期</span><div class="v">live 模式下模型<b>自主选择</b>路径（如 checkValidation → getDerivedField；筛查类选 listBlocked → getMatchDetail）；应答尾部带 <b>[取证] N/4 步，工具：…</b>（平台附加）；全部工具只读；写工具请求被拒 GW.SCOPE_EXCEEDED</div></div>
+      <div class="row"><span class="k w">原因</span><div class="v">第二档与第一档的根本差别：<b>判定权在模型，授权在平台</b>——场景白名单全部只读（写工具不在 T2 scope）、步数上限 4（超出按已有证据强制收尾）、每步单独换 T2（步级最小授权）、取证后缀由平台附加（不依赖模型自觉）；评测用<b>属性断言</b>（AP-EXPLORE-001：只读/步数/取证/终态），不锚定路径——同题两次运行允许路径不同</div></div>
+    </div>
+  </div>
   <h3>当前验证结果（全部体系绿，<a href="verification-report.md">完整报告</a>）</h3>
   <div class="verdict">
-    <div class="v"><div class="num">50/50</div><div class="lab">评测用例（工具正确性 1.0 · 步数 ≤4 · 越权 0）</div></div>
+    <div class="v"><div class="num">51/51</div><div class="lab">评测用例（工具正确性 1.0 · 步数 ≤4 · 越权 0）</div></div>
     <div class="v"><div class="num">37/37</div><div class="lab">多租六项检验（隔离/定义/成本对账）</div></div>
     <div class="v"><div class="num">4/4</div><div class="lab">漂移不变式（含术语目标/派生基字段两条新规则）</div></div>
-    <div class="v"><div class="num">19/19</div><div class="lab">WorkBuddy 浏览器 E2E</div></div>
+    <div class="v"><div class="num">11/11</div><div class="lab">第二档受限自主（scene_12 属性断言）</div></div>
+        <div class="v"><div class="num">19/19</div><div class="lab">WorkBuddy 浏览器 E2E</div></div>
     <div class="v"><div class="num">×100</div><div class="lab">事故的统计范围放大倍数（50 vs 5050+，已复现并修复）</div></div>
   </div>
 </section>
@@ -2186,7 +2199,7 @@
       <td>「进货单」在华东制造指采购订单；unpaid_cny = amount − paid；「大额」阈值 50 万；发票-订单-收货三单关系</td>
       <td>人工（只写机器推不出的）</td></tr>
     <tr><td class="mono"><b>原生段</b></td><td>怎么动、能答什么</td>
-      <td>ap.invoice.checkValidation 工具签名、正反例与错误码；30 条能力问题清单</td>
+      <td>ap.invoice.checkValidation 工具签名、正反例与错误码；31 条能力问题清单</td>
       <td>规格派生（bo-ap.yaml）</td></tr>
   </table>
 
@@ -2289,7 +2302,7 @@
     这类问题才是日常查询的主体。按约束的松紧排开，一共三档：
   </p>
   <table>
-    <tr><th style="width:110px"></th><th style="width:30%">① 确定性执行<br><span style="font-weight:400;font-size:12px">本仓已建</span></th><th style="width:32%">② 受限自主只读<br><span style="font-weight:400;font-size:12px">本仓未建，缺口 G3</span></th><th>③ 开放探索<br><span style="font-weight:400;font-size:12px">本仓未建，本节给出设计</span></th></tr>
+    <tr><th style="width:110px"></th><th style="width:30%">① 确定性执行<br><span style="font-weight:400;font-size:12px">本仓已建</span></th><th style="width:32%">② 受限自主只读<br><span style="font-weight:400;font-size:12px">本仓已建（ap.explore）</span></th><th>③ 开放探索<br><span style="font-weight:400;font-size:12px">本仓未建，本节给出设计</span></th></tr>
     <tr><td><b>AI 的角色</b></td><td>操作员，替人执行已知操作</td><td>查询员，替人把一个问题查清楚</td><td>分析师，替人发现未知模式</td></tr>
     <tr><td><b>典型问题</b></td><td>INV-A-001 为什么被拦；把税码改成 T13</td><td>这家供应商近三个月被拦的单有什么共同点</td><td>P2P 流程里哪些供应商高风险</td></tr>
     <tr><td><b>数据访问</b></td><td>只经 BO API，带人的权限、幂等、审计</td><td>同样只经 BO API，但只用读操作，工具集按场景取交集</td><td>分析侧湖仓直查，不直连交易库，行列级权限在湖上强制（见缺口 G4）</td></tr>
@@ -2342,8 +2355,8 @@
     三档共用同一套语义层和同一套身份与审计，差别在访问通道和纪律的松紧。
     这与第 01 章 L0 分层兼容：第二档是 L2 编排的一种变体，
     第三档是 L3a 语义（图谱）加 L4 能力组件（数据湖/检索）的组合应用。
-    第二、三档本仓都未建，治理要素（语义同源、证据链、审计）已有，
-    第二档缺的是工具规模与上下文预算的约定（缺口 G3），
+    第二档本仓已建（ap.explore：只读白名单 + 步数上限 + 平台取证 + 步级最小授权），第三档未建；治理要素（语义同源、证据链、审计）两档共用，
+    第二档已建（工具规模解法 = capability.discover；上下文预算约定待固化），
     第三档缺的是数据湖接入和湖侧权限同源（缺口 G4）。
   </div>
 
@@ -2680,7 +2693,7 @@ x-bo-sod-group      : SoD 互斥组</div>
       <p><b>为什么归应用层：</b>每个产品都有自己的能力清单和评测（AP 有 AP 的 50 条），但「怎么绑定、
       负例必须成对、六类划分（含幻觉与诱导两个负向类）」是统一规范——否则各产品质量标准不一，
       跨产品的质量门禁无从谈起。</p>
-      <div class="cm-verify"><b>验证：</b>run_eval --tier full 50/50 全绿；能力清单 30 条全部有 verified_by 绑定</div>
+      <div class="cm-verify"><b>验证：</b>run_eval --tier full 51/51 全绿；能力清单 31 条全部有 verified_by 绑定</div>
     </div>
   </div>
 
@@ -2773,7 +2786,7 @@ x-bo-sod-group      : SoD 互斥组</div>
     <tr><td class="mono">5</td><td>高风险 Capability 加 Policy/Permission/Approval</td><td><b>本仓最强项</b>：令牌链 / 权限同源 / 审批 OT / SoD / 护栏 / 幂等 / 审计五要素</td><td>✅ 超额</td></tr>
     <tr><td class="mono">6</td><td>复用现有 Workflow 和 API</td><td>BO API 包装存量规则引擎与事务（底座优先）</td><td>✅ 达成</td></tr>
     <tr><td class="mono">7</td><td>建立 Discover / Describe / Execute</td><td>三段已落地（第 07 章六）：discover 检索候选 → explain 取契约 → MCP 代理执行</td><td>✅ 达成</td></tr>
-    <tr><td class="mono">8</td><td>少数决策点加 LLM Reasoning</td><td>意图分类 / 税码建议 / 归因摘要 / 跨域综合——恰是「少数决策点」，评测锁 mock 可回归</td><td>✅ 精确达成</td></tr>
+    <tr><td class="mono">8</td><td>少数决策点加 LLM Reasoning</td><td>意图分类 / 税码建议 / 归因摘要 / 跨域综合 / <b>第二档探索的工具选择（每步都是模型决定）</b>——评测锁 mock 可回归</td><td>✅ 精确达成</td></tr>
     <tr><td class="mono">9</td><td>逐步引入 Goal/Plan/Task/Event Agent Runtime</td><td>Event ✅（形态④，事件诊断含 LLM 摘要）、Task ✅（定时例程 / 审批挂起恢复）；Goal/Plan 未建</td><td>⚠️ 部分</td></tr>
   </table>
   <div class="explain">
@@ -2900,7 +2913,7 @@ python -X utf8 scripts/selfcheck.py
 <span class="c"># 汇总报告（跑齐四体系：评测/多租/漂移/自检 + 三个入口对照）→ docs/verification-report.md</span>
 python -X utf8 scripts/gen_report.py
 
-<span class="c"># 十一幕演示 + 无头 MCP</span>
+<span class="c"># 十二幕演示 + 无头 MCP</span>
 python scripts/demo/scene_1.py    <span class="c"># … 至 scene_11（Windows 下加 -X utf8）</span>
 python scripts/headless_mcp.py call ap.invoice.checkValidation --args '{"invoiceNo":"INV-A-001"}'</pre>
     </div>
@@ -2928,8 +2941,8 @@ erp-ai-hub/             <span class="c">LangGraph Hub：五场景图 + interrupt
 erp-ai-context/         <span class="c">语义服务：三段式语义文件 + 七工具 + 双租/行业叠加 + 漂移检测 + 配置存储（L3a）</span>
 harness-assets/         <span class="c">标品资产层：standard/ + partner/ 行业包 + tenant-{east,uni}/（L2 Harness）</span>
 workbuddy/              <span class="c">React 助手平台：OAuth/聊天/审批台/通知/解析查看器/租户配置（L1）</span>
-eval/                   <span class="c">50 条基准用例 + 三层 runner（L4 评测与回放）</span>
-scripts/                <span class="c">检验体系（自检/租检/报告）+ 十一幕演示 + 无头 CLI（L1 形态③）</span>
+eval/                   <span class="c">51 条基准用例 + 三层 runner（L4 评测与回放）</span>
+scripts/                <span class="c">检验体系（自检/租检/报告）+ 十二幕演示 + 无头 CLI（L1 形态③）</span>
 compose/                <span class="c">docker-compose 一键起：postgres / jaeger / 五服务（部署域落地）</span>
 docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + 令牌设计 + 验证报告</span></pre>
   <div class="grid c2">
@@ -2939,7 +2952,7 @@ docs/                   <span class="c">本文档 + 映射表 + 演示剧本 + �
       <p><a href="architecture-alignment.md"><code>docs/architecture-alignment.md</code></a> —— 逐条一致性/冲突点/缺口分析与补齐记录。</p></div>
     <div class="card"><h4>令牌设计</h4>
       <p><a href="token-design.md"><code>docs/token-design.md</code></a> —— T1/T2/T3/OT 逐跳 claims、七道拦截、审批时序、两层幂等。</p></div>
-    <div class="card"><h4>十一幕演示剧本</h4>
+    <div class="card"><h4>十二幕演示剧本</h4>
       <p><a href="demo-script.md"><code>docs/demo-script.md</code></a> —— 每幕讲解词 + 断言要点 + 浏览器路径 + 45 分钟节奏。</p></div>
     <div class="card"><h4>验证报告（生成物）</h4>
       <p><a href="verification-report.md"><code>docs/verification-report.md</code></a> —— 四体系结果 + 指标门禁 + 三个入口取证，随代码再生成。</p></div>

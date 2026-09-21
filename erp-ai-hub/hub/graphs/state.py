@@ -30,6 +30,12 @@ class GraphState(TypedDict, total=False):
     approval: dict
     approval_result: str          # pending | applied | rejected | failed
     ot: dict | None
+    # 受限自主只读（ap.explore，第二档）
+    last_call: dict                  # 当步单次调用（SSE 增量发射通道，避免累计清单重发）
+    next_tool: str                   # 模型决定的下一步工具（None = 收尾）
+    next_args: dict                 # 下一步参数
+    history: list[dict]             # 已取得的工具结果（喂回模型做下一步决策）
+    final_answer: str               # 模型给出的收尾结论（超步数时可能为空）
     # 工具可见性与结果
     tool_calls: list[dict]
     result: Any
@@ -91,6 +97,13 @@ CONTRACTS: dict[str, str] = {
         '{"intent":"diagnose_cross","invoiceNo":"<发票号>",'
         '"reply":"好的，我做跨域归因：先 AP 侧诊断，再委派采购域取证。"}\n'
         '2. 信息不足 -> {"intent":"clarify","reply":"请提供发票号（如 INV-A-001）。"}'
+    ),
+    "ap.explore": (
+        '你是应付（AP）域的只读探索助手（第二档·受限自主：安全由平台约束保证，不靠你自觉）。'
+        '根据问题与已取得的工具结果，决定下一步动作，只输出一个 JSON 对象（不要 markdown 代码块、不要多余文字）：'
+        '继续取证 -> {"action":"call","tool":"<工具名>","arguments":{...}}（工具只能从对话中列出的白名单选择，全部只读）；'
+        '证据足够 -> {"action":"final","answer":"<结论>"}。'
+        '结论必须引用已取得的发现（规则码/数字），不发明未取得的事实；通常 2~3 步内收尾。'
     ),
     "ap.event": (
         '你是应付发票的事件诊断摘要器，把无头诊断的校验结果讲成人话。'

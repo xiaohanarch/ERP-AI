@@ -153,10 +153,18 @@ def _run_scene(scene, message, conversation_id, user, tenant, trace, agent, mode
                 yield _sse(payload)
                 yield _sse({"type": "done"})
                 return
-            for tc in (delta or {}).get("tool_calls") or []:
+            delta = delta or {}
+            if delta.get("last_call") is not None:
+                # 增量通道（循环图：每次只发当步调用，避免累计清单重发）
+                tc = delta["last_call"]
                 yield _sse({"type": "tool", "tool": tc.get("tool"),
                             "arguments": tc.get("arguments"), "ok": tc.get("ok", True),
                             "error": tc.get("error")})
+            else:
+                for tc in delta.get("tool_calls") or []:
+                    yield _sse({"type": "tool", "tool": tc.get("tool"),
+                                "arguments": tc.get("arguments"), "ok": tc.get("ok", True),
+                                "error": tc.get("error")})
     except Exception as e:  # noqa: BLE001 —— SSE 协议不允许悬空
         yield _sse({"type": "error", "code": "HUB.INTERNAL_ERROR", "message": str(e)[:200]})
         yield _sse({"type": "done"})

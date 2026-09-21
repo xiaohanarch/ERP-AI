@@ -12,6 +12,7 @@
   ap.batch   -> {"intent":"batch_screen","reply":"..."}
   ap.taxcode -> {"intent":"suggest_tax_code","invoiceNo":"...","taxCode":"...","reason":"..."}
   ap.event   -> {"intent":"event_summary","summary":"..."}（无头诊断归因摘要，输入为校验取证结果）
+  ap.explore -> {"action":"call"/"final",...}（第二档受限自主：按已取得结果决定下一步）
   proc.diag  -> {"intent":"po_lookup","poNo":"PO-A-0001","reply":"..."}
   xdom.diag  -> {"intent":"diagnose_cross","invoiceNo":"...","reply":"..."}
   无单号     -> {"intent":"clarify","reply":"请提供发票号/采购订单号..."}
@@ -24,6 +25,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 INVOICE_NO = re.compile(r"INV-[A-Z0-9\-]+")
+RULE_ID = re.compile(r"AP\.[A-Z_]+\.[A-Z_]+")
 PO_NO = re.compile(r"PO-[A-Z0-9\-]+")
 RULESET_VERSION = "AP-RS-1.2.0"
 
@@ -101,6 +103,31 @@ def scripted_content(scene: str, messages: list[dict]) -> str:
             "intent": "clarify",
             "reply": "请提供需要补全税码的发票号（如 INV-A-003）。",
         }, ensure_ascii=False)
+
+    if scene == "ap.explore":
+        # 第二档确定性策略（评测锚点）：按已取得的工具结果决定下一步。
+        # seen 只含 [已执行] 结果（约束消息里的白名单文本不参与判定）
+        user_msgs = [m.get("content", "") for m in messages if m.get("role") == "user"]
+        question = user_msgs[0] if user_msgs else ""
+        seen = " ".join(m for m in user_msgs if m.startswith("[已执行]"))
+        if inv and "ap.invoice.checkValidation" not in seen:
+            return json.dumps({"action": "call", "tool": "ap.invoice.checkValidation",
+                               "arguments": {"invoiceNo": inv}}, ensure_ascii=False)
+        if inv and "ap.invoice.getMatchDetail" not in seen:
+            return json.dumps({"action": "call", "tool": "ap.invoice.getMatchDetail",
+                               "arguments": {"invoiceNo": inv}}, ensure_ascii=False)
+        if not inv and "ap.invoice.listBlocked" not in seen and ("阻断" in question or "哪些" in question):
+            return json.dumps({"action": "call", "tool": "ap.invoice.listBlocked",
+                               "arguments": {}}, ensure_ascii=False)
+        rules = []
+        for rid in RULE_ID.finditer(seen):
+            if rid.group(0) not in rules:
+                rules.append(rid.group(0))
+        summary = ("；".join(rules) if rules else "未发现阻断规则")
+        return json.dumps({"action": "final",
+                           "answer": f"基于工具取证的结论：{summary}。"
+                                     f"（结论仅引用已取得的发现，不发明事实）"},
+                          ensure_ascii=False)
 
     if scene == "ap.event":
         if "已阻断" in text:  # 归因摘要请求：用户消息为确定性校验取证结果
