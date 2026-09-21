@@ -1569,13 +1569,15 @@
       <b>投影段</b>（实体清单/标签/枚举——由存量 <span class="mono">/metadata</span> 实时生成，
       人工只写定义层术语）+ <b>增量段</b>（元数据推不出的业务资产：派生字段、术语、指标定义）+
       <b>原生段</b>（引用 BO 规格的能力问题）。租户/行业定义经 overlays 三层叠加解析。
-      <b>漂移检测</b>把「语义与存量一致」做成可检验不变式（预埋 2 处漂移必须全部检出，
+      第八个工具 <span class="mono">semantic.capability.discover</span> 是能力发现（Discover / Describe / Dispatch
+    渐进披露的第一段：按意图检索候选 BO 操作、带风险三级卡片，解工具规模问题，详见第 07 章六）。
+    <b>漂移检测</b>把「语义与存量一致」做成可检验不变式（预埋 2 处漂移必须全部检出，
       含术语目标与派生基字段两条新规则）。<b>本体驱动</b>：增量段带 compute 的派生字段经构建期
       生成器（<span class="mono">scripts/gen_derived_fields.py</span>）产出 <span class="mono">derived-fields.json</span>
       （带语义版本戳），Java 侧通用引擎加载——本体改定义、重建，API 能力随之改变。</p>
       <div class="cm-files"><span class="hl">domains/ap_invoice.yaml</span>        <span class="c"># 语义文件三段式（版本 ap-sem-1.1.0）</span>
 <span class="hl">service/loader.py</span>               <span class="c"># effective_projection：投影段实时生成（元数据自动喂养）+ 冷启动回退</span>
-<span class="hl">service/tools.py</span>                <span class="c"># 七个语义查询工具：术语翻译/指标定义/规则解释/实体与字段清单…</span>
+<span class="hl">service/tools.py</span>                <span class="c"># 八个语义查询工具：能力发现（capability.discover）/术语翻译/指标定义/规则解释/实体与字段清单…</span>
 <span class="hl">service/config_store.py</span>         <span class="c"># 配置存储：DB 层（管理端可改）+ 文件层（出厂默认）+ 变更记录</span>
 <span class="hl">drift/drift_check.py</span>            <span class="c"># 漂移检测：四类不变式（字段/规则/术语目标/派生基字段）</span>
 <span class="hl">overlays/{tenant-east,tenant-uni,partner-manufacturing}.yaml</span>  <span class="c"># 双租 + 行业语义包</span></div>
