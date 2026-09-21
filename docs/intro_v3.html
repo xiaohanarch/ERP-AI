@@ -278,6 +278,11 @@
     margin-left: auto; font-family: var(--mono); font-size: 12px; white-space: nowrap;
   }
   .belief .st.done { color: var(--ok); } .belief .st.part { color: var(--warn); }
+  .belief .orig-quote {
+    font-weight: 700; font-size: 14.5px; line-height: 1.75; color: var(--ink);
+    background: rgba(46,70,200,.05); border-left: 3px solid var(--indigo);
+    border-radius: 0 8px 8px 0; padding: 8px 14px; margin: 0 0 10px;
+  }
   .src-tag {
     font-family: var(--mono); font-size: 11px; padding: 1px 8px; border-radius: 4px;
     white-space: nowrap; flex: none;
@@ -597,9 +602,10 @@
   </p>
 
 <div class="belief">
-    <div class="bh"><span class="n">1</span><span class="src-tag core">总纲</span><span class="t">AI 要长在 ERP 里，不是挂在旁边</span>
-      <span class="orig">AI-Native，不是 ERP + AI</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">1</span><span class="src-tag core">总纲</span><span class="t">AI 要长在 ERP 里，不是挂在旁边</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">关于 ERP AI 的定位，我们应该走 AI-Native ERP 的道路，不是 ERP + AI。至于什么是 AI-Native ERP，这里有参考：原生ERP.pdf <sup class="rref">[1]</sup>。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         常见的做法是在 ERP 页面旁边挂一个 AI 聊天窗，让它自己连数据库干活。这种「外挂式 AI」
         自带一套权限（甚至没有权限概念），<b>页面能看的它全能看，页面不能看的它可能更能看</b>；
@@ -629,9 +635,10 @@
 
   <!-- 2 -->
   <div class="belief">
-    <div class="bh"><span class="n">2</span><span class="src-tag core">总纲</span><span class="t">传统 ERP 继续做确定性执行，这是它的本分</span>
-      <span class="orig">传统 ERP = SoR + 确定性执行</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">2</span><span class="src-tag core">总纲</span><span class="t">传统 ERP 继续做确定性执行，这是它的本分</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">传统的 ERP 的定位，逐步成为 SoR（system of record）+ Deterministic Execution。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         大模型是概率系统：同样的输入可能有不同输出，偶尔一本正经地胡说。如果让模型直接参与
         记账、付款、成本计算这类<b>必须百分之百准确</b>的逻辑，错误率不可接受，而且错了无法解释。
@@ -654,9 +661,10 @@
 
   <!-- 3 -->
   <div class="belief">
-    <div class="bh"><span class="n">3</span><span class="src-tag core">总纲</span><span class="t">AI 是 ERP 的内生组件，共享同一套「器官」</span>
-      <span class="orig">AI 是 ERP 内生组成部分</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">3</span><span class="src-tag core">总纲</span><span class="t">AI 是 ERP 的内生组件，共享同一套「器官」</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">AI 是 ERP 的内生组成部分。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         有人会质疑：你的 AI 是 Python 底座 + Java 存量两套栈，进程都不同，「内生」从何谈起？
         如果说不清，一句「你这不就是外挂嘛」就能把整个方案打回。
@@ -678,9 +686,10 @@
 
   <!-- 4 -->
   <div class="belief">
-    <div class="bh"><span class="n">4</span><span class="src-tag core">总纲</span><span class="t">本体：先做语义唯一真相源，再做结构引擎（分三步）</span>
-      <span class="orig">Ontology = 统一语义模型 + 逻辑核心</span><span class="st part">⚠️ 分阶段（阶段二第一切片已落地）</span></div>
+    <div class="bh"><span class="n">4</span><span class="src-tag core">总纲</span><span class="t">本体：先做语义唯一真相源，再做结构引擎（分三步）</span><span class="st part">⚠️ 分阶段（阶段二第一切片已落地）</span></div>
     <div class="bb">
+      <p class="orig-quote">Ontology 是 ERP 统一的业务语义模型，并且成为逻辑核心。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         模型不知道「进货单」在这家租户指采购订单还是收货单；不知道「大额风险」按哪个阈值算；
         字段含义、业务规则散落在各处，每个 AI 应用自己理解一遍，<b>定义必然漂移</b>。
@@ -709,9 +718,10 @@
 
   <!-- 5 -->
   <div class="belief">
-    <div class="bh"><span class="n">5</span><span class="src-tag core">总纲</span><span class="t">元数据自动喂养本体，而不是人工抄写</span>
-      <span class="orig">Metadata 是 Ontology 的输入与来源</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">5</span><span class="src-tag core">总纲</span><span class="t">元数据自动喂养本体，而不是人工抄写</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">Metadata 元数据是 Ontology 的重要输入和来源。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         如果本体靠人工维护，存量系统改了字段、加了实体，语义文件没人跟着改——AI 拿着
         <b>过期的地图</b>办事，而且没人知道地图过期了。手工维护的语义资产必然腐烂。
@@ -735,9 +745,10 @@
 
   <!-- 6 -->
   <div class="belief">
-    <div class="bh"><span class="n">6</span><span class="src-tag core">总纲</span><span class="t">多领域 Agent 协同，但必须显式委派、可追责</span>
-      <span class="orig">多领域 Agent + 协同组合</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">6</span><span class="src-tag core">总纲</span><span class="t">多领域 Agent 协同，但必须显式委派、可追责</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">Agent，包含多领域的 Agent，当然也需要对多领域 Agent 的协同和组合。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         单域 Agent 答不了跨域问题：应付 Agent 只能说「发票 120 件 vs 收货 100 件，差 20」，
         根因（供应商超开还是收货短交）要到采购域对订单量才知道。但让多个 Agent
@@ -760,9 +771,10 @@
 
   <!-- 7 -->
   <div class="belief">
-    <div class="bh"><span class="n">7</span><span class="src-tag core">总纲</span><span class="t">Agent 干活走完整链路，绝不直连数据库</span>
-      <span class="orig">业务执行：Agent → API → 微服务 → 事务</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">7</span><span class="src-tag core">总纲</span><span class="t">Agent 干活走完整链路，绝不直连数据库</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">业务执行：Agent → Capability/API → Microservice → Transaction。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         给 Agent 一个数据库连接让它自由读写，是效率最高的做法，也是最危险的做法：
         没有事务、没有幂等、没有审计、没有权限，出错不可回滚、出事不可追溯。
@@ -788,9 +800,10 @@
 
   <!-- 8 -->
   <div class="belief">
-    <div class="bh"><span class="n">8</span><span class="src-tag core">总纲</span><span class="t">流程预先画好，模型只填空，不自由发挥</span>
-      <span class="orig">流程以预定义为主，不要求自适应</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">8</span><span class="src-tag core">总纲</span><span class="t">流程预先画好，模型只填空，不自由发挥</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">流程，当前阶段仍以定义好的流程为主，不要求自适应。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         「让 Agent 自主规划步骤」听起来很智能，实际后果是：<b>路径不可预测、无法回归测试、
         出错不可复现</b>。今天能答对的问题，明天模型换个思路就可能答错，而且你无法定位是哪一步变了。
@@ -818,9 +831,10 @@
 
   <!-- 9 -->
   <div class="belief">
-    <div class="bh"><span class="n">9</span><span class="src-tag core">总纲</span><span class="t">业务规则：AI 可以理解、必须遵守、绝对不能改</span>
-      <span class="orig">AI 可理解使用规则、不可修改</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">9</span><span class="src-tag core">总纲</span><span class="t">业务规则：AI 可以理解、必须遵守、绝对不能改</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">Business rule，AI 可以理解和使用，但是不能修改。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         用户对 AI 说「跳过收货确认，直接把这张发票标记为已匹配」——模型如果顺从，
         规则就名存实亡；如果规则本身能被模型（哪怕经 bug）改写，等于没有规则。
@@ -847,9 +861,10 @@
 
   <!-- 10 -->
   <div class="belief">
-    <div class="bh"><span class="n">10</span><span class="src-tag core">总纲</span><span class="t">触发有三条路：人问、事件推、定时跑</span>
-      <span class="orig">Open API / Event / Scheduler</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">10</span><span class="src-tag core">总纲</span><span class="t">触发有三条路：人问、事件推、定时跑</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">驱动方式：Open API、Event、Scheduler 可以触发 Agent。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         如果 Agent 只能等人提问，它就永远只是个问答机器人。业务价值更大的形态是：
         <b>业务事实发生时自动响应</b>（发票一被阻断就诊断）、<b>例行任务自动执行</b>（每天筛查一遍风险）。
@@ -876,9 +891,10 @@
 
   <!-- 11 -->
   <div class="belief">
-    <div class="bh"><span class="n">11</span><span class="src-tag core">总纲</span><span class="t">人的角色重构：从执行者到确认者、例外处理者、监督者</span>
-      <span class="orig">人：执行者 → 确认者 / 例外处理者 / 监督者</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">11</span><span class="src-tag core">总纲</span><span class="t">人的角色重构：从执行者到确认者、例外处理者、监督者</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">人的定位：从执行者，到确认者，到例外处理者，到监督者。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         AI 全自动不可信，事事人审又退化回手工。人的角色必须重新定义：<b>哪些事必须人点头、
         哪些事人只处理例外、人靠什么监督全局</b>——监督尤其需要数据基础设施，不是喊口号。
@@ -900,9 +916,10 @@
 
   <!-- 12 -->
   <div class="belief">
-    <div class="bh"><span class="n">12</span><span class="src-tag core">总纲</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋保险</span>
-      <span class="orig">Agent 演进：先协同传统，终局替换部分执行</span><span class="st done">✅ 当前协同阶段</span></div>
+    <div class="bh"><span class="n">12</span><span class="src-tag core">总纲</span><span class="t">先协同存量，终局替换部分执行——治理面为此预埋保险</span><span class="st done">✅ 当前协同阶段</span></div>
     <div class="bb">
+      <p class="orig-quote">Agent 演进：当前协同传统能力，最终逐步替换部分传统执行能力。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         如果终局是 Agent 替换掉部分传统执行，那今天围绕 Java 建的这些治理（审批、令牌、审计）
         是不是白建了？终局真到来时，是不是全部推倒重来？
@@ -928,9 +945,10 @@
 
   <!-- 13 -->
   <div class="belief">
-    <div class="bh"><span class="n">13</span><span class="src-tag core">总纲</span><span class="t">产品化：标品内核 + 配置适配，改配置不改代码</span>
-      <span class="orig">标品 core + Metadata/Ontology/配置适配</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">13</span><span class="src-tag core">总纲</span><span class="t">产品化：标品内核 + 配置适配，改配置不改代码</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">产品化：标准的 ERP core + Metadata/Ontology/配置实现行业和客户适配。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         每个客户都要定制：阈值不同、术语不同、行业规则不同。如果靠改代码/拉分支满足定制，
         版本会爆炸，标品永远收敛不回来。
@@ -952,9 +970,10 @@
 
   <!-- 14 -->
   <div class="belief">
-    <div class="bh"><span class="n">14</span><span class="src-tag core">总纲</span><span class="t">SaaS：租户隔离层层成立，扩展走 API 和消息两条道</span>
-      <span class="orig">标品层/租户层隔离，API / Message 扩展</span><span class="st done">✅ 已实现已验证</span></div>
+    <div class="bh"><span class="n">14</span><span class="src-tag core">总纲</span><span class="t">SaaS：租户隔离层层成立，扩展走 API 和消息两条道</span><span class="st done">✅ 已实现已验证</span></div>
     <div class="bb">
+      <p class="orig-quote">SaaS 租户：标品层和租户层的隔离，通过 API / Message 来扩展。</p>
+
       <div class="seg"><div class="ic q">问题</div><div class="tx">
         多租户系统最严重的事故就是<b>数据串租</b>；而租户的定制需求如果只能改核心代码来满足，
         标品就被拖垮。租户要能<b>自助接入自己的系统</b>，又不给核心开后门。
