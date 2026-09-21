@@ -1,7 +1,7 @@
 """场景图注册表：scene -> compiled graph。"""
 from __future__ import annotations
 
-from hub.graphs import batch, diag, eventdiag, proc, taxcode, xdom
+from hub.graphs import batch, diag, eventdiag, explore, proc, taxcode, xdom
 
 GRAPHS = {
     "ap.diag": diag.build,
@@ -10,6 +10,7 @@ GRAPHS = {
     "ap.event": eventdiag.build,   # 仅内部（事件订阅线程）
     "proc.diag": proc.build,       # 采购域查询（独立可用 / 被委派执行）
     "xdom.diag": xdom.build,       # 跨域根因诊断（AP -> 委派采购域）
+    "ap.explore": explore.build,   # 受限自主只读（第二档：模型驱动工具循环）
 }
 
-USER_SCENES = ("ap.diag", "ap.batch", "ap.taxcode", "proc.diag", "xdom.diag")
+USER_SCENES = ("ap.diag", "ap.batch", "ap.taxcode", "proc.diag", "xdom.diag", "ap.explore")
